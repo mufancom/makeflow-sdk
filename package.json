@@ -1,0 +1,29 @@
+{
+  "name": "makeflow-sdk",
+  "version": "0.0.1",
+  "description": "Makeflow SDK",
+  "repository": "https://gitlab.mufan.io/makeflow/makeflow-sdk",
+  "author": "Chengdu Mufan Technology Co., Ltd.",
+  "private": true,
+  "scripts": {
+    "build": "rimraf bld && tsc --project .",
+    "watch": "tsc --project . --watch",
+    "start": "ts-node src/index.ts"
+  },
+  "bin": {
+    "mf-sdk": "bld/index.js"
+  },
+  "devDependencies": {
+    "@magicspace/configs": "^0.1.47",
+    "@magicspace/tslint-rules": "^0.1.41",
+    "@types/node": "^11.11.6",
+    "biu": "^0.2.20",
+    "rimraf": "^2.6.3",
+    "ts-node": "^8.0.3",
+    "tslint": "^5.14.0",
+    "typescript": "^3.3.4000"
+  },
+  "dependencies": {
+    "clime": "^0.5.10"
+  }
+}
