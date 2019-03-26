@@ -1,3 +1,7 @@
+# File system
+
+.DS_Store
+
 # Develepment environment
 
 .idea/
@@ -25,12 +29,7 @@ dist/
 
 debug/
 *.log
-webpack-bundle-stats.json
 
 # Testing files
 
 /test.*
-
-# File system
-
-.DS_Store
