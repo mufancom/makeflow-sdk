@@ -2,15 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "biu",
-      "type": "shell",
-      "command": "node",
-      "args": ["node_modules/biu/bld/cli.js"],
-      "isBackground": true,
-      "group": "build",
-      "problemMatcher": "$biu-typescript"
-    },
-    {
       "label": "incremental-build",
       "type": "shell",
       "command": "node",
@@ -21,8 +12,8 @@
       },
       "args": [
         "node_modules/typescript/bin/tsc",
-        "--build",
-        "tsconfig.incremental.json",
+        "--project",
+        "src/program",
         "--watch"
       ],
       "isBackground": true,
@@ -30,36 +21,12 @@
       "problemMatcher": "$tsc-watch"
     },
     {
-      "label": "full-build",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "node_modules/typescript/bin/tsc",
-        "--build",
-        "tsconfig.json",
-        "--force"
-      ],
-      "group": "build",
-      "problemMatcher": "$tsc"
-    },
-    {
       "label": "clean",
       "type": "shell",
       "command": "yarn",
-      "args": ["rimraf", "*/bld"],
+      "args": ["rimraf", "bld"],
       "group": "build",
       "problemMatcher": []
-    },
-    {
-      "label": "lint",
-      "type": "shell",
-      "command": "yarn",
-      "args": ["lint-ts"],
-      "group": "build",
-      "problemMatcher": {
-        "base": "$tslint5",
-        "owner": "typescript"
-      }
     }
   ]
 }

@@ -1,1 +1,1 @@
-module.exports = require("./node_modules/@magicspace/configs/prettier");
+module.exports = require('@magicspace/configs/prettier');

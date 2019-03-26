@@ -1,0 +1,13 @@
+{
+  "$schema": "./bld/power-app/schema.json",
+  "name": "issue-sync",
+  "description": "sss",
+  "homePageURL": "https://baidu.com",
+  "configs": [
+    {
+      "name": "hello",
+      "displayName": "foo"
+    }
+  ],
+  "fields": []
+}

@@ -1,27 +1,35 @@
 {
   "name": "makeflow-sdk",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Makeflow SDK",
-  "repository": "https://gitlab.mufan.io/makeflow/makeflow-sdk",
+  "repository": "https://github.com/makeflow/makeflow-sdk",
   "author": "Chengdu Mufan Technology Co., Ltd.",
-  "private": true,
-  "scripts": {
-    "build": "rimraf bld && tsc --project .",
-    "watch": "tsc --project . --watch",
-    "start": "ts-node src/index.ts"
-  },
   "bin": {
-    "mf-sdk": "bld/index.js"
+    "mf": "bld/program/cli.js"
+  },
+  "files": [
+    "src/program/**/*.ts",
+    "bld/program"
+  ],
+  "scripts": {
+    "build:program": "yarn tsc --project src/program",
+    "build:power-app": "typescript-json-schema --required --out bld/power-app/schema.json src/power-app/tsconfig.json PowerApp",
+    "lint:program": "tslint --project src/program",
+    "lint:test": "tslint --project test",
+    "lint-prettier": "prettier --check \"**/*.{ts,tsx,js,jsx,json,yml,md}\"",
+    "lint": "yarn lint-prettier && yarn lint:program && yarn lint:test",
+    "test": "jest"
   },
   "devDependencies": {
     "@magicspace/configs": "^0.1.47",
     "@magicspace/tslint-rules": "^0.1.41",
-    "@types/node": "^11.11.6",
+    "@types/node": "^11.11.8",
     "biu": "^0.2.20",
     "rimraf": "^2.6.3",
     "ts-node": "^8.0.3",
     "tslint": "^5.14.0",
-    "typescript": "^3.3.4000"
+    "typescript": "^3.3.4000",
+    "typescript-json-schema": "^0.36.0"
   },
   "dependencies": {
     "clime": "^0.5.10"

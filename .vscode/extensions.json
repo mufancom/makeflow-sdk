@@ -1,9 +1,6 @@
 {
   "recommendations": [
-    "mf.biu-problem-matchers",
     "esbenp.prettier-vscode",
-    "streetsidesoftware.code-spell-checker",
-    "stkb.rewrap",
     "ms-vscode.vscode-typescript-tslint-plugin"
   ],
   "unwantedRecommendations": []
