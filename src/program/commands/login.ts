@@ -25,7 +25,7 @@ interface MFUserCandidate {
 class LoginCommandOptions extends Options {
   @option({
     flag: 'u',
-    description: 'Username',
+    description: 'Username (mobile)',
   })
   username!: string;
 
@@ -67,7 +67,7 @@ class LoginCommandOptions extends Options {
     }
 
     if (!password) {
-      throw new Error('password is required');
+      throw new Error('Password is required');
     }
 
     return {
@@ -78,7 +78,7 @@ class LoginCommandOptions extends Options {
 }
 
 @command({
-  description: 'Log in to Makeflow.',
+  description: 'Login to Makeflow.',
 })
 export default class extends Command {
   @metadata
@@ -87,7 +87,7 @@ export default class extends Command {
 
     await this.createAccessToken(username, password);
 
-    console.info(`🎉 Login succeeded`);
+    console.info(`You have successfully logged in!`);
   }
 
   private async getUserId(username: string, password: string): Promise<string> {
@@ -104,7 +104,7 @@ export default class extends Command {
     if (result.length > 1) {
       let answer = await prompts({
         type: 'select',
-        message: "What's your active user",
+        message: 'Please select a user to login.',
         name: 'userId',
         choices: result.map<Choice>(
           ({id, username, organization, profile}) => ({
@@ -122,7 +122,7 @@ export default class extends Command {
     }
 
     if (!userId) {
-      throw new Error('Account not available');
+      throw new Error('No active user is available.');
     }
 
     return userId;
@@ -144,7 +144,7 @@ export default class extends Command {
     let appConfigData = {accessToken: undefined};
 
     try {
-      let appConfigJSONData = FS.readFileSync(CONFIG_FILE, 'utf8') || '{}';
+      let appConfigJSONData = FS.readFileSync(CONFIG_FILE, 'utf-8') || '{}';
 
       appConfigData = JSON.parse(appConfigJSONData);
     } catch (error) {}
@@ -154,7 +154,7 @@ export default class extends Command {
     FS.writeFileSync(
       CONFIG_FILE,
       `${JSON.stringify(appConfigData, undefined, 2)}\n`,
-      'utf8',
+      'utf-8',
     );
   }
 }

@@ -1,14 +1,32 @@
-export interface PowerApp {
+///////////////////
+// Prerequisites //
+///////////////////
+
+type Nominal<T, _> = T;
+
+export type ProcedureItemType = 'indicator' | 'checkable';
+
+export interface ProcedureSelectAlikeFieldOption {
+  text: string;
+  value: string;
+}
+
+//////////////////////
+// Power App Schema //
+//////////////////////
+
+export interface PowerAppSchema {
   /**
    * @pattern ^[\w\d]+(-[\w\d]+)*$
    */
   name: string;
+  displayName: string;
   description?: string;
   /**
    * @pattern ^https?://.+$
    */
   homePageURL?: string;
-  configs?: PowerAppConfigEntryDefinition[];
+  configs?: PowerAppConfigDefinition[];
   fields?: PowerAppFieldDefinition[];
   powerItems?: PowerItemDefinition[];
   powerTags?: PowerTagDefinition[];
@@ -18,8 +36,10 @@ export interface PowerApp {
 // Config Entry Definition //
 /////////////////////////////
 
-interface PowerAppConfigEntryDefinition {
-  name: string;
+export type PowerAppConfigName = Nominal<string, 'power-app-config-name'>;
+
+export interface PowerAppConfigDefinition {
+  name: PowerAppConfigName;
   displayName: string;
   description?: string;
 }
@@ -28,29 +48,28 @@ interface PowerAppConfigEntryDefinition {
 // Field Definition //
 //////////////////////
 
-type PowerAppFieldDefinition =
+export type PowerAppFieldName = Nominal<string, 'power-app-field-name'>;
+
+export type PowerAppFieldDefinition =
   | PowerAppTextFieldDefinition
   | PowerAppOptionsFieldDefinition;
 
-interface PowerAppTextFieldDefinition {
-  name: string;
+export interface PowerAppTextFieldDefinition {
+  name: PowerAppFieldName;
   displayName: string;
   type: 'text';
 }
 
-interface PowerAppOptionsFieldDefinition {
-  name: string;
+export interface PowerAppOptionsFieldDefinition {
+  name: PowerAppFieldName;
   displayName: string;
   type: 'select' | 'radio';
-  options: PowerAppSelectAlikeFieldOptions[] | PowerAppFieldDataSourceOptions;
+  options:
+    | ProcedureSelectAlikeFieldOption[]
+    | PowerAppFieldDataSourceDefinition;
 }
 
-interface PowerAppSelectAlikeFieldOptions {
-  text: string;
-  value: string;
-}
-
-interface PowerAppFieldDataSourceOptions {
+export interface PowerAppFieldDataSourceDefinition {
   url: string;
   inputs?: PowerAppInputDefinition[];
 }
@@ -59,21 +78,25 @@ interface PowerAppFieldDataSourceOptions {
 // Power Item Definition //
 ///////////////////////////
 
-interface PowerItemDefinition {
-  name: string;
+export type PowerItemName = Nominal<string, 'power-item-name'>;
+
+export interface PowerItemDefinition {
+  name: PowerItemName;
   displayName: string;
   description?: string;
   hookBaseURL: string;
   inputs?: PowerAppInputDefinition[];
-  type?: 'indicator' | 'checkable';
+  type?: ProcedureItemType;
 }
 
 //////////////////////////
 // Power Tag Definition //
 //////////////////////////
 
-interface PowerTagDefinition {
-  name: string;
+export type PowerTagName = Nominal<string, 'power-tag-name'>;
+
+export interface PowerTagDefinition {
+  name: PowerTagName;
   displayName: string;
   description?: string;
   hookBaseURL: string;
@@ -84,29 +107,37 @@ interface PowerTagDefinition {
 // Common //
 ////////////
 
-type PowerAppInputDefinition =
-  | PowerItemConfigurableInputDefinition
-  | PowerItemBoundInputDefinition;
+export type PowerAppInputName = Nominal<string, 'power-app-input-name'>;
 
-interface PowerItemConfigurableInputDefinition {
-  name: string;
+export interface PowerAppInputDefinition {
+  name: PowerAppInputName;
   displayName: string;
+  bind?: PowerAppInputDefinitionInputOptions;
+  default?: PowerAppInputDefinitionInputOptions;
 }
 
-interface PowerItemBoundInputDefinition {
-  name: string;
-  displayName: string;
-  bind: PowerItemBound;
+export type PowerAppInputDefinitionInputOptions =
+  | PowerAppInputDefinitionVariableInputOptions
+  | PowerAppInputDefinitionValueInputOptions
+  | PowerAppInputDefinitionAppConfigInputOptions
+  | PowerAppInputDefinitionResourcePropertyInputOptions;
+
+export interface PowerAppInputDefinitionVariableInputOptions {
+  type: 'variable';
+  variable: string;
 }
 
-type PowerItemBound = PowerItemAppBound | PowerItemResourceBound;
+export interface PowerAppInputDefinitionValueInputOptions {
+  type: 'value';
+  value: string;
+}
 
-interface PowerItemAppBound {
-  type: 'app';
+export interface PowerAppInputDefinitionAppConfigInputOptions {
+  type: 'app-config';
   configName: string;
 }
 
-interface PowerItemResourceBound {
-  type: 'resource';
-  getter: string;
+export interface PowerAppInputDefinitionResourcePropertyInputOptions {
+  type: 'resource-property';
+  propertyName: string;
 }

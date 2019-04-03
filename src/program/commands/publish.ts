@@ -9,7 +9,7 @@ import {API} from '../core';
 
 const api = new API(API_BASE_URL);
 
-const powerAppSchema = loadPowerAppJSONSchema();
+const definitionSchema = loadDefinitionJSONSchema();
 
 const schemaValidator = new Validator();
 
@@ -19,41 +19,41 @@ const schemaValidator = new Validator();
 export default class extends Command {
   async execute(
     @param({
-      description: 'PowerApp file.',
+      description: 'PowerApp definition file.',
       default: 'power-app.json',
     })
     file: Castable.File,
   ): Promise<void> {
     await file.assert();
 
-    let powerAppConfig = await file.json();
+    let definition = await file.json<any>();
 
-    await this.publish(powerAppConfig);
+    await this.publish(definition);
 
-    console.info(`🎉 Publish succeeded`);
+    console.info(
+      `PowerApp "${definition.name}" has been successfully published!`,
+    );
   }
 
-  private async publish(powerAppConfig: object): Promise<void> {
-    let result = schemaValidator.validate(powerAppConfig, powerAppSchema);
+  private async publish(definition: object): Promise<void> {
+    let result = schemaValidator.validate(definition, definitionSchema);
 
     if (result.errors.length) {
       let errorMessages = result.errors.map(({message}) => `- ${message}`);
 
       throw new Error(
-        `Invalid power app configuration, reasons:\n${errorMessages.join(
-          '\n',
-        )}`,
+        `Invalid PowerApp definition, reasons:\n${errorMessages.join('\n')}`,
       );
     }
 
     if (!ACCESS_TOKEN) {
-      throw new Error('Please login first, via "mf login"');
+      throw new Error('Please login with `mf login` first');
     }
 
     await api.post(
       '/power-app/publish',
       {
-        'power-app': powerAppConfig,
+        definition,
       },
       {
         headers: {
@@ -64,7 +64,7 @@ export default class extends Command {
   }
 }
 
-function loadPowerAppJSONSchema(): object {
+function loadDefinitionJSONSchema(): object {
   let schemaJSON = FS.readFileSync(
     Path.join(__dirname, '../../power-app/schema.json'),
     'utf8',
