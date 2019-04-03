@@ -4,10 +4,10 @@ import * as Path from 'path';
 import {Castable, Command, command, param} from 'clime';
 import {Validator} from 'jsonschema';
 
-import {ACCESS_TOKEN, API_BASE_URL} from '../config';
+import {config} from '../config';
 import {API} from '../core';
 
-const api = new API(API_BASE_URL);
+const api = new API(config.api);
 
 const definitionSchema = loadDefinitionJSONSchema();
 
@@ -46,7 +46,9 @@ export default class extends Command {
       );
     }
 
-    if (!ACCESS_TOKEN) {
+    let {token: accessToken} = config;
+
+    if (!accessToken) {
       throw new Error('Please login with `mf login` first');
     }
 
@@ -57,7 +59,7 @@ export default class extends Command {
       },
       {
         headers: {
-          'X-Access-Token': ACCESS_TOKEN,
+          'X-Access-Token': accessToken,
         },
       },
     );
@@ -67,7 +69,7 @@ export default class extends Command {
 function loadDefinitionJSONSchema(): object {
   let schemaJSON = FS.readFileSync(
     Path.join(__dirname, '../../power-app/schema.json'),
-    'utf8',
+    'utf-8',
   );
 
   return JSON.parse(schemaJSON);

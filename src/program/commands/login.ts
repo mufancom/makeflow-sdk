@@ -1,12 +1,10 @@
-import * as FS from 'fs';
-
 import {Command, Options, command, metadata, option} from 'clime';
 import prompts, {Choice} from 'prompts';
 
-import {API_BASE_URL, CONFIG_FILE} from '../config';
+import {config, updateConfig} from '../config';
 import {API} from '../core';
 
-const api = new API(API_BASE_URL);
+const api = new API(config.api);
 
 interface MFUserCandidate {
   id: string;
@@ -46,7 +44,7 @@ class LoginCommandOptions extends Options {
       let answer = await prompts({
         type: 'text',
         name: 'username',
-        message: 'Username',
+        message: 'Username (mobile)',
       });
 
       username = answer.username;
@@ -141,20 +139,6 @@ export default class extends Command {
       permissions: ['power-app:publish'],
     });
 
-    let appConfigData = {accessToken: undefined};
-
-    try {
-      let appConfigJSONData = FS.readFileSync(CONFIG_FILE, 'utf-8') || '{}';
-
-      appConfigData = JSON.parse(appConfigJSONData);
-    } catch (error) {}
-
-    appConfigData.accessToken = accessToken;
-
-    FS.writeFileSync(
-      CONFIG_FILE,
-      `${JSON.stringify(appConfigData, undefined, 2)}\n`,
-      'utf-8',
-    );
+    updateConfig({token: accessToken});
   }
 }

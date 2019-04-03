@@ -40,7 +40,6 @@
     "extendable-error": "^0.1.5",
     "jsonschema": "^1.2.4",
     "prompts": "^2.0.4",
-    "rc": "^1.2.8",
     "tslang": "^0.1.13"
   }
 }

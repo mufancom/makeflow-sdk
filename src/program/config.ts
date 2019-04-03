@@ -1,17 +1,38 @@
+import * as FS from 'fs';
 import * as OS from 'os';
 import * as Path from 'path';
 
-import rc from 'rc';
+const CONFIG_PATH = Path.join(OS.homedir(), '.mfrc');
 
-const DEFAULT_CONFIG = {
-  apiBaseUrl: 'http://localhost:8080/api/v1',
+export interface SDKConfig {
+  api: string;
+  token?: string;
+}
+
+const DEFAULT_CONFIG: SDKConfig = {
+  api: 'https://makeflow.com/api/v1',
 };
 
-const appConfig = rc('mf', DEFAULT_CONFIG);
+export const config: SDKConfig = {...DEFAULT_CONFIG};
 
-export const CONFIG_FILE: string =
-  appConfig.config || Path.join(OS.homedir(), '.mfrc');
+try {
+  let configJSON = FS.readFileSync(CONFIG_PATH, 'utf-8');
+  Object.assign(config, JSON.parse(configJSON));
+} catch (error) {}
 
-export const API_BASE_URL: string =
-  appConfig['apiBaseUrl'] || DEFAULT_CONFIG.apiBaseUrl;
-export const ACCESS_TOKEN: string | undefined = appConfig['accessToken'];
+export function updateConfig(update: Partial<SDKConfig>): void {
+  Object.assign(config, update);
+
+  let configToSave: Partial<SDKConfig> = {};
+
+  for (let [key, value] of Object.entries(config)) {
+    if (value !== DEFAULT_CONFIG[key as keyof SDKConfig]) {
+      configToSave[key as keyof SDKConfig] = value;
+    }
+  }
+
+  FS.writeFileSync(
+    CONFIG_PATH,
+    `${JSON.stringify(configToSave, undefined, 2)}\n`,
+  );
+}
