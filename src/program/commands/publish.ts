@@ -1,7 +1,7 @@
 import * as FS from 'fs';
 import * as Path from 'path';
 
-import {Castable, Command, command, param} from 'clime';
+import {Castable, Command, Options, command, option, param} from 'clime';
 import {Validator} from 'jsonschema';
 
 import {config} from '../config';
@@ -13,6 +13,14 @@ const definitionSchema = loadDefinitionJSONSchema();
 
 const schemaValidator = new Validator();
 
+export class PublishOptions extends Options {
+  @option({
+    flag: 't',
+    description: 'The token will taken when makeflow callback',
+  })
+  token?: string;
+}
+
 @command({
   description: 'Publish a PowerApp for Makeflow.',
 })
@@ -23,19 +31,20 @@ export default class extends Command {
       default: 'power-app.json',
     })
     file: Castable.File,
+    options: PublishOptions,
   ): Promise<void> {
     await file.assert();
 
     let definition = await file.json<any>();
 
-    await this.publish(definition);
+    await this.publish(definition, options.token);
 
     console.info(
       `PowerApp "${definition.name}" has been successfully published!`,
     );
   }
 
-  private async publish(definition: object): Promise<void> {
+  private async publish(definition: object, token?: string): Promise<void> {
     let result = schemaValidator.validate(definition, definitionSchema);
 
     if (result.errors.length) {
@@ -56,6 +65,7 @@ export default class extends Command {
       '/power-app/publish',
       {
         definition,
+        token,
       },
       {
         headers: {
