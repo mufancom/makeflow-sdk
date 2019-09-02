@@ -16,7 +16,7 @@ const schemaValidator = new Validator();
 export class PublishOptions extends Options {
   @option({
     flag: 't',
-    description: 'The token will taken when makeflow callback',
+    description: 'The verification token for makeflow callback',
   })
   token?: string;
 }
