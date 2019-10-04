@@ -1,7 +1,6 @@
 import axios from 'axios';
+import {ExpectedError} from 'clime';
 import {Dict} from 'tslang';
-
-import {ExpectedError, ExpectedErrorCode} from './error';
 
 interface APIPostGenericParams<TData = object, TResult = unknown> {
   data: TData;
@@ -71,7 +70,7 @@ export class API {
     if ('error' in result) {
       let error = result.error;
 
-      throw new ExpectedError(error.code as ExpectedErrorCode, error.message);
+      throw new ExpectedError(error.message || error.code);
     } else {
       return result.data;
     }

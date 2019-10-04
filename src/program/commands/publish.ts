@@ -1,7 +1,15 @@
 import * as FS from 'fs';
 import * as Path from 'path';
 
-import {Castable, Command, Options, command, option, param} from 'clime';
+import {
+  Castable,
+  Command,
+  ExpectedError,
+  Options,
+  command,
+  option,
+  param,
+} from 'clime';
 import {Validator} from 'jsonschema';
 
 import {config} from '../config';
@@ -58,7 +66,7 @@ export default class extends Command {
     let {token: accessToken} = config;
 
     if (!accessToken) {
-      throw new Error('Please login with `mf login` first');
+      throw new ExpectedError('Please login with `mf login` first');
     }
 
     await api.post(
