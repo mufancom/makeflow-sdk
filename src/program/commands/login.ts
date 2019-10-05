@@ -4,7 +4,7 @@ import prompts, {Choice} from 'prompts';
 import {config, updateConfig} from '../config';
 import {API} from '../core';
 
-const api = new API(config.api);
+const api = new API(config.api, config.token);
 
 interface MFUserCandidate {
   id: string;
@@ -89,12 +89,13 @@ export default class extends Command {
   }
 
   private async getUserId(username: string, password: string): Promise<string> {
-    let result = await api.post<MFUserCandidate[]>(
+    let result = await api.call<MFUserCandidate[]>(
       '/account/list-user-candidates',
       {
         mobile: username,
         password,
       },
+      true,
     );
 
     let userId: string;
@@ -106,9 +107,7 @@ export default class extends Command {
         name: 'userId',
         choices: result.map<Choice>(
           ({id, username, organization, profile}) => ({
-            title: `${organization.displayName} - @${
-              profile.fullName
-            }(${username})`,
+            title: `${organization.displayName} - @${profile.fullName}(${username})`,
             value: id,
           }),
         ),
@@ -132,12 +131,16 @@ export default class extends Command {
   ): Promise<void> {
     let userId = await this.getUserId(username, password);
 
-    let accessToken = await api.post('/access-token/create', {
-      mobile: username,
-      password,
-      user: userId,
-      permissions: ['power-app:publish'],
-    });
+    let accessToken = await api.call<string>(
+      '/access-token/create',
+      {
+        mobile: username,
+        password,
+        user: userId,
+        permissions: ['power-app:publish'],
+      },
+      true,
+    );
 
     updateConfig({token: accessToken});
   }

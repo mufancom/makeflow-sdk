@@ -1,11 +1,5 @@
-import axios from 'axios';
 import {ExpectedError} from 'clime';
-import {Dict} from 'tslang';
-
-interface APIPostGenericParams<TData = object, TResult = unknown> {
-  data: TData;
-  result: TResult;
-}
+import fetch from 'node-fetch';
 
 interface APISuccessResult {
   data: any;
@@ -20,52 +14,49 @@ interface APIErrorResult {
 
 type APIResult = APISuccessResult | APIErrorResult;
 
-export interface APICallOptions {
-  type?: string;
-  headers?: Dict<string>;
-}
-
 export class API {
-  constructor(private apiBaseURL: string) {}
+  constructor(
+    private apiBaseURL: string,
+    private _accessToken: string | undefined,
+  ) {
+    console.info('API', apiBaseURL);
+  }
 
-  post<TGenericParams extends APIPostGenericParams<any, any>>(
-    url: string,
-    data: TGenericParams['data'],
-    options?: APICallOptions,
-  ): Promise<TGenericParams['result']>;
-  post<T>(url: string, data?: Dict<any>, options?: APICallOptions): Promise<T>;
-  post(
-    url: string,
-    data?: Dict<any>,
-    options?: APICallOptions,
-  ): Promise<unknown> {
-    return this.call('POST', url, data, options);
+  get accessToken(): string {
+    let accessToken = this._accessToken;
+
+    if (!accessToken) {
+      throw new ExpectedError('Please login with `mf login` first');
+    }
+
+    return accessToken;
   }
 
   getURL(path: string): string {
     return this.apiBaseURL + path;
   }
 
-  private async call<T>(
-    method: string,
+  async call<T>(
     path: string,
-    body?: unknown,
-    {type = 'application/json;charset=UTF-8', headers}: APICallOptions = {},
+    data: unknown,
+    ignoreAccessToken = false,
   ): Promise<T> {
     let url = this.getURL(path);
 
-    let response = await axios({
-      method,
-      url,
-      withCredentials: true,
-      data: body,
+    let response = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(data),
       headers: {
-        'Content-Type': type,
-        ...headers,
+        'Content-Type': 'application/json',
+        ...(ignoreAccessToken
+          ? undefined
+          : {
+              'X-Access-Token': this.accessToken,
+            }),
       },
     });
 
-    let result = response.data as APIResult;
+    let result = (await response.json()) as APIResult;
 
     if ('error' in result) {
       let error = result.error;

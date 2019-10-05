@@ -15,7 +15,7 @@ import {Validator} from 'jsonschema';
 import {config} from '../config';
 import {API} from '../core';
 
-const api = new API(config.api);
+const api = new API(config.api, config.token);
 
 const definitionSchema = loadDefinitionJSONSchema();
 
@@ -69,18 +69,10 @@ export default class extends Command {
       throw new ExpectedError('Please login with `mf login` first');
     }
 
-    await api.post(
-      '/power-app/publish',
-      {
-        definition,
-        token,
-      },
-      {
-        headers: {
-          'X-Access-Token': accessToken,
-        },
-      },
-    );
+    await api.call('/power-app/publish', {
+      definition,
+      token,
+    });
   }
 }
 
