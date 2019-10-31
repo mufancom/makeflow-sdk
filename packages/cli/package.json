@@ -1,6 +1,6 @@
 {
   "name": "makeflow-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1-alpha.0",
   "description": "Makeflow SDK CLI",
   "repository": "https://github.com/makeflow/makeflow-sdk",
   "author": "Chengdu Mufan Technology Co., Ltd.",
@@ -20,10 +20,10 @@
     "@makeflow/types": "*"
   },
   "dependencies": {
-    "tslang": "^0.1.13",
     "clime": "^0.5.10",
     "jsonschema": "^1.2.4",
     "node-fetch": "^2.6.0",
-    "prompts": "^2.0.4"
+    "prompts": "^2.0.4",
+    "tslang": "^0.1.13"
   }
 }

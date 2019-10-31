@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/types",
-  "version": "0.1.0",
+  "version": "0.1.1-alpha.0",
   "description": "Makeflow SDK power app definition",
   "repository": "https://github.com/makeflow/makeflow-sdk",
   "author": "Chengdu Mufan Technology Co., Ltd.",
@@ -16,8 +16,5 @@
   "dependencies": {
     "@types/draft-js": "^0.10.37",
     "tslang": "^0.1.13"
-  },
-  "devDependencies": {
-
   }
 }
