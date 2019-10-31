@@ -1,24 +1,15 @@
 {
-  "name": "makeflow-sdk",
-  "version": "0.1.0",
-  "description": "Makeflow SDK",
+  "name": "makeflow-sdk-packages",
+  "private": true,
   "repository": "https://github.com/makeflow/makeflow-sdk",
   "author": "Chengdu Mufan Technology Co., Ltd.",
-  "bin": {
-    "mf": "bld/program/cli.js"
-  },
-  "files": [
-    "src/program/**/*.ts",
-    "bld/program"
-  ],
   "scripts": {
-    "build:program": "yarn tsc --project src/program",
+    "build": "tsc --build tsconfig.build.json",
+    "lerna:publish": "lerna publish prerelease --npm-tag latest --registry=https://registry.npmjs.org",
     "build:power-app": "typescript-json-schema --required --out bld/power-app/schema.json src/power-app/tsconfig.json PowerAppSchema",
-    "lint:program": "tslint --project src/program",
-    "lint:test": "tslint --project test",
     "lint-prettier": "prettier --check \"**/*.{ts,tsx,js,jsx,json,yml,md}\"",
-    "lint": "yarn lint-prettier && yarn lint:program && yarn lint:test",
-    "test": "jest"
+    "lint": "yarn prettier --check \"**/*.{ts,tsx,js,jsx,json,yml,md}\" && yarn workspace makeflow-sdk lint && yarn workspace @makeflow/types lint",
+    "link-types": "yarn workspace @makeflow/types link"
   },
   "devDependencies": {
     "@magicspace/configs": "^0.1.47",
@@ -29,17 +20,18 @@
     "@types/prompts": "^1.2.0",
     "@types/rc": "^1.1.0",
     "biu": "^0.2.20",
+    "lerna": "^3.18.3",
+    "prettier": "^1.18.2",
     "rimraf": "^2.6.3",
     "ts-node": "^8.0.3",
     "tslint": "^5.14.0",
-    "typescript": "^3.3.4000",
+    "typescript": "^3.6.4",
     "typescript-json-schema": "^0.36.0"
   },
-  "dependencies": {
-    "clime": "^0.5.10",
-    "jsonschema": "^1.2.4",
-    "node-fetch": "^2.6.0",
-    "prompts": "^2.0.4",
-    "tslang": "^0.1.13"
+  "workspaces": {
+    "packages": [
+      "packages/cli",
+      "packages/types"
+    ]
   }
 }

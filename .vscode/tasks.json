@@ -12,8 +12,8 @@
       },
       "args": [
         "node_modules/typescript/bin/tsc",
-        "--project",
-        "src/program",
+        "--build",
+        "tsconfig.incremental.json",
         "--watch"
       ],
       "isBackground": true,
@@ -24,7 +24,7 @@
       "label": "clean",
       "type": "shell",
       "command": "yarn",
-      "args": ["rimraf", "bld"],
+      "args": ["rimraf", "packages/*/bld"],
       "group": "build",
       "problemMatcher": []
     }

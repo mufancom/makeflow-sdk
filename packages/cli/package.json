@@ -1,0 +1,29 @@
+{
+  "name": "makeflow-sdk",
+  "version": "0.1.0",
+  "description": "Makeflow SDK CLI",
+  "repository": "https://github.com/makeflow/makeflow-sdk",
+  "author": "Chengdu Mufan Technology Co., Ltd.",
+  "license": "MIT",
+  "bin": {
+    "mf": "bld/program/cli.js"
+  },
+  "files": [
+    "src/program/**/*.ts",
+    "bld/program"
+  ],
+  "scripts": {
+    "lint:program": "tslint --project src/program",
+    "lint": "yarn lint:program"
+  },
+  "peerDependencies": {
+    "@makeflow/types": "*"
+  },
+  "dependencies": {
+    "tslang": "^0.1.13",
+    "clime": "^0.5.10",
+    "jsonschema": "^1.2.4",
+    "node-fetch": "^2.6.0",
+    "prompts": "^2.0.4"
+  }
+}

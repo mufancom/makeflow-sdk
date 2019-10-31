@@ -3,15 +3,13 @@
   "compilerOptions": {
     "composite": true,
 
+    "target": "es6",
     "types": ["node"],
-    "lib": ["esnext"],
-
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    "declaration": true,
 
     "rootDir": ".",
-    "outDir": "../../bld/program"
+    "outDir": "../../bld/library"
   }
 }

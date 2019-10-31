@@ -1,0 +1,12 @@
+{
+  "extends": "@magicspace/configs/tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "lib": ["esnext"],
+
+    "experimentalDecorators": true,
+
+    "rootDir": ".",
+    "outDir": "../../bld/program"
+  }
+}

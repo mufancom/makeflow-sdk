@@ -1,0 +1,23 @@
+{
+  "name": "@makeflow/types",
+  "version": "0.1.0",
+  "description": "Makeflow SDK power app definition",
+  "repository": "https://github.com/makeflow/makeflow-sdk",
+  "author": "Chengdu Mufan Technology Co., Ltd.",
+  "license": "MIT",
+  "scripts": {
+    "lint:library": "tslint --project src/library",
+    "lint": "yarn lint:library"
+  },
+  "files": [
+    "src/library/**/*.ts",
+    "bld/library"
+  ],
+  "dependencies": {
+    "@types/draft-js": "^0.10.37",
+    "tslang": "^0.1.13"
+  },
+  "devDependencies": {
+
+  }
+}
