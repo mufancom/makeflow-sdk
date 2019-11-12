@@ -90,7 +90,7 @@ export default class extends Command {
 
   private async getUserId(username: string, password: string): Promise<string> {
     let result = await api.call<MFUserCandidate[]>(
-      '/account/list-user-candidates',
+      '/account/list-users',
       {
         mobile: username,
         password,
@@ -137,7 +137,7 @@ export default class extends Command {
         mobile: username,
         password,
         user: userId,
-        permissions: ['power-app:publish'],
+        permissions: ['power-app:admin'],
       },
       true,
     );
