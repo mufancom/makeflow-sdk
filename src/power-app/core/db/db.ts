@@ -10,11 +10,13 @@ import {
 export interface IDBAdapter extends DBAdapter {}
 
 abstract class DBAdapter {
-  abstract readonly ready: Promise<void>;
+  private readonly ready = this.initialize();
 
-  constructor(public options: unknown) {}
+  constructor(protected options: unknown) {}
 
   async setStorage(storage: IStorageObject): Promise<void> {
+    await this.ready;
+
     let result = storage.save();
 
     if (!result) {
@@ -38,6 +40,8 @@ abstract class DBAdapter {
   async getStorage(
     query: Partial<Docs> & Required<{type: Docs['type']}>,
   ): Promise<IStorageObject> {
+    await this.ready;
+
     switch (query.type) {
       case 'installation':
         return new Installation(await this.getInstallationDoc(query));
@@ -45,6 +49,8 @@ abstract class DBAdapter {
         return new PowerItem(await this.getPowerItemDoc(query));
     }
   }
+
+  protected abstract initialize(): Promise<void>;
 
   // Installation
 

@@ -33,12 +33,20 @@ export interface MongoOptions {
 export class MongoAdapter extends AbstractDBAdapter {
   protected db!: Db;
 
-  readonly ready: Promise<void>;
-
-  constructor(options: MongoOptions) {
+  constructor(protected options: MongoOptions) {
     super(options);
+  }
 
-    this.ready = this.initialize(options);
+  protected async initialize(): Promise<void> {
+    let {uri, name} = this.options;
+
+    let client = await MongoClient.connect(uri, {
+      useNewUrlParser: true,
+      ignoreUndefined: true,
+      useUnifiedTopology: true,
+    });
+
+    this.db = client.db(name);
   }
 
   protected async getInstallationDoc({
@@ -147,18 +155,6 @@ export class MongoAdapter extends AbstractDBAdapter {
         },
       },
     );
-  }
-
-  private async initialize({uri, name}: MongoOptions): Promise<void> {
-    let client = await MongoClient.connect(uri, {
-      useNewUrlParser: true,
-      ignoreUndefined: true,
-      useUnifiedTopology: true,
-    });
-
-    this.db = client.db(name);
-
-    console.info(`Connected to MongoDB ${uri}`);
   }
 
   private getCollection<TName extends keyof NameToCollectionDocumentSchemaDict>(

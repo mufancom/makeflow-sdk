@@ -15,13 +15,14 @@ interface Schema {
 }
 
 export class LowdbAdapter extends AbstractDBAdapter {
-  private db: LowdbSync<Schema>;
-  ready!: Promise<void>;
+  private db!: LowdbSync<Schema>;
 
-  constructor(options: LowdbOptions) {
+  constructor(protected options: LowdbOptions) {
     super(options);
+  }
 
-    let {file = 'db.json'} = options;
+  protected async initialize(): Promise<void> {
+    let {file = 'db.json'} = this.options;
 
     this.db = lowdb(new FileSync(file));
 
