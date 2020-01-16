@@ -9,3 +9,5 @@ export * from './power-item';
 export type Events = InstallationEvent | PermissionEvent | PowerItemEvent;
 
 export type EventType = Events['type'];
+
+export type EventResponse = Events['response'];

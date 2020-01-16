@@ -1,120 +1,142 @@
 import {
   IDBAdapter,
   INetAdapter,
-  IStorageObject,
+  InstallationEvent,
   KoaAdapter,
   MongoAdapter,
-  PowerItem,
+  PermissionEvent,
+  PowerAppVersion,
+  PowerItemEvent,
 } from './core';
 import {PowerAppSchema} from './schema';
 
-export interface PowerAppVersionDefinition {
-  ancestor: string;
-  contributions: PowerAppVersionDefinitionContributions;
-}
-
-export interface PowerAppVersionDefinitionContributions {
-  powerItems?: {
-    [key in string]: PowerAppVersionDefinitionPowerItem;
-  };
-}
-
-export interface PowerAppVersionDefinitionMigrations {
-  up(data: any): any;
-  down(data: any): any;
-}
-
-type MakeflowApi = never;
-
-export type ActionStorage<TStorageObject extends IStorageObject> = Pick<
-  TStorageObject,
-  'get' | 'set'
->;
-
-export interface PowerItemChange {
-  storage: ActionStorage<PowerItem>;
-  api: MakeflowApi;
-  inputs: any[];
-  configs: any[];
-}
-
-export interface PowerItemChangeResponse {
-  description?: string;
-  stage?: 'none' | 'done';
-  outputs?: object;
-}
-
-export interface PowerAppVersionDefinitionPowerItem {
-  migrations?: PowerAppVersionDefinitionMigrations;
-  actions?: {
-    [key in string]: (
-      change: PowerItemChange,
-    ) => PowerItemChangeResponse | void;
-  };
-  activate?(change: PowerItemChange): PowerItemChangeResponse | void;
-  update?(change: PowerItemChange): PowerItemChangeResponse | void;
-  deactivate?(change: PowerItemChange): PowerItemChangeResponse | void;
-}
-
 export class PowerApp {
-  private versionDefinition!: PowerAppVersionDefinition;
+  private versionDefinition!: PowerAppVersion.Definition;
   private netAdapter!: INetAdapter;
   private dbAdapter!: IDBAdapter;
 
-  constructor (_schema?: PowerAppSchema) {
+  constructor(_schema?: PowerAppSchema) {
     this.dbAdapter = new MongoAdapter({
-      uri: `mongodb://localhost:27017`,
+      uri: `mongodb://mongo:27017`,
       name: 'makeflow-power-app',
     });
   }
 
-  version (_v: any, versionDefinition: PowerAppVersionDefinition): void {
+  version(_v: any, versionDefinition: PowerAppVersion.Definition): void {
     this.versionDefinition = versionDefinition;
   }
 
-  serve (): void {
+  serve(): void {
     this.koa();
   }
 
-  koa (): void {
+  koa(): void {
     this.netAdapter = new KoaAdapter(this.versionDefinition);
     this.start();
   }
 
-  express (): void {}
+  express(): void {}
 
-  hapi (): void {}
+  hapi(): void {}
 
-  private start (): void {
-    this.netAdapter.on('installation', a => {});
+  private start(): void {
+    this.netAdapter
+      .on('installation', this.handleInstallation)
+      .on('permission', this.handlePermission)
+      .on('power-item', this.handlePowerItemChange)
+      .serve();
+  }
 
-    this.netAdapter.on('power-item', async (hook, body, resolve) => {
-      let api = {};
+  private handleInstallation = async (
+    event: InstallationEvent['eventObject'],
+    response: InstallationEvent['response'],
+  ): Promise<void> => {
+    let responseData = {};
 
-      let {token, inputs, configs} = body;
-
-      let storage = await this.dbAdapter.getStorage({
-        type: 'power-item',
-        token,
-      });
-
-      let response = hook({
-        storage: {
-          set: storage.set.bind(storage),
-          get: storage.get.bind(storage),
-        },
-        api,
-        inputs,
-        configs,
-      });
-
-      await this.dbAdapter.setStorage(storage);
-
-      resolve(response);
+    let installationStorage = await this.dbAdapter.getStorage({
+      type: 'installation',
+      ...event.payload,
     });
 
-    this.netAdapter.serve();
-  }
+    switch (event.type) {
+      case 'activate':
+        installationStorage.create({type: 'installation', ...event.payload});
+        break;
+      case 'update':
+        installationStorage.set(event.payload);
+
+        responseData = {
+          granted: !!installationStorage.get('accessToken'),
+        };
+        break;
+      case 'deactivate':
+        installationStorage.delete();
+        break;
+      default:
+        return;
+    }
+
+    await this.dbAdapter.setStorage(installationStorage);
+
+    response(responseData);
+  };
+
+  private handlePermission = async (
+    event: PermissionEvent['eventObject'],
+    response: PermissionEvent['response'],
+  ): Promise<void> => {
+    let installationStorage = await this.dbAdapter.getStorage({
+      type: 'installation',
+      ...event.payload,
+    });
+
+    switch (event.type) {
+      case 'grant':
+        let accessToken = event.payload.accessToken;
+
+        installationStorage.set('accessToken', accessToken);
+        break;
+      case 'revoke':
+        installationStorage.set('accessToken', undefined);
+        break;
+      default:
+        return;
+    }
+
+    await this.dbAdapter.setStorage(installationStorage);
+    response({});
+  };
+
+  private handlePowerItemChange = async (
+    event: PowerItemEvent['eventObject'],
+    response: PowerItemEvent['response'],
+  ): Promise<void> => {
+    let {change, payload} = event;
+
+    // TODO (boen): api
+    let api;
+
+    let {token} = payload;
+
+    let storage = await this.dbAdapter.getStorage({
+      type: 'power-item',
+      token,
+    });
+
+    let inputs = 'inputs' in payload ? payload.inputs : {};
+    let configs = 'configs' in payload ? payload.configs : {};
+
+    let responseData = change({
+      storage: storage.getActionStorage(),
+      api,
+      inputs,
+      configs,
+    });
+
+    await this.dbAdapter.setStorage(storage);
+
+    response(responseData ? responseData : {});
+  };
 }
 
 let app = new PowerApp();
@@ -124,17 +146,15 @@ app.version('1.0.0', {
   contributions: {
     powerItems: {
       six: {
-        activate ({storage, api, inputs, configs}) {
-          console.log({storage, api, inputs, configs});
-
+        activate({storage}) {
           storage.get();
 
           return {
             stage: 'done',
           };
         },
-        actions: {
-          create () {
+        action: {
+          create() {
             return {
               stage: 'none',
             };
@@ -147,4 +167,4 @@ app.version('1.0.0', {
 
 app.serve();
 
-console.info('http://localhost:3000');
+console.info('http://localhost:9001');

@@ -12,7 +12,8 @@
     "bld/program"
   ],
   "scripts": {
-    "dev": "tsc --project src/power-app --watch | node-dev --respawn --no-notify bld/power-app/app.js",
+    "watch": "tsc --project src/power-app --watch",
+    "dev": "node-dev --respawn --no-notify bld/power-app/app.js",
     "build:program": "yarn tsc --project src/program",
     "build:power-app": "typescript-json-schema --required --out bld/power-app/schema.json src/power-app/tsconfig.json PowerAppSchema",
     "lint:program": "tslint --project src/program",

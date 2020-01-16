@@ -18,9 +18,9 @@ export class Installation extends AbstractStorageObject<
   }
 
   protected mergeStorageToDoc(
-    doc: InstallationDoc,
+    {source, organization, installation, team, ...rest}: InstallationDoc,
     storage: Partial<InstallationStorage>,
   ): InstallationDoc {
-    return {...doc, ...storage};
+    return {...rest, ...storage, source, organization, installation, team};
   }
 }

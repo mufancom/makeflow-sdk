@@ -1,6 +1,14 @@
-import {Collection, Db, MongoClient, ObjectId} from 'mongodb';
+import _ from 'lodash';
+import {
+  Collection,
+  Db,
+  MongoClient,
+  ObjectId,
+  OnlyFieldsOfType,
+  UpdateQuery,
+} from 'mongodb';
 
-import {InstallationDoc, PowerItemDoc} from '../storage';
+import {Docs, InstallationDoc, PowerItemDoc} from '../storage';
 
 import {AbstractDBAdapter} from './db';
 
@@ -88,9 +96,7 @@ export class MongoAdapter extends AbstractDBAdapter {
         organization,
         team,
       },
-      {
-        $set: nDoc,
-      },
+      getUpdateQuery(nDoc),
     );
   }
 
@@ -160,4 +166,19 @@ export class MongoAdapter extends AbstractDBAdapter {
   ): Collection<NameToCollectionDocumentSchemaDict[TName]> {
     return this.db.collection(name);
   }
+}
+
+function getUpdateQuery<TDoc extends Docs>(doc: TDoc): UpdateQuery<TDoc> {
+  let unset = _.fromPairs(
+    _.toPairsIn(_.pickBy(doc, _.isUndefined)).map(key => [key, '']),
+  );
+
+  return {
+    $set: doc,
+    ...((!_.isEmpty(unset)
+      ? {
+          $unset: unset,
+        }
+      : {}) as OnlyFieldsOfType<TDoc, any, ''>),
+  };
 }

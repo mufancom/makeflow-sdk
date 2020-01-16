@@ -1,32 +1,34 @@
 import {EventEmitter} from 'events';
 
-import {PowerAppVersionDefinition} from '../../app';
+import {PowerAppVersion} from '../version';
 
-import {EventType, Events} from './events';
+import {Events} from './events';
 
 export interface INetAdapter extends NetAdapter {}
 
 abstract class NetAdapter extends EventEmitter {
-  constructor (protected definition: PowerAppVersionDefinition) {
+  constructor(protected definition: PowerAppVersion.Definition) {
     super();
   }
 
-  abstract serve (): void;
+  abstract serve(): void;
 
-  // on (
-  //   event: '',
-  //   listener: (params: PowerApp.InstallationActivateHookParams) => void,
-  // ): this;
-  // on (event: 'power-item:hook', listener: () => void): this;
-  on<TT extends TEventObject['type'], TEventObject extends Events> (
-    event: TT,
-    listener: (event: TEventObject['eventObjects']) => void,
+  on<TEvent extends Events>(
+    type: TEvent['type'],
+    listener: (
+      event: TEvent['eventObject'],
+      response: TEvent['response'],
+    ) => void,
   ): this {
-    return super.on(event, listener);
+    return super.on(type, listener);
   }
 
-  emit (event: EventType, ...args: any[]): boolean {
-    return super.emit(event, ...args);
+  emit<TEvent extends Events>(
+    type: TEvent['type'],
+    event: TEvent['eventObject'],
+    response: TEvent['response'],
+  ): boolean {
+    return super.emit(type, event, response);
   }
 }
 

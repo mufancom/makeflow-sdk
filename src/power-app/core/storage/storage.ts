@@ -3,6 +3,10 @@ import _ from 'lodash';
 import {InstallationDoc, InstallationStorage} from './installation';
 import {PowerItemDoc, PowerItemStorage} from './power-item';
 
+export type ActionStorage<
+  TStorageObject extends IStorageObject = IStorageObject
+> = Pick<TStorageObject, 'get' | 'set'>;
+
 export type Docs = InstallationDoc | PowerItemDoc;
 
 export type Storages = InstallationStorage | PowerItemStorage;
@@ -15,7 +19,13 @@ export interface IStorageObject<
 export type StorageSaveResult<TDoc extends Docs> =
   | {type: 'create'; doc: TDoc}
   | {type: 'delete'; doc: TDoc}
-  | {type: 'update'; docs: [TDoc, TDoc]};
+  | {
+      type: 'update';
+      docs: {
+        old: TDoc;
+        new: TDoc;
+      };
+    };
 
 abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
   private storage: Partial<TStorage>;
@@ -23,8 +33,8 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
 
   constructor(private readonly originalDoc?: TDoc) {
     if (originalDoc) {
-      this.storage = this.extractDocToStorage(originalDoc);
-      this.doc = originalDoc;
+      this.storage = _.cloneDeep(this.extractDocToStorage(originalDoc));
+      this.doc = _.cloneDeep(originalDoc);
     } else {
       this.storage = {};
     }
@@ -93,7 +103,10 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
 
       return {
         type: 'update',
-        docs: [originalDoc, doc],
+        docs: {
+          old: originalDoc,
+          new: doc,
+        },
       };
     } else if (doc) {
       return {
@@ -103,6 +116,15 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
     }
 
     return undefined;
+  }
+
+  getActionStorage<
+    TStorageObject extends IStorageObject = IStorageObject
+  >(): ActionStorage<TStorageObject> {
+    return {
+      get: this.get.bind(this),
+      set: this.set.bind(this),
+    };
   }
 
   protected abstract extractDocToStorage(doc: TDoc): TStorage;

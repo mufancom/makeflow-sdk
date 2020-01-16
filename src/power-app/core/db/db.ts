@@ -29,7 +29,8 @@ abstract class DBAdapter {
         await this.deleteStorage(result.doc);
         break;
       case 'update':
-        await this.updateStorage(...result.docs);
+        let {old: oDoc, new: nDoc} = result.docs;
+        await this.updateStorage(oDoc, nDoc);
         break;
     }
   }

@@ -3,44 +3,117 @@ import bodyParser from 'koa-bodyparser';
 import Router, {RouterContext} from 'koa-router';
 import _ from 'lodash';
 
-import {PowerAppVersionDefinition} from '../../app';
+import {PowerAppVersion} from '../version';
 
+import {
+  Events,
+  InstallationEvent,
+  PermissionEvent,
+  PowerItemEvent,
+} from './events';
 import {AbstractNetAdapter} from './net';
 
 interface PowerItemRequestParams {
   name: string;
-  type: string;
+  type: Exclude<keyof PowerAppVersion.PowerItem.Definition, 'migrations'>;
   action: string | undefined;
 }
 
 export class KoaAdapter extends AbstractNetAdapter {
   private app = new Koa();
 
-  constructor(public definition: PowerAppVersionDefinition) {
+  constructor(public definition: PowerAppVersion.Definition) {
     super(definition);
 
-    let router = new Router<unknown>();
+    let router = new Router<unknown>({prefix: '/api/mf'});
 
-    router.post('/power-item/:name/:type/:action?', this.onPowerItemRequest);
+    router
+      .all('*', async (context, next) => {
+        // TODO (boen):
+        console.info(context.path);
 
-    this.app.use(
-      bodyParser({
-        onerror: (_, ctx) => ctx.throw('body parse error', 422),
-      }),
-    );
+        await next();
 
-    this.app.use(router.routes());
+        context.body = await context.body;
+      })
+      .post('/installation/:type', this.handleInstallationRequest)
+      .post('/permission/:type', this.handPermissionRequest)
+      .post('/power-item/:name/:type/:actions?', this.handlePowerItemRequest);
+
+    this.app
+      .use(
+        bodyParser({
+          onerror: (_, context) => context.throw('body parse error', 422),
+        }),
+      )
+      .use(router.routes());
   }
 
   serve(): void {
-    this.app.listen(3000);
+    this.app.listen(9001);
   }
 
-  private onPowerItemRequest = async (ctx: RouterContext): Promise<void> => {
+  private emitEvent<TEvent extends Events>(
+    type: TEvent['type'],
+    event: TEvent['eventObject'],
+    context: RouterContext,
+  ): void {
+    let response = getResponse<TEvent>(context);
+
+    let existedListeners = this.emit<TEvent>(type, event, response);
+
+    if (!existedListeners) {
+      response({});
+    }
+  }
+
+  private handPermissionRequest = async (
+    context: RouterContext,
+  ): Promise<void> => {
+    let {
+      params: {type},
+      request: {body},
+    } = context;
+
+    // TODO (boen): check body data validity
+    let payload = body;
+
+    this.emitEvent<PermissionEvent>(
+      'permission',
+      {
+        type,
+        payload,
+      },
+      context,
+    );
+  };
+
+  private handleInstallationRequest = (context: RouterContext): void => {
+    let {
+      params: {type},
+      request: {body},
+    } = context;
+
+    // TODO (boen): check body data validity
+    let payload = body;
+
+    this.emitEvent<InstallationEvent>(
+      'installation',
+      {
+        type,
+        payload,
+      },
+      context,
+    );
+  };
+
+  private handlePowerItemRequest = async (
+    context: RouterContext,
+  ): Promise<void> => {
     let {
       params,
       request: {body},
-    } = ctx;
+    } = context;
 
     if (!isPowerItemRequestParams(params)) {
       return;
@@ -58,23 +131,34 @@ export class KoaAdapter extends AbstractNetAdapter {
       return;
     }
 
-    let hook =
-      type === 'action'
-        ? powerItem.actions?.[action!]
-        : (powerItem as any)[type];
+    let change =
+      type === 'action' ? powerItem.action?.[action!] : powerItem[type];
 
-    if (!hook) {
+    if (!change) {
       return;
     }
 
-    ctx.body = await new Promise(resolve => {
-      let existedListeners = this.emit('power-item', hook, body, resolve);
+    // TODO (boen): check body data validity
+    let payload = body;
 
-      if (!existedListeners) {
-        resolve({});
-      }
-    });
+    this.emitEvent<PowerItemEvent>(
+      'power-item',
+      {
+        type,
+        payload,
+        change,
+      } as PowerItemEvent['eventObject'],
+      context,
+    );
   };
+}
+
+function getResponse<TEvent extends Events>(
+  context: RouterContext,
+): TEvent['response'] {
+  let response!: TEvent['response'];
+  context.body = new Promise(resolve => (response = resolve));
+  return response;
 }
 
 function isPowerItemRequestParams(

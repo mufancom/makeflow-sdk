@@ -2,10 +2,11 @@ import {PowerApp} from '../../../types';
 
 export interface InstallationEvent {
   type: 'installation';
-  eventObjects:
+  eventObject:
     | InstallationActivateEventObject
     | InstallationDeactivateEventObject
     | InstallationUpdateEventObject;
+  response(data: PowerApp.InstallationUpdateHookReturn): void;
 }
 
 export interface InstallationActivateEventObject {

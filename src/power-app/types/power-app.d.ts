@@ -26,13 +26,13 @@ export namespace PowerApp {
     resources: ResourcesMapping;
   }
 
+  interface InstallationUpdateHookReturn {
+    granted?: boolean;
+  }
+
   // installation/deactivate hook //
 
   interface InstallationDeactivateHookParams extends SharedConfigHookParams {}
-
-  interface InstallationDeactivateHookReturn {
-    granted?: boolean;
-  }
 
   // permission/grant hook //
 

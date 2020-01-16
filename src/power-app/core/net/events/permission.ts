@@ -1,8 +1,11 @@
+import {Dict} from 'tslang';
+
 import {PowerApp} from '../../../types';
 
 export interface PermissionEvent {
   type: 'permission';
-  eventObjects: PermissionGrantEventObject | PermissionRevokeEventObject;
+  eventObject: PermissionGrantEventObject | PermissionRevokeEventObject;
+  response(data: Dict<unknown>): void;
 }
 
 export interface PermissionGrantEventObject {
