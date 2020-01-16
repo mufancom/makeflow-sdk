@@ -170,7 +170,7 @@ export class MongoAdapter extends AbstractDBAdapter {
 
 function getUpdateQuery<TDoc extends Docs>(doc: TDoc): UpdateQuery<TDoc> {
   let unset = _.fromPairs(
-    _.toPairsIn(_.pickBy(doc, _.isUndefined)).map(key => [key, '']),
+    _.toPairsIn(_.pickBy(doc, _.isUndefined)).map(([key]) => [key, '']),
   );
 
   return {

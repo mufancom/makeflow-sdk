@@ -20,10 +20,11 @@ export class PowerItem extends AbstractStorageObject<
 
   protected mergeStorageToDoc(
     doc: PowerItemDoc,
-    storage: Partial<PowerItemStorage>,
+    storage: PowerItemStorage,
   ): PowerItemDoc {
-    doc.storage = {...doc.storage, ...storage};
-
-    return doc;
+    return {
+      ...doc,
+      storage,
+    };
   }
 }

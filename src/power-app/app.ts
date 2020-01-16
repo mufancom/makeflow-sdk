@@ -63,17 +63,16 @@ export class PowerApp {
         installationStorage.create({type: 'installation', ...event.payload});
         break;
       case 'update':
-        installationStorage.set(event.payload);
+        installationStorage.merge(event.payload);
 
         responseData = {
           granted: !!installationStorage.get('accessToken'),
         };
+
         break;
       case 'deactivate':
         installationStorage.delete();
         break;
-      default:
-        return;
     }
 
     await this.dbAdapter.setStorage(installationStorage);
@@ -92,18 +91,15 @@ export class PowerApp {
 
     switch (event.type) {
       case 'grant':
-        let accessToken = event.payload.accessToken;
-
-        installationStorage.set('accessToken', accessToken);
+        installationStorage.set('accessToken', event.payload.accessToken);
         break;
       case 'revoke':
         installationStorage.set('accessToken', undefined);
         break;
-      default:
-        return;
     }
 
     await this.dbAdapter.setStorage(installationStorage);
+
     response({});
   };
 
@@ -126,6 +122,12 @@ export class PowerApp {
     let inputs = 'inputs' in payload ? payload.inputs : {};
     let configs = 'configs' in payload ? payload.configs : {};
 
+    storage.create({
+      type: 'power-item',
+      token: payload.token,
+      storage: {},
+    });
+
     let responseData = change({
       storage: storage.getActionStorage(),
       api,
@@ -145,20 +147,21 @@ app.version('1.0.0', {
   ancestor: '0.0.0',
   contributions: {
     powerItems: {
-      six: {
-        activate({storage}) {
-          storage.get();
+      'basic-job': {
+        activate({storage, configs}) {
+          storage.set(configs);
+        },
+        update({storage}) {
+          storage.merge({a: 888});
 
           return {
-            stage: 'done',
+            description: 'done',
           };
         },
-        action: {
-          create() {
-            return {
-              stage: 'none',
-            };
-          },
+        deactivate() {
+          return {
+            description: 'none',
+          };
         },
       },
     },

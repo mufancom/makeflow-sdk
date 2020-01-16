@@ -5,7 +5,7 @@ import {PowerItemDoc, PowerItemStorage} from './power-item';
 
 export type ActionStorage<
   TStorageObject extends IStorageObject = IStorageObject
-> = Pick<TStorageObject, 'get' | 'set'>;
+> = Pick<TStorageObject, 'get' | 'set' | 'merge'>;
 
 export type Docs = InstallationDoc | PowerItemDoc;
 
@@ -28,23 +28,20 @@ export type StorageSaveResult<TDoc extends Docs> =
     };
 
 abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
-  private storage: Partial<TStorage>;
+  private storage: TStorage | undefined;
   private doc: TDoc | undefined;
 
   constructor(private readonly originalDoc?: TDoc) {
     if (originalDoc) {
-      this.storage = _.cloneDeep(this.extractDocToStorage(originalDoc));
-      this.doc = _.cloneDeep(originalDoc);
-    } else {
-      this.storage = {};
+      this.initialize(originalDoc);
     }
   }
 
-  get(): Partial<TStorage>;
+  get(): TStorage;
   get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey];
   get<TKey extends keyof TStorage>(
     key?: TKey | undefined,
-  ): Partial<TStorage> | TStorage[TKey] | undefined {
+  ): TStorage | TStorage[TKey] | undefined {
     let storage = this.storage;
 
     if (!storage) {
@@ -58,17 +55,21 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
     return storage[key];
   }
 
-  set(storage: Partial<TStorage>): void;
+  set(storage: TStorage): void;
   set<TKey extends keyof TStorage>(key: TKey, value: TStorage[TKey]): void;
   set<TKey extends keyof TStorage>(
-    storageOrKey: Partial<TStorage> | TKey,
+    storageOrKey: TStorage | TKey,
     value?: TStorage[TKey],
   ): void {
     if (typeof storageOrKey === 'object') {
       this.storage = storageOrKey;
-    } else {
-      this.storage[storageOrKey] = value;
+    } else if (this.storage) {
+      this.storage[storageOrKey] = value!;
     }
+  }
+
+  merge(storage: Partial<TStorage>): void {
+    this.storage = _.merge(this.storage, storage);
   }
 
   create(doc: TDoc): void {
@@ -76,7 +77,7 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
       return;
     }
 
-    this.doc = doc;
+    this.initialize(doc);
   }
 
   delete(): void {
@@ -95,7 +96,7 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
         };
       }
 
-      doc = this.mergeStorageToDoc(doc, this.storage);
+      doc = this.mergeStorageToDoc(doc, this.storage!);
 
       if (_.isEqual(originalDoc, doc)) {
         return undefined;
@@ -111,7 +112,7 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
     } else if (doc) {
       return {
         type: 'create',
-        doc,
+        doc: this.mergeStorageToDoc(doc, this.storage!),
       };
     }
 
@@ -124,15 +125,18 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
     return {
       get: this.get.bind(this),
       set: this.set.bind(this),
+      merge: this.merge.bind(this),
     };
   }
 
   protected abstract extractDocToStorage(doc: TDoc): TStorage;
 
-  protected abstract mergeStorageToDoc(
-    doc: TDoc,
-    storage: Partial<TStorage>,
-  ): TDoc;
+  protected abstract mergeStorageToDoc(doc: TDoc, storage: TStorage): TDoc;
+
+  private initialize(doc: TDoc): void {
+    this.storage = _.cloneDeep(this.extractDocToStorage(doc));
+    this.doc = _.cloneDeep(doc);
+  }
 }
 
 export const AbstractStorageObject = StorageObject;
