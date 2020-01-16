@@ -147,6 +147,7 @@ export class MongoAdapter extends AbstractDBAdapter {
     let client = await MongoClient.connect(uri, {
       useNewUrlParser: true,
       ignoreUndefined: true,
+      useUnifiedTopology: true,
     });
 
     this.db = client.db(name);

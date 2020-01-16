@@ -61,32 +61,34 @@ export class PowerApp {
   private netAdapter!: INetAdapter;
   private dbAdapter!: IDBAdapter;
 
-  constructor(_schema?: PowerAppSchema) {
+  constructor (_schema?: PowerAppSchema) {
     this.dbAdapter = new MongoAdapter({
       uri: `mongodb://localhost:27017`,
       name: 'makeflow-power-app',
     });
   }
 
-  version(_v: any, versionDefinition: PowerAppVersionDefinition): void {
+  version (_v: any, versionDefinition: PowerAppVersionDefinition): void {
     this.versionDefinition = versionDefinition;
   }
 
-  serve(): void {
+  serve (): void {
     this.koa();
   }
 
-  koa(): void {
+  koa (): void {
     this.netAdapter = new KoaAdapter(this.versionDefinition);
     this.start();
   }
 
-  express(): void {}
+  express (): void {}
 
-  hapi(): void {}
+  hapi (): void {}
 
-  private start(): void {
-    this.netAdapter.on('power-item:hook', async (hook, body, resolve) => {
+  private start (): void {
+    this.netAdapter.on('installation', a => {});
+
+    this.netAdapter.on('power-item', async (hook, body, resolve) => {
       let api = {};
 
       let {token, inputs, configs} = body;
@@ -122,7 +124,7 @@ app.version('1.0.0', {
   contributions: {
     powerItems: {
       six: {
-        activate({storage, api, inputs, configs}) {
+        activate ({storage, api, inputs, configs}) {
           console.log({storage, api, inputs, configs});
 
           storage.get();
@@ -132,7 +134,7 @@ app.version('1.0.0', {
           };
         },
         actions: {
-          create() {
+          create () {
             return {
               stage: 'none',
             };

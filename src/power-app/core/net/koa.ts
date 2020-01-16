@@ -68,7 +68,7 @@ export class KoaAdapter extends AbstractNetAdapter {
     }
 
     ctx.body = await new Promise(resolve => {
-      let existedListeners = this.emit('power-item:hook', hook, body, resolve);
+      let existedListeners = this.emit('power-item', hook, body, resolve);
 
       if (!existedListeners) {
         resolve({});
