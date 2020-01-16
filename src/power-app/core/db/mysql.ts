@@ -3,7 +3,9 @@ import {InstallationDoc, PowerItemDoc} from '../storage';
 import {AbstractDBAdapter} from './db';
 
 export class MySQLAdapter extends AbstractDBAdapter {
-  ready!: Promise<void>;
+  protected initialize(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 
   protected getInstallationDoc(
     _doc: InstallationDoc,

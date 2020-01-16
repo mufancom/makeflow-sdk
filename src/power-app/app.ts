@@ -11,7 +11,6 @@ import {
   PowerAppVersion,
   PowerItemEvent,
 } from './core';
-import {PowerAppSchema} from './schema';
 
 export interface PowerAppOptions {
   db:
@@ -24,7 +23,7 @@ export class PowerApp {
   private netAdapter!: INetAdapter;
   private dbAdapter!: IDBAdapter;
 
-  constructor(_schema?: PowerAppSchema) {
+  constructor() {
     this.dbAdapter = new MongoAdapter({
       uri: `mongodb://mongo:27017`,
       name: 'makeflow-power-app',
