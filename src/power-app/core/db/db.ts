@@ -39,9 +39,8 @@ abstract class DBAdapter {
     query: Partial<Docs> & Required<{type: Docs['type']}>,
   ): Promise<IStorageObject> {
     switch (query.type) {
-      case 'installation': {
+      case 'installation':
         return new Installation(await this.getInstallationDoc(query));
-      }
       case 'power-item':
         return new PowerItem(await this.getPowerItemDoc(query));
     }

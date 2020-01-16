@@ -3,12 +3,21 @@ import {
   INetAdapter,
   InstallationEvent,
   KoaAdapter,
+  LowdbAdapter,
+  LowdbOptions,
   MongoAdapter,
+  MongoOptions,
   PermissionEvent,
   PowerAppVersion,
   PowerItemEvent,
 } from './core';
 import {PowerAppSchema} from './schema';
+
+export interface PowerAppOptions {
+  db:
+    | {type: 'mongo'; options: MongoOptions}
+    | {type: 'lowdb'; options: LowdbOptions};
+}
 
 export class PowerApp {
   private versionDefinition!: PowerAppVersion.Definition;
@@ -20,6 +29,8 @@ export class PowerApp {
       uri: `mongodb://mongo:27017`,
       name: 'makeflow-power-app',
     });
+
+    this.dbAdapter = new LowdbAdapter({});
   }
 
   version(_v: any, versionDefinition: PowerAppVersion.Definition): void {
