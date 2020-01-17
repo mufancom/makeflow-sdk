@@ -1,11 +1,11 @@
-import {PowerApp} from '../../types';
+import {API} from '@makeflow/types';
 
 import {AbstractStorageObject} from './storage';
 
 export type InstallationDoc = {
   type: 'installation';
-} & Partial<PowerApp.PermissionGrantHookParams> &
-  PowerApp.InstallationActivateHookParams;
+} & Partial<API.PowerApp.PermissionGrantHookParams> &
+  API.PowerApp.InstallationActivateHookParams;
 
 export type InstallationStorage = InstallationDoc;
 

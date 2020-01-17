@@ -1,6 +1,5 @@
+import {API} from '@makeflow/types';
 import {Dict} from 'tslang';
-
-import {PowerApp} from '../../../types';
 
 export interface PermissionEvent {
   type: 'permission';
@@ -10,10 +9,10 @@ export interface PermissionEvent {
 
 export interface PermissionGrantEventObject {
   type: 'grant';
-  payload: PowerApp.PermissionGrantHookParams;
+  payload: API.PowerApp.PermissionGrantHookParams;
 }
 
 export interface PermissionRevokeEventObject {
   type: 'revoke';
-  payload: PowerApp.PermissionRevokeHookParams;
+  payload: API.PowerApp.PermissionRevokeHookParams;
 }

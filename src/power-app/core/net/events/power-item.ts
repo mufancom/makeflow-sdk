@@ -1,4 +1,5 @@
-import {PowerItem} from '../../../types';
+import {API} from '@makeflow/types';
+
 import {PowerAppVersion} from '../../version';
 
 export interface PowerItemEvent {
@@ -21,20 +22,20 @@ export type PowerItemEventObject<
 
 export interface PowerItemActivateEventObject {
   type: 'activate';
-  payload: PowerItem.ActivateHookParams;
+  payload: API.PowerItem.ActivateHookParams;
 }
 
 export interface PowerItemDeactivateEventObject {
   type: 'deactivate';
-  payload: PowerItem.DeactivateHookParams;
+  payload: API.PowerItem.DeactivateHookParams;
 }
 
 export interface PowerItemUpdateEventObject {
   type: 'update';
-  payload: PowerItem.UpdateHookParams;
+  payload: API.PowerItem.UpdateHookParams;
 }
 
 export interface PowerItemActionEventObject {
   type: 'action';
-  payload: PowerItem.ActionHookParams;
+  payload: API.PowerItem.ActionHookParams;
 }

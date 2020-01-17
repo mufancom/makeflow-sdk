@@ -1,4 +1,4 @@
-import {PowerApp} from '../../../types';
+import {API} from '@makeflow/types';
 
 export interface InstallationEvent {
   type: 'installation';
@@ -6,20 +6,20 @@ export interface InstallationEvent {
     | InstallationActivateEventObject
     | InstallationDeactivateEventObject
     | InstallationUpdateEventObject;
-  response(data: PowerApp.InstallationUpdateHookReturn): void;
+  response(data: API.PowerApp.InstallationUpdateHookReturn): void;
 }
 
 export interface InstallationActivateEventObject {
   type: 'activate';
-  payload: PowerApp.InstallationActivateHookParams;
+  payload: API.PowerApp.InstallationActivateHookParams;
 }
 
 export interface InstallationDeactivateEventObject {
   type: 'deactivate';
-  payload: PowerApp.InstallationDeactivateHookParams;
+  payload: API.PowerApp.InstallationDeactivateHookParams;
 }
 
 export interface InstallationUpdateEventObject {
   type: 'update';
-  payload: PowerApp.InstallationUpdateHookParams;
+  payload: API.PowerApp.InstallationUpdateHookParams;
 }
