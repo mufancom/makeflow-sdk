@@ -14,28 +14,30 @@ type _PowerItemEventObject =
   | PowerItemUpdateEventObject
   | PowerItemActionEventObject;
 
+export interface PowerItemEventParams {
+  name: string;
+  type: Exclude<keyof PowerAppVersion.PowerItem.Definition, 'migrations'>;
+  action: string | undefined;
+}
+
 export type PowerItemEventObject<
   TPowerItemEventObject extends _PowerItemEventObject = _PowerItemEventObject
 > = {
-  change: PowerAppVersion.PowerItem.Change;
+  params: PowerItemEventParams;
 } & TPowerItemEventObject;
 
 export interface PowerItemActivateEventObject {
-  type: 'activate';
   payload: API.PowerItem.ActivateHookParams;
 }
 
 export interface PowerItemDeactivateEventObject {
-  type: 'deactivate';
   payload: API.PowerItem.DeactivateHookParams;
 }
 
 export interface PowerItemUpdateEventObject {
-  type: 'update';
   payload: API.PowerItem.UpdateHookParams;
 }
 
 export interface PowerItemActionEventObject {
-  type: 'action';
   payload: API.PowerItem.ActionHookParams;
 }

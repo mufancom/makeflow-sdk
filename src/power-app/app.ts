@@ -1,10 +1,19 @@
+import {API} from '@makeflow/types';
 import _ from 'lodash';
-import {intersects, minVersion, rcompare, validRange} from 'semver';
+import {
+  intersects,
+  lt,
+  minVersion,
+  rcompare,
+  satisfies,
+  validRange,
+} from 'semver';
 import {Constructor} from 'tslang';
 
 import {
   IDBAdapter,
   INetAdapter,
+  IStorageObject,
   InstallationEvent,
   KoaAdapter,
   LowdbAdapter,
@@ -15,40 +24,42 @@ import {
   PowerAppVersion,
   PowerGlanceDoc,
   PowerGlanceEvent,
+  PowerGlanceEventParams,
   PowerItemEvent,
+  PowerItemEventParams,
   mergeOriginalDoc,
 } from './core';
 
-const PowerAppDBAdapterDict = {
-  mongo: MongoAdapter,
-  lowdb: LowdbAdapter,
-};
-
 export interface PowerAppOptions {
+  source?: API.PowerApp.Source;
   db?:
     | {type: 'mongo'; options: MongoOptions}
     | {type: 'lowdb'; options: LowdbOptions};
 }
 
+interface PowerAppVersionInfo {
+  range: string;
+  definition: PowerAppVersion.Definition;
+}
+
 export class PowerApp {
-  private definitions: {
-    version: string;
-    definition: PowerAppVersion.Definition;
-  }[] = [];
+  private definitions: PowerAppVersionInfo[] = [];
   private netAdapter!: INetAdapter;
   private dbAdapter!: IDBAdapter;
+
+  private api!: undefined;
 
   constructor(private options: PowerAppOptions = {}) {
     this.initialize();
   }
 
-  version(version: string, definition: PowerAppVersion.Definition): void {
-    if (!validRange(version)) {
+  version(range: string, definition: PowerAppVersion.Definition): void {
+    if (!validRange(range)) {
       throw Error('版本范围格式错误');
     }
 
     this.definitions.push({
-      version,
+      range,
       definition,
     });
   }
@@ -70,14 +81,19 @@ export class PowerApp {
   }
 
   private initialize(): void {
-    let {
-      db = {
-        type: 'lowdb',
-        options: {},
-      },
-    } = this.options;
+    let {db} = this.options;
 
-    this.dbAdapter = new PowerAppDBAdapterDict[db.type](db.options as any);
+    switch (db?.type) {
+      case 'mongo':
+        this.dbAdapter = new MongoAdapter(db.options);
+        break;
+      case 'lowdb':
+        this.dbAdapter = new LowdbAdapter(db.options);
+        break;
+      default:
+        this.dbAdapter = new LowdbAdapter({});
+        break;
+    }
   }
 
   private start(Adapter: Constructor<INetAdapter> = KoaAdapter): void {
@@ -104,15 +120,14 @@ export class PowerApp {
       let intersectionDefinitions = _.intersectionWith(
         definitions,
         definitions,
-        ({version: va}, {version: vb}) =>
-          !_.isEqual(va, vb) && intersects(va, vb),
+        ({range: ra}, {range: rb}) => !_.isEqual(ra, rb) && intersects(ra, rb),
       );
 
       if (intersectionDefinitions.length) {
         throw Error('版本定义有交集');
       }
 
-      this.definitions = definitions.sort(({version: ra}, {version: rb}) =>
+      this.definitions = definitions.sort(({range: ra}, {range: rb}) =>
         rcompare(minVersion(ra)!, minVersion(rb)!),
       );
     } catch (error) {
@@ -183,10 +198,23 @@ export class PowerApp {
     event: PowerItemEvent['eventObject'],
     response: PowerItemEvent['response'],
   ): Promise<void> => {
-    let {type, change, payload} = event;
+    let {params, payload} = event;
 
-    // TODO (boen): api
-    let api;
+    let {type} = params;
+
+    let result = getChangeAndMigrations<PowerAppVersion.PowerItem.Change>(
+      (payload as any).version,
+      this.definitions,
+      () => '',
+      getPowerItemChange(params),
+      getMigrations(params),
+    );
+
+    if (!result) {
+      return;
+    }
+
+    let api = this.api;
 
     let {token} = payload;
 
@@ -207,6 +235,12 @@ export class PowerApp {
       });
     }
 
+    let {change, migrations} = result;
+
+    for (let migration of migrations) {
+      migration(storage.getActionStorage());
+    }
+
     let responseData = change({
       storage: storage.getActionStorage(),
       api,
@@ -223,7 +257,21 @@ export class PowerApp {
     event: PowerGlanceEvent['eventObject'],
     response: PowerGlanceEvent['response'],
   ): Promise<void> => {
-    let {type, change, payload} = event;
+    let {params, payload} = event;
+
+    let {type} = params;
+
+    let result = getChangeAndMigrations<PowerAppVersion.PowerGlance.Change>(
+      (payload as any).version,
+      this.definitions,
+      () => '',
+      getPowerGlanceChange(params),
+      getMigrations(params),
+    );
+
+    if (!result) {
+      return;
+    }
 
     // TODO (boen): api
     let api;
@@ -255,6 +303,12 @@ export class PowerApp {
       storage = mergeOriginalDoc(storage, {clock});
     }
 
+    let {change, migrations} = result;
+
+    for (let migration of migrations) {
+      migration(storage.getActionStorage());
+    }
+
     let resources = 'resources' in payload ? payload.resources : [];
     let configs = 'configs' in payload ? payload.configs : {};
 
@@ -268,6 +322,126 @@ export class PowerApp {
     await this.dbAdapter.setStorage(storage);
 
     response(responseData ? responseData : {});
+  };
+}
+
+function matchVersionInfoIndex(
+  version: string,
+  infos: PowerAppVersionInfo[],
+  initialIndex = infos.length,
+): number {
+  for (let index = initialIndex - 1; index >= 0; index--) {
+    let {range} = infos[index];
+
+    if (satisfies(version, range)) {
+      return index;
+    }
+  }
+
+  throw Error('没有匹配的版本');
+}
+
+function getPowerItemChange({
+  name,
+  type,
+  action,
+}: PowerItemEventParams): (
+  definition: PowerAppVersion.Definition,
+) => PowerAppVersion.PowerItem.Change | undefined {
+  return ({contributions: {powerItems = {}}}) => {
+    let powerItem = powerItems[name];
+
+    if (!powerItem) {
+      return undefined;
+    }
+
+    return type === 'action' ? powerItem.action?.[action!] : powerItem[type];
+  };
+}
+
+function getPowerGlanceChange({
+  name,
+  type,
+}: PowerGlanceEventParams): (
+  definition: PowerAppVersion.Definition,
+) => PowerAppVersion.PowerGlance.Change | undefined {
+  return ({contributions: {powerGlances = {}}}) => {
+    let powerGlance = powerGlances[name];
+
+    if (!powerGlance) {
+      return undefined;
+    }
+
+    return powerGlance[type];
+  };
+}
+
+function getMigrations({
+  name,
+}: PowerItemEventParams | PowerGlanceEventParams): (
+  type: keyof PowerAppVersion.Migrations<IStorageObject>,
+  definitions: PowerAppVersion.Definition[],
+) => PowerAppVersion.MigrationFunction<IStorageObject>[] {
+  return (type, definitions) =>
+    _.compact(
+      definitions.map(
+        definition =>
+          definition.contributions.powerItems?.[name]?.migrations?.[type],
+      ),
+    );
+}
+
+function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
+  comingVersion: string,
+  infos: PowerAppVersionInfo[],
+  savedVersionResolver: () => string,
+  getChange: (definition: PowerAppVersion.Definition) => TChange | undefined,
+  getMigrations: (
+    type: keyof PowerAppVersion.Migrations<IStorageObject>,
+    definitions: PowerAppVersion.Definition[],
+  ) => PowerAppVersion.MigrationFunction<IStorageObject>[],
+):
+  | {
+      change: TChange;
+      migrations: PowerAppVersion.MigrationFunction<IStorageObject>[];
+    }
+  | undefined {
+  let index = matchVersionInfoIndex(comingVersion, infos);
+
+  let {range, definition} = infos[index];
+
+  let change = getChange(definition);
+
+  if (!change) {
+    return undefined;
+  }
+
+  let savedVersion = savedVersionResolver();
+
+  if (satisfies(savedVersion, range)) {
+    return {
+      change,
+      migrations: [],
+    };
+  }
+
+  return {
+    change,
+    migrations: lt(comingVersion, savedVersion)
+      ? getMigrations(
+          'down',
+          _.reverse(
+            _.slice(infos, index, matchVersionInfoIndex(savedVersion, infos)),
+          ).map(info => info.definition),
+        )
+      : getMigrations(
+          'up',
+          _.slice(
+            infos,
+            matchVersionInfoIndex(savedVersion, infos, index) + 1,
+            index + 1,
+          ).map(info => info.definition),
+        ),
   };
 }
 

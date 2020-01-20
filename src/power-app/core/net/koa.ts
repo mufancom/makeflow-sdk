@@ -3,40 +3,36 @@ import bodyParser from 'koa-bodyparser';
 import Router, {RouterContext} from 'koa-router';
 import _ from 'lodash';
 
-import {PowerAppVersion} from '../version';
-
 import {
   Events,
   InstallationEvent,
   PermissionEvent,
   PowerGlanceEvent,
+  PowerGlanceEventParams,
   PowerItemEvent,
+  PowerItemEventParams,
 } from './events';
-import {AbstractNetAdapter} from './net';
-
-interface PowerItemRequestParams {
-  name: string;
-  type: Exclude<keyof PowerAppVersion.PowerItem.Definition, 'migrations'>;
-  action: string | undefined;
-}
-
-interface PowerGlanceRequestParams {
-  name: string;
-  type: Exclude<keyof PowerAppVersion.PowerGlance.Definition, 'migrations'>;
-}
+import {AbstractNetAdapter, NetAdapterOptions} from './net';
 
 export class KoaAdapter extends AbstractNetAdapter {
   private app = new Koa();
 
-  constructor(public definition: PowerAppVersion.Definition) {
-    super(definition);
+  constructor(readonly options: NetAdapterOptions = {prefix: '/api/mf'}) {
+    super();
 
-    let router = new Router<unknown>({prefix: '/api/mf'});
+    let {prefix} = options;
+
+    let router = new Router<unknown>({prefix});
 
     router
       .all('*', async (context, next) => {
         // TODO (boen):
         console.info(context.path);
+
+        if (!this.authenticate(context.request.body?.source)) {
+          context.throw('authenticate failed', 416);
+          return;
+        }
 
         await next();
 
@@ -57,7 +53,9 @@ export class KoaAdapter extends AbstractNetAdapter {
   }
 
   serve(): void {
-    this.app.listen(9001);
+    let {port = 9001} = this.options;
+
+    this.app.listen(port);
   }
 
   private emitEvent<TEvent extends Events>(
@@ -122,26 +120,7 @@ export class KoaAdapter extends AbstractNetAdapter {
       request: {body},
     } = context;
 
-    if (!isPowerItemRequestParams(params)) {
-      return;
-    }
-
-    let {
-      contributions: {powerItems = {}},
-    } = this.definition;
-
-    let {name, type, action} = params;
-
-    let powerItem = powerItems[name];
-
-    if (!powerItem) {
-      return;
-    }
-
-    let change =
-      type === 'action' ? powerItem.action?.[action!] : powerItem[type];
-
-    if (!change) {
+    if (!isPowerItemEventParams(params)) {
       return;
     }
 
@@ -151,10 +130,9 @@ export class KoaAdapter extends AbstractNetAdapter {
     this.emitEvent<PowerItemEvent>(
       'power-item',
       {
-        type,
         payload,
-        change,
-      } as PowerItemEvent['eventObject'],
+        params,
+      },
       context,
     );
   };
@@ -167,25 +145,7 @@ export class KoaAdapter extends AbstractNetAdapter {
       request: {body},
     } = context;
 
-    if (!isPowerGlanceRequestParams(params)) {
-      return;
-    }
-
-    let {
-      contributions: {powerGlances = {}},
-    } = this.definition;
-
-    let {name, type} = params;
-
-    let powerGlance = powerGlances[name];
-
-    if (!powerGlance) {
-      return;
-    }
-
-    let change = powerGlance[type];
-
-    if (!change) {
+    if (!isPowerGlanceEventParams(params)) {
       return;
     }
 
@@ -195,10 +155,9 @@ export class KoaAdapter extends AbstractNetAdapter {
     this.emitEvent<PowerGlanceEvent>(
       'power-glance',
       {
-        type,
         payload,
-        change,
-      } as PowerGlanceEvent['eventObject'],
+        params,
+      },
       context,
     );
   };
@@ -212,9 +171,7 @@ function getResponse<TEvent extends Events>(
   return response;
 }
 
-function isPowerItemRequestParams(
-  params: any,
-): params is PowerItemRequestParams {
+function isPowerItemEventParams(params: any): params is PowerItemEventParams {
   let {type, action} = Object(params);
 
   switch (type) {
@@ -229,9 +186,9 @@ function isPowerItemRequestParams(
   }
 }
 
-function isPowerGlanceRequestParams(
+function isPowerGlanceEventParams(
   params: any,
-): params is PowerGlanceRequestParams {
+): params is PowerGlanceEventParams {
   let {type} = Object(params);
 
   switch (type) {

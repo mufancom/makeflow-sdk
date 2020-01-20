@@ -20,10 +20,16 @@ export namespace PowerAppVersion {
     };
   }
 
+  export type MigrationFunction<TStorageObject extends IStorageObject> = (
+    storage: ActionStorage<TStorageObject>,
+  ) => void;
+
   export interface Migrations<TStorageObject extends IStorageObject> {
-    up?(storage: ActionStorage<TStorageObject>): void;
-    down?(storage: ActionStorage<TStorageObject>): void;
+    up?: MigrationFunction<TStorageObject>;
+    down?: MigrationFunction<TStorageObject>;
   }
+
+  export type Changes = PowerItem.Change | PowerGlance.Change;
 
   // power-item
 

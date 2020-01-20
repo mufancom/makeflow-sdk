@@ -1,13 +1,20 @@
 import {EventEmitter} from 'events';
 
-import {PowerAppVersion} from '../version';
+import {API} from '@makeflow/types';
+import _ from 'lodash';
 
 import {Events} from './events';
 
 export interface INetAdapter extends NetAdapter {}
 
+export interface NetAdapterOptions {
+  token?: string;
+  port?: number;
+  prefix?: string;
+}
+
 abstract class NetAdapter extends EventEmitter {
-  constructor(protected definition: PowerAppVersion.Definition) {
+  constructor(readonly options?: NetAdapterOptions) {
     super();
   }
 
@@ -29,6 +36,20 @@ abstract class NetAdapter extends EventEmitter {
     response: TEvent['response'],
   ): boolean {
     return super.emit(type, event, response);
+  }
+
+  authenticate(source: API.PowerApp.Source | undefined): boolean {
+    let token = this.options?.token;
+
+    if (!token) {
+      return true;
+    }
+
+    if (!source) {
+      return false;
+    }
+
+    return _.isEqual(token, source.token);
   }
 }
 

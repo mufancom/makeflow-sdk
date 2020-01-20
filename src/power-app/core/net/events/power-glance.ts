@@ -13,24 +13,26 @@ type _PowerGlanceEventObject =
   | PowerGlanceUpdateEventObject
   | PowerGlanceDisposeEventObject;
 
+export interface PowerGlanceEventParams {
+  name: string;
+  type: Exclude<keyof PowerAppVersion.PowerGlance.Definition, 'migrations'>;
+}
+
 export type PowerGlanceEventObject<
   TPowerGlanceEventObject extends _PowerGlanceEventObject = _PowerGlanceEventObject
 > = {
-  change: PowerAppVersion.PowerGlance.Change;
+  params: PowerGlanceEventParams;
 } & TPowerGlanceEventObject;
 
 export interface PowerGlanceInitializeEventObject {
-  type: 'initialize';
   payload: API.PowerGlance.InitializeHookParams;
 }
 
 export interface PowerGlanceUpdateEventObject {
-  type: 'update';
   payload: API.PowerGlance.UpdateHookParams;
 }
 
 export interface PowerGlanceDisposeEventObject {
-  type: 'dispose';
   // TODO (boen): types
   payload: API.PowerGlance.UpdateHookParams;
 }
