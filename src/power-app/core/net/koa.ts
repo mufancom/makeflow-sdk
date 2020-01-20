@@ -9,6 +9,7 @@ import {
   Events,
   InstallationEvent,
   PermissionEvent,
+  PowerGlanceEvent,
   PowerItemEvent,
 } from './events';
 import {AbstractNetAdapter} from './net';
@@ -17,6 +18,11 @@ interface PowerItemRequestParams {
   name: string;
   type: Exclude<keyof PowerAppVersion.PowerItem.Definition, 'migrations'>;
   action: string | undefined;
+}
+
+interface PowerGlanceRequestParams {
+  name: string;
+  type: Exclude<keyof PowerAppVersion.PowerGlance.Definition, 'migrations'>;
 }
 
 export class KoaAdapter extends AbstractNetAdapter {
@@ -38,7 +44,8 @@ export class KoaAdapter extends AbstractNetAdapter {
       })
       .post('/installation/:type', this.handleInstallationRequest)
       .post('/permission/:type', this.handPermissionRequest)
-      .post('/power-item/:name/:type/:actions?', this.handlePowerItemRequest);
+      .post('/power-item/:name/:type/:actions?', this.handlePowerItemRequest)
+      .post('/power-glance/:name/:type', this.handlePowerGlanceRequest);
 
     this.app
       .use(
@@ -151,6 +158,50 @@ export class KoaAdapter extends AbstractNetAdapter {
       context,
     );
   };
+
+  private handlePowerGlanceRequest = async (
+    context: RouterContext,
+  ): Promise<void> => {
+    let {
+      params,
+      request: {body},
+    } = context;
+
+    if (!isPowerGlanceRequestParams(params)) {
+      return;
+    }
+
+    let {
+      contributions: {powerGlances = {}},
+    } = this.definition;
+
+    let {name, type} = params;
+
+    let powerGlance = powerGlances[name];
+
+    if (!powerGlance) {
+      return;
+    }
+
+    let change = powerGlance[type];
+
+    if (!change) {
+      return;
+    }
+
+    // TODO (boen): check body data validity
+    let payload = body;
+
+    this.emitEvent<PowerGlanceEvent>(
+      'power-glance',
+      {
+        type,
+        payload,
+        change,
+      } as PowerGlanceEvent['eventObject'],
+      context,
+    );
+  };
 }
 
 function getResponse<TEvent extends Events>(
@@ -173,6 +224,21 @@ function isPowerItemRequestParams(
       return true;
     case 'action':
       return !!action;
+    default:
+      return false;
+  }
+}
+
+function isPowerGlanceRequestParams(
+  params: any,
+): params is PowerGlanceRequestParams {
+  let {type} = Object(params);
+
+  switch (type) {
+    case 'initialize':
+    case 'change':
+    case 'dispose':
+      return true;
     default:
       return false;
   }

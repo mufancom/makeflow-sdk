@@ -1,17 +1,21 @@
+import {API} from '@makeflow/types';
 import {Dict} from 'tslang';
 
 import {
   ActionStorage,
   IStorageObject,
+  PowerGlance as PowerGlanceStorageObject,
   PowerItem as PowerItemStorageObject,
 } from './storage';
 
 export namespace PowerAppVersion {
   export interface Definition {
-    ancestor: string;
     contributions: {
       powerItems?: {
         [key in string]: PowerItem.Definition;
+      };
+      powerGlances?: {
+        [key in string]: PowerGlance.Definition;
       };
     };
   }
@@ -20,6 +24,8 @@ export namespace PowerAppVersion {
     up?(storage: ActionStorage<TStorageObject>): void;
     down?(storage: ActionStorage<TStorageObject>): void;
   }
+
+  // power-item
 
   export namespace PowerItem {
     export interface ChangeParams {
@@ -30,24 +36,41 @@ export namespace PowerAppVersion {
       configs: Dict<unknown>;
     }
 
-    export interface ChangeResponseData {
-      description?: string;
-      stage?: 'none' | 'done';
-      outputs?: object;
-    }
+    export interface ChangeResponseData extends API.PowerItem.HookReturn {}
 
-    export type PowerItemChange = (
-      params: ChangeParams,
-    ) => ChangeResponseData | void;
+    export type Change = (params: ChangeParams) => ChangeResponseData | void;
 
     export interface Definition {
-      activate?: PowerItemChange;
-      update?: PowerItemChange;
-      deactivate?: PowerItemChange;
+      activate?: Change;
+      update?: Change;
+      deactivate?: Change;
       action?: {
-        [key in string]: PowerItemChange;
+        [key in string]: Change;
       };
       migrations?: Migrations<PowerItemStorageObject>;
+    }
+  }
+
+  // power-glance
+
+  export namespace PowerGlance {
+    export interface ChangeParams {
+      storage: ActionStorage<PowerGlanceStorageObject>;
+      // TODO
+      api: undefined;
+      resources: API.PowerGlance.ResourceEntry[];
+      configs: Dict<unknown>;
+    }
+
+    export interface ChangeResponseData extends API.PowerGlance.HookReturn {}
+
+    export type Change = (params: ChangeParams) => ChangeResponseData | void;
+
+    export interface Definition {
+      initialize?: Change;
+      change?: Change;
+      dispose?: Change;
+      migrations?: Migrations<PowerGlanceStorageObject>;
     }
   }
 }

@@ -5,7 +5,7 @@ import {PowerAppVersion} from '../../version';
 export interface PowerItemEvent {
   type: 'power-item';
   eventObject: PowerItemEventObject;
-  response(data: PowerAppVersion.PowerItem.ChangeResponseData): void;
+  response(data: API.PowerItem.HookReturn): void;
 }
 
 type _PowerItemEventObject =
@@ -17,7 +17,7 @@ type _PowerItemEventObject =
 export type PowerItemEventObject<
   TPowerItemEventObject extends _PowerItemEventObject = _PowerItemEventObject
 > = {
-  change: PowerAppVersion.PowerItem.PowerItemChange;
+  change: PowerAppVersion.PowerItem.Change;
 } & TPowerItemEventObject;
 
 export interface PowerItemActivateEventObject {

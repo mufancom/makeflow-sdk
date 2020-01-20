@@ -1,15 +1,19 @@
 import _ from 'lodash';
 
 import {InstallationDoc, InstallationStorage} from './installation';
+import {PowerGlanceDoc, PowerGlanceStorage} from './power-glance';
 import {PowerItemDoc, PowerItemStorage} from './power-item';
 
 export type ActionStorage<
   TStorageObject extends IStorageObject = IStorageObject
 > = Pick<TStorageObject, 'get' | 'set' | 'merge'>;
 
-export type Docs = InstallationDoc | PowerItemDoc;
+export type Docs = InstallationDoc | PowerItemDoc | PowerGlanceDoc;
 
-export type Storages = InstallationStorage | PowerItemStorage;
+export type Storages =
+  | InstallationStorage
+  | PowerItemStorage
+  | PowerGlanceStorage;
 
 export interface IStorageObject<
   TDoc extends Docs = Docs,
@@ -31,7 +35,7 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
   private storage: TStorage | undefined;
   private doc: TDoc | undefined;
 
-  constructor(private readonly originalDoc?: TDoc) {
+  constructor(readonly originalDoc?: TDoc) {
     if (originalDoc) {
       this.initialize(originalDoc);
     }

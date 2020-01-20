@@ -4,6 +4,7 @@ import {AbstractStorageObject} from './storage';
 
 export interface PowerItemDoc {
   type: 'power-item';
+  version: string;
   token: string;
   storage: Dict<any>;
 }

@@ -3,6 +3,8 @@ import {
   IStorageObject,
   Installation,
   InstallationDoc,
+  PowerGlance,
+  PowerGlanceDoc,
   PowerItem,
   PowerItemDoc,
 } from '../storage';
@@ -47,6 +49,8 @@ abstract class DBAdapter {
         return new Installation(await this.getInstallationDoc(query));
       case 'power-item':
         return new PowerItem(await this.getPowerItemDoc(query));
+      case 'power-glance':
+        return new PowerGlance(await this.getPowerGlanceDoc(query));
     }
   }
 
@@ -88,6 +92,25 @@ abstract class DBAdapter {
     nDoc: PowerItemDoc,
   ): Promise<void>;
 
+  // PowerGlance
+
+  protected abstract async getPowerGlanceDoc(
+    doc: Partial<PowerGlanceDoc>,
+  ): Promise<PowerGlanceDoc | undefined>;
+
+  protected abstract async createPowerGlanceDoc(
+    doc: PowerGlanceDoc,
+  ): Promise<void>;
+
+  protected abstract async deletePowerGlanceDoc(
+    doc: Partial<PowerGlanceDoc>,
+  ): Promise<void>;
+
+  protected abstract async updatePowerGlanceDoc(
+    oDoc: PowerGlanceDoc,
+    nDoc: PowerGlanceDoc,
+  ): Promise<void>;
+
   private async createStorage(doc: Docs): Promise<void> {
     switch (doc.type) {
       case 'installation':
@@ -95,6 +118,9 @@ abstract class DBAdapter {
         break;
       case 'power-item':
         await this.createPowerItemDoc(doc);
+        break;
+      case 'power-glance':
+        await this.createPowerGlanceDoc(doc);
         break;
     }
   }
@@ -107,6 +133,9 @@ abstract class DBAdapter {
       case 'power-item':
         await this.deletePowerItemDoc(doc);
         break;
+      case 'power-glance':
+        await this.deletePowerGlanceDoc(doc);
+        break;
     }
   }
 
@@ -117,6 +146,9 @@ abstract class DBAdapter {
         break;
       case 'power-item':
         await this.updatePowerItemDoc(oDoc, nDoc);
+        break;
+      case 'power-glance':
+        await this.updatePowerGlanceDoc(oDoc, nDoc);
         break;
     }
   }

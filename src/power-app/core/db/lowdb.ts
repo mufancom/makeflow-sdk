@@ -1,7 +1,7 @@
 import lowdb, {LowdbSync} from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
 
-import {InstallationDoc, PowerItemDoc} from '../storage';
+import {InstallationDoc, PowerGlanceDoc, PowerItemDoc} from '../storage';
 
 import {AbstractDBAdapter} from './db';
 
@@ -12,6 +12,7 @@ export interface LowdbOptions {
 interface Schema {
   installation: InstallationDoc[];
   'power-item': PowerItemDoc[];
+  'power-glance': PowerGlanceDoc[];
 }
 
 export class LowdbAdapter extends AbstractDBAdapter {
@@ -30,6 +31,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
       .defaults<Schema>({
         installation: [],
         'power-item': [],
+        'power-glance': [],
       })
       .write();
   }
@@ -106,6 +108,45 @@ export class LowdbAdapter extends AbstractDBAdapter {
     await this.db
       .get('power-item')
       .find({token})
+      .set('storage', storage)
+      .write();
+  }
+
+  protected async getPowerGlanceDoc({
+    token,
+  }: Partial<PowerGlanceDoc>): Promise<PowerGlanceDoc | undefined> {
+    return this.db
+      .get('power-glance')
+      .find({token})
+      .value();
+  }
+
+  protected async createPowerGlanceDoc(doc: PowerGlanceDoc): Promise<void> {
+    await this.db
+      .get('power-glance')
+      .push(doc)
+      .write();
+  }
+
+  protected async deletePowerGlanceDoc({
+    token,
+  }: Partial<PowerGlanceDoc>): Promise<void> {
+    await this.db
+      .get('power-glance')
+      .remove({
+        token,
+      })
+      .write();
+  }
+
+  protected async updatePowerGlanceDoc(
+    {token}: PowerGlanceDoc,
+    {storage, clock}: PowerGlanceDoc,
+  ): Promise<void> {
+    await this.db
+      .get('power-glance')
+      .find({token})
+      .set('clock', clock)
       .set('storage', storage)
       .write();
   }

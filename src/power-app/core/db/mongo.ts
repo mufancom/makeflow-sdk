@@ -8,7 +8,7 @@ import {
   UpdateQuery,
 } from 'mongodb';
 
-import {Docs, InstallationDoc, PowerItemDoc} from '../storage';
+import {Docs, InstallationDoc, PowerGlanceDoc, PowerItemDoc} from '../storage';
 
 import {AbstractDBAdapter} from './db';
 
@@ -19,6 +19,7 @@ interface IDocument {
 interface NameToDocs {
   installation: InstallationDoc;
   'power-item': PowerItemDoc;
+  'power-glance': PowerGlanceDoc;
 }
 
 type NameToCollectionDocumentSchemaDict = {
@@ -152,6 +153,56 @@ export class MongoAdapter extends AbstractDBAdapter {
       {
         $set: {
           storage,
+        },
+      },
+    );
+  }
+
+  protected async getPowerGlanceDoc({
+    token,
+  }: Partial<PowerGlanceDoc>): Promise<PowerGlanceDoc | undefined> {
+    if (!token) {
+      return undefined;
+    }
+
+    let collection = this.getCollection('power-glance');
+
+    let doc = await collection.findOne({token});
+
+    return doc ? doc : undefined;
+  }
+
+  protected async createPowerGlanceDoc(doc: PowerGlanceDoc): Promise<void> {
+    let collection = this.getCollection('power-glance');
+    await collection.insertOne(doc);
+  }
+
+  protected async deletePowerGlanceDoc({
+    token,
+  }: Partial<PowerGlanceDoc>): Promise<void> {
+    let collection = this.getCollection('power-item');
+
+    if (!token) {
+      return;
+    }
+
+    await collection.deleteOne({token});
+  }
+
+  protected async updatePowerGlanceDoc(
+    {token}: PowerGlanceDoc,
+    {storage, clock}: PowerGlanceDoc,
+  ): Promise<void> {
+    let collection = this.getCollection('power-glance');
+
+    await collection.updateOne(
+      {
+        token,
+      },
+      {
+        $set: {
+          storage,
+          clock,
         },
       },
     );
