@@ -22,9 +22,11 @@ import {
   MongoOptions,
   PermissionEvent,
   PowerAppVersion,
+  PowerGlance,
   PowerGlanceDoc,
   PowerGlanceEvent,
   PowerGlanceEventParams,
+  PowerItem,
   PowerItemEvent,
   PowerItemEventParams,
   mergeOriginalDoc,
@@ -101,9 +103,7 @@ export class PowerApp {
       return;
     }
 
-    let latestDefinition = this.definitions[0];
-
-    this.netAdapter = new Adapter(latestDefinition);
+    this.netAdapter = new Adapter();
 
     this.netAdapter
       .on('installation', this.handleInstallation)
@@ -200,12 +200,18 @@ export class PowerApp {
   ): Promise<void> => {
     let {params, payload} = event;
 
-    let {type} = params;
+    let {token} = payload;
+
+    let storage = (await this.dbAdapter.getStorage({
+      type: 'power-item',
+      token,
+    })) as PowerItem;
 
     let result = getChangeAndMigrations<PowerAppVersion.PowerItem.Change>(
+      // TODO (boen): version where come from
       (payload as any).version,
+      storage.get('version'),
       this.definitions,
-      () => '',
       getPowerItemChange(params),
       getMigrations(params),
     );
@@ -214,36 +220,27 @@ export class PowerApp {
       return;
     }
 
-    let api = this.api;
-
-    let {token} = payload;
-
-    let storage = await this.dbAdapter.getStorage({
-      type: 'power-item',
-      token,
-    });
-
     let inputs = 'inputs' in payload ? payload.inputs : {};
     let configs = 'configs' in payload ? payload.configs : {};
 
-    if (type === 'activate') {
+    let {change, migrations} = result;
+
+    if (params.type === 'activate') {
       storage.create({
         type: 'power-item',
         token: payload.token,
         version: '1.0.0',
         storage: {},
       });
-    }
-
-    let {change, migrations} = result;
-
-    for (let migration of migrations) {
-      migration(storage.getActionStorage());
+    } else {
+      for (let migration of migrations) {
+        migration(storage.getActionStorage());
+      }
     }
 
     let responseData = change({
       storage: storage.getActionStorage(),
-      api,
+      api: this.api,
       inputs,
       configs,
     });
@@ -259,12 +256,18 @@ export class PowerApp {
   ): Promise<void> => {
     let {params, payload} = event;
 
-    let {type} = params;
+    let {token, clock} = payload;
+
+    let storage = (await this.dbAdapter.getStorage({
+      type: 'power-glance',
+      token,
+    })) as PowerGlance;
 
     let result = getChangeAndMigrations<PowerAppVersion.PowerGlance.Change>(
+      // TODO (boen): version where come from
       (payload as any).version,
+      storage.get('version'),
       this.definitions,
-      () => '',
       getPowerGlanceChange(params),
       getMigrations(params),
     );
@@ -273,17 +276,9 @@ export class PowerApp {
       return;
     }
 
-    // TODO (boen): api
-    let api;
+    let {change, migrations} = result;
 
-    let {token, clock} = payload;
-
-    let storage = await this.dbAdapter.getStorage({
-      type: 'power-glance',
-      token,
-    });
-
-    if (type === 'initialize') {
+    if (params.type === 'initialize') {
       storage.create({
         type: 'power-glance',
         token: payload.token,
@@ -301,22 +296,17 @@ export class PowerApp {
       }
 
       storage = mergeOriginalDoc(storage, {clock});
+
+      for (let migration of migrations) {
+        migration(storage.getActionStorage());
+      }
     }
-
-    let {change, migrations} = result;
-
-    for (let migration of migrations) {
-      migration(storage.getActionStorage());
-    }
-
-    let resources = 'resources' in payload ? payload.resources : [];
-    let configs = 'configs' in payload ? payload.configs : {};
 
     let responseData = change({
       storage: storage.getActionStorage(),
-      api,
-      resources,
-      configs,
+      api: this.api,
+      resources: payload.resources,
+      configs: payload.configs,
     });
 
     await this.dbAdapter.setStorage(storage);
@@ -392,9 +382,9 @@ function getMigrations({
 }
 
 function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
-  comingVersion: string,
+  comingVersion: string | undefined,
+  savedVersion: string | undefined,
   infos: PowerAppVersionInfo[],
-  savedVersionResolver: () => string,
   getChange: (definition: PowerAppVersion.Definition) => TChange | undefined,
   getMigrations: (
     type: keyof PowerAppVersion.Migrations<IStorageObject>,
@@ -406,6 +396,10 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
       migrations: PowerAppVersion.MigrationFunction<IStorageObject>[];
     }
   | undefined {
+  if (!comingVersion || !savedVersion) {
+    return undefined;
+  }
+
   let index = matchVersionInfoIndex(comingVersion, infos);
 
   let {range, definition} = infos[index];
@@ -415,8 +409,6 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
   if (!change) {
     return undefined;
   }
-
-  let savedVersion = savedVersionResolver();
 
   if (satisfies(savedVersion, range)) {
     return {
