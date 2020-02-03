@@ -12,15 +12,15 @@ import {
   PowerItemEvent,
   PowerItemEventParams,
 } from './events';
-import {AbstractNetAdapter, NetAdapterOptions} from './net';
+import {AbstractNetAdapter} from './net';
 
 export class KoaAdapter extends AbstractNetAdapter {
   private app = new Koa();
 
-  constructor(readonly options: NetAdapterOptions = {prefix: '/api/mf'}) {
-    super();
+  constructor(...args: any[]) {
+    super(...args);
 
-    let {prefix} = options;
+    let {prefix} = this.options;
 
     let router = new Router<unknown>({prefix});
 
@@ -53,7 +53,7 @@ export class KoaAdapter extends AbstractNetAdapter {
   }
 
   serve(): void {
-    let {port = 9001} = this.options;
+    let {port} = this.options;
 
     this.app.listen(port);
   }

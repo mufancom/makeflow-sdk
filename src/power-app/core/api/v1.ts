@@ -11,8 +11,10 @@ import {
 import fetch, {BodyInit} from 'node-fetch';
 import {Dict} from 'tslang';
 
-const JSON_REQUEST_TYPE = 'application/json;charset=UTF-8';
-const STREAM_REQUEST_TYPE = 'application/octet-stream';
+const JSON_CONTENT_TYPE = 'application/json;charset=UTF-8';
+const STREAM_CONTENT_TYPE = 'application/octet-stream';
+
+export type APISource = Partial<APITypes.PowerApp.Source>;
 
 export interface RequestOptions {
   body?: string | Dict<any>;
@@ -22,16 +24,17 @@ export interface RequestOptions {
 
 export class API {
   readonly version = 'v1';
+
   private resourceToken: OperationTokenToken | undefined;
 
-  constructor(private accessToken: string, private baseURL?: string) {}
+  constructor(private source?: APISource) {}
 
-  setResourceToken(token: string): void {
-    this.accessToken = token;
+  setResourceToken(token: OperationTokenToken): void {
+    this.resourceToken = token;
   }
 
-  setBaseURL(baseURL: string): void {
-    this.baseURL = baseURL;
+  setSource(source: APISource): void {
+    this.source = source;
   }
 
   // account
@@ -82,19 +85,17 @@ export class API {
 
   /**
    * 更新超级自定义检查项
-   * @param description 超级自定义检查项描述
-   * @param stage 超级自定义检查项状态
+   * @params options.description 超级自定义检查项描述
+   * @params options.stage 超级自定义检查项状态
    * @token
    */
   async updatePowerCheckableCustomItem(
-    description?: string,
-    stage?: APITypes.PowerCustomCheckableItem.Stage,
+    options: Omit<APITypes.PowerCustomCheckableItem.UpdateParams, 'token'>,
   ): Promise<void> {
     return this.request('/power-checkable-custom-item/update', {
       body: {
         token: this.resourceToken,
-        description,
-        stage,
+        ...options,
       },
     });
   }
@@ -135,22 +136,18 @@ export class API {
 
   /**
    * 更新超级流程项
-   * @param description 流程项描述
-   * @param stage 流程项状态
-   * @param outputs 输出
+   * @params options.description 流程项描述
+   * @params options.stage 流程项状态
+   * @params options.outputs 输出
    * @token
    */
   async updatePowerItem(
-    description?: string,
-    stage?: APITypes.PowerItem.Stage,
-    outputs?: Dict<Value.CompositeValueDescriptor>,
+    options: Omit<APITypes.PowerItem.UpdateParams, 'token'>,
   ): Promise<void> {
     return this.request('/power-item/update', {
       body: {
         token: this.resourceToken,
-        description,
-        stage,
-        outputs,
+        ...options,
       },
     });
   }
@@ -159,41 +156,21 @@ export class API {
 
   /**
    * 创建任务
-   * @param team 团队ID
-   * @param procedure 流程ID
-   * @param brief 任务简述
-   * @param description 任务描述
-   * @param tags 标签
-   * @param assignee 负责人
-   * @param outputs 任务输出
-   * @param associatedTasks 关联任务信息
-   * @param postponedTo 延后任务时间
+   * @params options.team 团队ID
+   * @params options.procedure 流程ID
+   * @params options.brief 任务简述
+   * @params options.description 任务描述
+   * @params options.tags 标签
+   * @params options.assignee 负责人
+   * @params options.outputs 任务输出
+   * @params options.associatedTasks 关联任务信息
+   * @params options.postponedTo 延后任务时间
    * @accessToken
    */
-  async createTask(
-    team: TeamId,
-    procedure: ProcedureId,
-    brief: string,
-    description: string | undefined,
-    tags: TagId[] | undefined,
-    assignee: UserId | undefined,
-    outputs: Dict<Value.CompositeValueDescriptor> | undefined,
-    associatedTasks: TaskAssociation[] | undefined,
-    postponedTo: number | undefined,
-  ): Promise<TaskId> {
+  async createTask(options: CreateTaskOptions): Promise<TaskId> {
     return this.request('/task/create', {
       requireAccessToken: true,
-      body: {
-        team,
-        procedure,
-        brief,
-        description,
-        tags,
-        assignee,
-        outputs,
-        associatedTasks,
-        postponedTo,
-      },
+      body: options,
     });
   }
 
@@ -202,22 +179,22 @@ export class API {
    * @param task 任务ID
    * @param body 文件内容
    * @param fileName 文件名
-   * @param fileType 文件类型
+   * @param type 文件类型
    * @accessToken
    */
   async sendTaskFileMessage(
     task: TaskId,
     body: BodyInit,
     fileName: string,
-    fileType: string,
+    type: string,
   ): Promise<void> {
     await this.request(
-      `/task/send-file-message?task=${task}&name=${encodeURIComponent(
+      `/task/send-file-message?task=${task}&fileName=${encodeURIComponent(
         fileName,
-      )}&mime=${encodeURIComponent(fileType)}`,
+      )}&type=${encodeURIComponent(type)}`,
       {
         requireAccessToken: true,
-        type: STREAM_REQUEST_TYPE,
+        type: STREAM_CONTENT_TYPE,
         body,
       },
     );
@@ -260,14 +237,18 @@ export class API {
 
   private async request<TData>(
     path: string,
-    {body, type = JSON_REQUEST_TYPE, requireAccessToken}: RequestOptions = {},
+    {body, type = JSON_CONTENT_TYPE, requireAccessToken}: RequestOptions = {},
   ): Promise<TData> {
-    let baseURL = this.baseURL ?? '';
+    let source = this.source;
+
+    if (requireAccessToken && !source?.token) {
+      throw new Error('ACCESS_TOKEN_IS_REQUIRED');
+    }
+
+    let baseURL = source?.url ?? '';
     let version = this.version;
 
-    let makeflowAddressURL = new URL(baseURL);
-
-    if (typeof body === 'object' && type === JSON_REQUEST_TYPE) {
+    if (typeof body === 'object' && type === JSON_CONTENT_TYPE) {
       body = JSON.stringify(body);
     }
 
@@ -276,14 +257,14 @@ export class API {
     }
 
     let response = await fetch(
-      `${makeflowAddressURL.origin}/api/${version}${path}`,
+      `${new URL(baseURL).origin}/api/${version}${path}`,
       {
         method: 'POST',
         body,
         headers: {
           'Content-Type': type,
           ...(requireAccessToken
-            ? {'x-access-token': this.accessToken}
+            ? {'x-access-token': source!.token!}
             : undefined),
         },
       },
@@ -301,6 +282,18 @@ export class API {
 }
 
 // types
+
+export interface CreateTaskOptions {
+  team: TeamId;
+  procedure: ProcedureId;
+  brief: string;
+  description?: string;
+  tags?: TagId[];
+  assignee?: UserId;
+  outputs?: Dict<Value.CompositeValueDescriptor>;
+  associatedTasks?: TaskAssociation[];
+  postponedTo?: number;
+}
 
 export interface UserCandidate {
   id: UserId;

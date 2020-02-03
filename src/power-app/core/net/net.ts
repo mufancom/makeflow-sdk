@@ -8,13 +8,24 @@ import {Events} from './events';
 export interface INetAdapter extends NetAdapter {}
 
 export interface NetAdapterOptions {
-  token?: string;
   port?: number;
   prefix?: string;
 }
 
+const DEFAULT_NET_OPTIONS: NetAdapterOptions = {
+  prefix: '/api/mf',
+  port: 9001,
+};
+
 abstract class NetAdapter extends EventEmitter {
-  constructor(readonly options?: NetAdapterOptions) {
+  protected get options(): NetAdapterOptions {
+    return this._options ?? DEFAULT_NET_OPTIONS;
+  }
+
+  constructor(
+    readonly accessToken?: string,
+    readonly _options?: NetAdapterOptions,
+  ) {
     super();
   }
 
@@ -39,7 +50,7 @@ abstract class NetAdapter extends EventEmitter {
   }
 
   authenticate(source: API.PowerApp.Source | undefined): boolean {
-    let token = this.options?.token;
+    let token = this.accessToken;
 
     if (!token) {
       return true;

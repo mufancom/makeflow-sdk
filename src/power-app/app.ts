@@ -1,4 +1,4 @@
-import {API} from '@makeflow/types';
+import {API as APITypes} from '@makeflow/types';
 import _ from 'lodash';
 import {
   intersects,
@@ -11,6 +11,7 @@ import {
 import {Constructor} from 'tslang';
 
 import {
+  API,
   IDBAdapter,
   INetAdapter,
   IStorageObject,
@@ -20,6 +21,7 @@ import {
   LowdbOptions,
   MongoAdapter,
   MongoOptions,
+  NetAdapterOptions,
   PermissionEvent,
   PowerAppVersion,
   PowerGlance,
@@ -33,7 +35,7 @@ import {
 } from './core';
 
 export interface PowerAppOptions {
-  source?: API.PowerApp.Source;
+  source?: Partial<APITypes.PowerApp.Source>;
   db?:
     | {type: 'mongo'; options: MongoOptions}
     | {type: 'lowdb'; options: LowdbOptions};
@@ -46,10 +48,11 @@ interface PowerAppVersionInfo {
 
 export class PowerApp {
   private definitions: PowerAppVersionInfo[] = [];
+
   private netAdapter!: INetAdapter;
   private dbAdapter!: IDBAdapter;
 
-  private api!: undefined;
+  private api!: API;
 
   constructor(private options: PowerAppOptions = {}) {
     this.initialize();
@@ -66,24 +69,26 @@ export class PowerApp {
     });
   }
 
-  serve(): void {
-    this.start();
+  serve(options?: NetAdapterOptions): void {
+    this.start(options);
   }
 
-  koa(): void {
-    this.start(KoaAdapter);
+  koa(options?: NetAdapterOptions): void {
+    this.start(options, KoaAdapter);
   }
 
-  express(): void {
-    this.start(KoaAdapter);
+  express(options?: NetAdapterOptions): void {
+    this.start(options);
   }
 
-  hapi(): void {
-    this.start(KoaAdapter);
+  hapi(options?: NetAdapterOptions): void {
+    this.start(options);
   }
 
   private initialize(): void {
-    let {db} = this.options;
+    let {db, source} = this.options;
+
+    this.api = new API(source);
 
     switch (db?.type) {
       case 'mongo':
@@ -98,12 +103,15 @@ export class PowerApp {
     }
   }
 
-  private start(Adapter: Constructor<INetAdapter> = KoaAdapter): void {
+  private start(
+    options?: NetAdapterOptions,
+    Adapter: Constructor<INetAdapter> = KoaAdapter,
+  ): void {
     if (!this.checkVersionsQualified()) {
       return;
     }
 
-    this.netAdapter = new Adapter();
+    this.netAdapter = new Adapter(this.options.source?.token, options);
 
     this.netAdapter
       .on('installation', this.handleInstallation)
@@ -200,7 +208,7 @@ export class PowerApp {
   ): Promise<void> => {
     let {params, payload} = event;
 
-    let {token} = payload;
+    let {token, source} = payload;
 
     let storage = (await this.dbAdapter.getStorage({
       type: 'power-item',
@@ -437,7 +445,11 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
   };
 }
 
-let app = new PowerApp();
+let app = new PowerApp({
+  source: {
+    token: '',
+  },
+});
 
 app.version('1.0.0', {
   contributions: {

@@ -1,6 +1,7 @@
-import {API} from '@makeflow/types';
+import {API as APITypes} from '@makeflow/types';
 import {Dict} from 'tslang';
 
+import {API} from './api';
 import {
   ActionStorage,
   IStorageObject,
@@ -36,13 +37,12 @@ export namespace PowerAppVersion {
   export namespace PowerItem {
     export interface ChangeParams {
       storage: ActionStorage<PowerItemStorageObject>;
-      // TODO
-      api: undefined;
+      api: API;
       inputs: Dict<unknown>;
       configs: Dict<unknown>;
     }
 
-    export interface ChangeResponseData extends API.PowerItem.HookReturn {}
+    export interface ChangeResponseData extends APITypes.PowerItem.HookReturn {}
 
     export type Change = (params: ChangeParams) => ChangeResponseData | void;
 
@@ -62,13 +62,13 @@ export namespace PowerAppVersion {
   export namespace PowerGlance {
     export interface ChangeParams {
       storage: ActionStorage<PowerGlanceStorageObject>;
-      // TODO
-      api: undefined;
-      resources: API.PowerGlance.ResourceEntry[];
+      api: API;
+      resources: APITypes.PowerGlance.ResourceEntry[];
       configs: Dict<unknown>;
     }
 
-    export interface ChangeResponseData extends API.PowerGlance.HookReturn {}
+    export interface ChangeResponseData
+      extends APITypes.PowerGlance.HookReturn {}
 
     export type Change = (params: ChangeParams) => ChangeResponseData | void;
 
