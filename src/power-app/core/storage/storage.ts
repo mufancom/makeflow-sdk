@@ -35,10 +35,8 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
   private storage: TStorage | undefined;
   private doc: TDoc | undefined;
 
-  constructor(readonly originalDoc?: TDoc) {
-    if (originalDoc) {
-      this.initialize(originalDoc);
-    }
+  constructor(public originalDoc?: TDoc) {
+    this.initialize(originalDoc);
   }
 
   get(): TStorage;
@@ -123,23 +121,22 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
     return undefined;
   }
 
-  getActionStorage<
-    TStorageObject extends IStorageObject = IStorageObject
-  >(): ActionStorage<TStorageObject> {
-    return {
-      get: this.get.bind(this),
-      set: this.set.bind(this),
-      merge: this.merge.bind(this),
-    };
+  rebuild(): void {
+    this.initialize(this.doc);
   }
 
   protected abstract extractDocToStorage(doc: TDoc): TStorage;
 
   protected abstract mergeStorageToDoc(doc: TDoc, storage: TStorage): TDoc;
 
-  private initialize(doc: TDoc): void {
-    this.storage = _.cloneDeep(this.extractDocToStorage(doc));
-    this.doc = _.cloneDeep(doc);
+  private initialize(doc?: TDoc): void {
+    if (doc) {
+      this.storage = _.cloneDeep(this.extractDocToStorage(doc));
+      this.doc = _.cloneDeep(doc);
+    } else {
+      this.storage = undefined;
+      this.doc = undefined;
+    }
   }
 }
 

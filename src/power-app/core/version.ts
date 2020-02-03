@@ -23,7 +23,7 @@ export namespace PowerAppVersion {
 
   export type MigrationFunction<TStorageObject extends IStorageObject> = (
     storage: ActionStorage<TStorageObject>,
-  ) => void;
+  ) => Promise<void> | void;
 
   export interface Migrations<TStorageObject extends IStorageObject> {
     up?: MigrationFunction<TStorageObject>;
@@ -44,7 +44,9 @@ export namespace PowerAppVersion {
 
     export interface ChangeResponseData extends APITypes.PowerItem.HookReturn {}
 
-    export type Change = (params: ChangeParams) => ChangeResponseData | void;
+    export type Change = (
+      params: ChangeParams,
+    ) => Promise<ChangeResponseData | void> | ChangeResponseData | void;
 
     export interface Definition {
       activate?: Change;
@@ -70,7 +72,9 @@ export namespace PowerAppVersion {
     export interface ChangeResponseData
       extends APITypes.PowerGlance.HookReturn {}
 
-    export type Change = (params: ChangeParams) => ChangeResponseData | void;
+    export type Change = (
+      params: ChangeParams,
+    ) => Promise<ChangeResponseData | void> | ChangeResponseData | void;
 
     export interface Definition {
       initialize?: Change;

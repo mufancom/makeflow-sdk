@@ -14,6 +14,30 @@ export interface IDBAdapter extends DBAdapter {}
 abstract class DBAdapter {
   private readonly ready = this.initialize();
 
+  private readonly 'installation' = {
+    create: this.createInstallationDoc,
+    delete: this.deleteInstallationDoc,
+    update: this.updateInstallationDoc,
+    query: this.getInstallationDoc,
+    class: Installation,
+  };
+
+  private readonly 'power-item' = {
+    create: this.createPowerItemDoc,
+    delete: this.deletePowerItemDoc,
+    update: this.updatePowerItemDoc,
+    query: this.getPowerItemDoc,
+    class: PowerItem,
+  };
+
+  private readonly 'power-glance' = {
+    create: this.createPowerGlanceDoc,
+    delete: this.deletePowerGlanceDoc,
+    update: this.updatePowerGlanceDoc,
+    query: this.getPowerGlanceDoc,
+    class: PowerGlance,
+  };
+
   constructor(protected options: unknown) {}
 
   async setStorage(storage: IStorageObject): Promise<void> {
@@ -25,18 +49,15 @@ abstract class DBAdapter {
       return;
     }
 
-    switch (result.type) {
-      case 'create':
-        await this.createStorage(result.doc);
-        break;
-      case 'delete':
-        await this.deleteStorage(result.doc);
-        break;
-      case 'update':
-        let {old: oDoc, new: nDoc} = result.docs;
-        await this.updateStorage(oDoc, nDoc);
-        break;
-    }
+    let type = 'docs' in result ? result.docs.old.type : result.doc.type;
+
+    let params = ('docs' in result
+      ? [result.docs.old, result.docs.new]
+      : [result.doc]) as any;
+
+    await this[type][result.type].apply(this, params);
+
+    storage.rebuild();
   }
 
   async getStorage(
@@ -44,14 +65,11 @@ abstract class DBAdapter {
   ): Promise<IStorageObject> {
     await this.ready;
 
-    switch (query.type) {
-      case 'installation':
-        return new Installation(await this.getInstallationDoc(query));
-      case 'power-item':
-        return new PowerItem(await this.getPowerItemDoc(query));
-      case 'power-glance':
-        return new PowerGlance(await this.getPowerGlanceDoc(query));
-    }
+    let type = query.type;
+
+    return new this[type].class(
+      await (this[type].query as any).call(this, query),
+    );
   }
 
   protected abstract initialize(): Promise<void>;
@@ -110,48 +128,6 @@ abstract class DBAdapter {
     oDoc: PowerGlanceDoc,
     nDoc: PowerGlanceDoc,
   ): Promise<void>;
-
-  private async createStorage(doc: Docs): Promise<void> {
-    switch (doc.type) {
-      case 'installation':
-        await this.createInstallationDoc(doc);
-        break;
-      case 'power-item':
-        await this.createPowerItemDoc(doc);
-        break;
-      case 'power-glance':
-        await this.createPowerGlanceDoc(doc);
-        break;
-    }
-  }
-
-  private async deleteStorage(doc: Docs): Promise<void> {
-    switch (doc.type) {
-      case 'installation':
-        await this.deleteInstallationDoc(doc);
-        break;
-      case 'power-item':
-        await this.deletePowerItemDoc(doc);
-        break;
-      case 'power-glance':
-        await this.deletePowerGlanceDoc(doc);
-        break;
-    }
-  }
-
-  private async updateStorage(oDoc: Docs, nDoc: any): Promise<void> {
-    switch (oDoc.type) {
-      case 'installation':
-        await this.updateInstallationDoc(oDoc, nDoc);
-        break;
-      case 'power-item':
-        await this.updatePowerItemDoc(oDoc, nDoc);
-        break;
-      case 'power-glance':
-        await this.updatePowerGlanceDoc(oDoc, nDoc);
-        break;
-    }
-  }
 }
 
 export const AbstractDBAdapter = DBAdapter;

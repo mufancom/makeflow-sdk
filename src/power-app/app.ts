@@ -31,6 +31,7 @@ import {
   PowerItem,
   PowerItemEvent,
   PowerItemEventParams,
+  getActionStorage,
   mergeOriginalDoc,
 } from './core';
 
@@ -233,6 +234,8 @@ export class PowerApp {
 
     let {change, migrations} = result;
 
+    let actionStorage = getActionStorage(storage, this.dbAdapter);
+
     if (params.type === 'activate') {
       storage.create({
         type: 'power-item',
@@ -242,12 +245,12 @@ export class PowerApp {
       });
     } else {
       for (let migration of migrations) {
-        migration(storage.getActionStorage());
+        await migration(actionStorage);
       }
     }
 
-    let responseData = change({
-      storage: storage.getActionStorage(),
+    let responseData = await change({
+      storage: actionStorage,
       api: this.api,
       inputs,
       configs,
@@ -286,6 +289,8 @@ export class PowerApp {
 
     let {change, migrations} = result;
 
+    let actionStorage = getActionStorage(storage, this.dbAdapter);
+
     if (params.type === 'initialize') {
       storage.create({
         type: 'power-glance',
@@ -306,12 +311,12 @@ export class PowerApp {
       storage = mergeOriginalDoc(storage, {clock});
 
       for (let migration of migrations) {
-        migration(storage.getActionStorage());
+        await migration(actionStorage);
       }
     }
 
-    let responseData = change({
-      storage: storage.getActionStorage(),
+    let responseData = await change({
+      storage: actionStorage,
       api: this.api,
       resources: payload.resources,
       configs: payload.configs,
@@ -455,8 +460,9 @@ app.version('1.0.0', {
   contributions: {
     powerItems: {
       'basic-job': {
-        activate({storage, configs}) {
-          storage.set(configs);
+        async activate({storage, configs, api}) {
+          await api.matchUser('1997@boenfu.cn');
+          await storage.set(configs);
         },
         update({storage}) {
           storage.merge({boen: 666});
