@@ -26,7 +26,13 @@ export namespace PowerAppVersion {
   ) => Promise<void> | void;
 
   export interface Migrations<TStorageObject extends IStorageObject> {
+    /**
+     * up 是把前一个版本的数据升级成当前版本
+     */
     up?: MigrationFunction<TStorageObject>;
+    /**
+     * down 是把当前版本的数据降级成前一个版本
+     */
     down?: MigrationFunction<TStorageObject>;
   }
 

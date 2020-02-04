@@ -247,21 +247,25 @@ export class PowerApp {
       }
     }
 
-    let inputs = 'inputs' in payload ? payload.inputs : {};
-    let configs = 'configs' in payload ? payload.configs : {};
+    let responseData: PowerAppVersion.PowerItem.ChangeResponseData | void;
 
-    let responseData = await change({
-      storage: actionStorage,
-      api: this.api,
-      inputs,
-      configs,
-    });
+    if (change) {
+      let inputs = 'inputs' in payload ? payload.inputs : {};
+      let configs = 'configs' in payload ? payload.configs : {};
+
+      responseData = await change({
+        storage: actionStorage,
+        api: this.api,
+        inputs,
+        configs,
+      });
+    }
 
     storage.setVersion(version);
 
     await this.dbAdapter.setStorage(storage);
 
-    response(responseData ? responseData : {});
+    response(responseData || {});
   };
 
   private handlePowerGlanceChange = async (
@@ -328,18 +332,22 @@ export class PowerApp {
       }
     }
 
-    let responseData = await change({
-      storage: actionStorage,
-      api: this.api,
-      resources,
-      configs,
-    });
+    let responseData: PowerAppVersion.PowerGlance.ChangeResponseData | void;
+
+    if (change) {
+      responseData = await change({
+        storage: actionStorage,
+        api: this.api,
+        resources,
+        configs,
+      });
+    }
 
     storage.setVersion(version);
 
     await this.dbAdapter.setStorage(storage);
 
-    response(responseData ? responseData : {});
+    response(responseData || {});
   };
 }
 
@@ -420,7 +428,7 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
   ) => PowerAppVersion.MigrationFunction<IStorageObject>[],
 ):
   | {
-      change: TChange;
+      change: TChange | undefined;
       migrations: PowerAppVersion.MigrationFunction<IStorageObject>[];
     }
   | undefined {
@@ -433,10 +441,6 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
   let {range, definition} = infos[index];
 
   let change = getChange(definition);
-
-  if (!change) {
-    return undefined;
-  }
 
   if (!savedVersion || satisfies(savedVersion, range)) {
     return {
@@ -458,8 +462,8 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
           'up',
           _.slice(
             infos,
-            matchVersionInfoIndex(savedVersion, infos, index) + 1,
-            index + 1,
+            matchVersionInfoIndex(savedVersion, infos, index),
+            index,
           ).map(info => info.definition),
         ),
   };
@@ -476,7 +480,7 @@ app.version('1.0.0', {
     powerItems: {
       'basic-job': {
         async activate({storage, configs, api}) {
-          await api.matchUser('1997@boenfu.cn');
+          console.info(await api.matchUser('1997@boenfu.cn'));
           await storage.set(configs);
         },
         async update({storage}) {
@@ -493,6 +497,7 @@ app.version('1.0.0', {
             description: 'none',
           };
         },
+        migrations: {},
       },
     },
     powerGlances: {
