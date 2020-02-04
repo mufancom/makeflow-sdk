@@ -103,12 +103,13 @@ export class LowdbAdapter extends AbstractDBAdapter {
 
   protected async updatePowerItemDoc(
     {token}: PowerItemDoc,
-    {storage}: PowerItemDoc,
+    {storage, version}: PowerItemDoc,
   ): Promise<void> {
     await this.db
       .get('power-item')
       .find({token})
       .set('storage', storage)
+      .set('version', version)
       .write();
   }
 
@@ -141,12 +142,13 @@ export class LowdbAdapter extends AbstractDBAdapter {
 
   protected async updatePowerGlanceDoc(
     {token}: PowerGlanceDoc,
-    {storage, clock}: PowerGlanceDoc,
+    {storage, clock, version}: PowerGlanceDoc,
   ): Promise<void> {
     await this.db
       .get('power-glance')
       .find({token})
       .set('clock', clock)
+      .set('version', version)
       .set('storage', storage)
       .write();
   }
