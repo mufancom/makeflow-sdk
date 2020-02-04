@@ -33,6 +33,5 @@ export interface PowerGlanceUpdateEventObject {
 }
 
 export interface PowerGlanceDisposeEventObject {
-  // TODO (boen): types
-  payload: API.PowerGlance.UpdateHookParams;
+  payload: API.PowerGlance.DisposeHookParams;
 }

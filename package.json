@@ -46,8 +46,8 @@
     "typescript-json-schema": "^0.36.0"
   },
   "dependencies": {
-    "@makeflow/types": "^0.1.0",
-    "@makeflow/types-nominal": "^0.1.0",
+    "@makeflow/types": "^0.1.1",
+    "@makeflow/types-nominal": "^0.1.1",
     "clime": "^0.5.10",
     "fp-ts": "^2.4.0",
     "io-ts": "^2.0.4",
