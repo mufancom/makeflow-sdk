@@ -32,7 +32,6 @@ import {
   PowerItemEvent,
   PowerItemEventParams,
   getActionStorage,
-  mergeOriginalDoc,
 } from './core';
 
 export interface PowerAppOptions {
@@ -221,7 +220,7 @@ export class PowerApp {
 
     let result = getChangeAndMigrations<PowerAppVersion.PowerItem.Change>(
       version,
-      storage.get('version'),
+      storage.version,
       this.definitions,
       getPowerItemChange(params),
       getMigrations(params),
@@ -230,9 +229,6 @@ export class PowerApp {
     if (!result) {
       return;
     }
-
-    let inputs = 'inputs' in payload ? payload.inputs : {};
-    let configs = 'configs' in payload ? payload.configs : {};
 
     let {change, migrations} = result;
 
@@ -251,12 +247,17 @@ export class PowerApp {
       }
     }
 
+    let inputs = 'inputs' in payload ? payload.inputs : {};
+    let configs = 'configs' in payload ? payload.configs : {};
+
     let responseData = await change({
       storage: actionStorage,
       api: this.api,
       inputs,
       configs,
     });
+
+    storage.setVersion(version);
 
     await this.dbAdapter.setStorage(storage);
 
@@ -281,7 +282,7 @@ export class PowerApp {
 
     let result = getChangeAndMigrations<PowerAppVersion.PowerGlance.Change>(
       version,
-      storage.get('version'),
+      storage.version,
       this.definitions,
       getPowerGlanceChange(params),
       getMigrations(params),
@@ -304,7 +305,7 @@ export class PowerApp {
         storage: {},
       });
     } else {
-      let prevClock = Number(storage.originalDoc?.['clock']);
+      let prevClock = Number(storage.clock);
 
       if (prevClock + 1 !== clock) {
         //  reinitialize
@@ -320,7 +321,7 @@ export class PowerApp {
         }
       }
 
-      storage = mergeOriginalDoc(storage, {clock});
+      storage.setClock(clock);
 
       for (let migration of migrations) {
         await migration(actionStorage);
@@ -333,6 +334,8 @@ export class PowerApp {
       resources,
       configs,
     });
+
+    storage.setVersion(version);
 
     await this.dbAdapter.setStorage(storage);
 
@@ -421,7 +424,7 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
       migrations: PowerAppVersion.MigrationFunction<IStorageObject>[];
     }
   | undefined {
-  if (!comingVersion || !savedVersion) {
+  if (!comingVersion) {
     return undefined;
   }
 
@@ -435,7 +438,7 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
     return undefined;
   }
 
-  if (satisfies(savedVersion, range)) {
+  if (!savedVersion || satisfies(savedVersion, range)) {
     return {
       change,
       migrations: [],

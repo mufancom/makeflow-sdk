@@ -16,6 +16,10 @@ export class PowerGlance extends AbstractStorageObject<
   PowerGlanceDoc,
   PowerGlanceStorage
 > {
+  version = this.originalDoc?.version;
+
+  clock = this.originalDoc?.clock;
+
   setVersion(version: string): void {
     if (!this.doc) {
       return;

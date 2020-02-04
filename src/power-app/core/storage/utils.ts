@@ -1,5 +1,3 @@
-import {Constructor} from 'tslang';
-
 import {IDBAdapter} from '../db';
 
 import {ActionStorage, IStorageObject} from './storage';
@@ -11,25 +9,6 @@ export type ExtractDoc<
 export type ExtractStorage<
   TStorageObject extends IStorageObject
 > = TStorageObject extends IStorageObject<any, infer R> ? R : never;
-
-export function mergeOriginalDoc<
-  TStorageObject extends IStorageObject,
-  TDocs = ExtractDoc<TStorageObject>
->(storage: TStorageObject, originalDoc: Partial<TDocs>): TStorageObject {
-  if (!storage.originalDoc) {
-    return storage;
-  }
-
-  let StorageObjectClass = ('constructor' in storage
-    ? storage.constructor
-    : undefined) as Constructor<TStorageObject>;
-
-  if (!StorageObjectClass) {
-    return storage;
-  }
-
-  return new StorageObjectClass({...storage.originalDoc, ...originalDoc});
-}
 
 export function getActionStorage<
   TStorageObject extends IStorageObject = IStorageObject
