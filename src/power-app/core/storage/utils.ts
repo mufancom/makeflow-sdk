@@ -2,11 +2,19 @@ import {Constructor} from 'tslang';
 
 import {IDBAdapter} from '../db';
 
-import {ActionStorage, Docs, IStorageObject, Storages} from './storage';
+import {ActionStorage, IStorageObject} from './storage';
+
+export type ExtractDoc<
+  TStorageObject extends IStorageObject
+> = TStorageObject extends IStorageObject<infer R> ? R : never;
+
+export type ExtractStorage<
+  TStorageObject extends IStorageObject
+> = TStorageObject extends IStorageObject<any, infer R> ? R : never;
 
 export function mergeOriginalDoc<
-  TDocs extends Docs,
-  TStorageObject extends IStorageObject<TDocs> = IStorageObject<TDocs>
+  TStorageObject extends IStorageObject,
+  TDocs = ExtractDoc<TStorageObject>
 >(storage: TStorageObject, originalDoc: Partial<TDocs>): TStorageObject {
   if (!storage.originalDoc) {
     return storage;
@@ -24,25 +32,21 @@ export function mergeOriginalDoc<
 }
 
 export function getActionStorage<
-  TStorageObject extends IStorageObject = IStorageObject,
-  TStorage extends Storages = Storages
+  TStorageObject extends IStorageObject = IStorageObject
 >(
   storageObject: TStorageObject,
   db: IDBAdapter,
 ): ActionStorage<TStorageObject> {
   let get = storageObject.get.bind(storageObject);
 
-  async function set(storage: TStorage): Promise<void>;
-  async function set<TKey extends keyof TStorage>(
-    key: TKey,
-    value: TStorage[TKey],
-  ): Promise<void>;
   async function set(...args: any[]): Promise<void> {
     storageObject.set.apply(storageObject, args);
     await db.setStorage(storageObject);
   }
 
-  async function merge(storage: Partial<TStorage>): Promise<void> {
+  async function merge(
+    storage: Parameters<TStorageObject['merge']>[0],
+  ): Promise<void> {
     storageObject.merge(storage);
     await db.setStorage(storageObject);
   }

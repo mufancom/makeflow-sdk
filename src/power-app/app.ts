@@ -15,6 +15,7 @@ import {
   IDBAdapter,
   INetAdapter,
   IStorageObject,
+  Installation,
   InstallationEvent,
   KoaAdapter,
   LowdbAdapter,
@@ -25,7 +26,6 @@ import {
   PermissionEvent,
   PowerAppVersion,
   PowerGlance,
-  PowerGlanceDoc,
   PowerGlanceEvent,
   PowerGlanceEventParams,
   PowerItem,
@@ -153,7 +153,7 @@ export class PowerApp {
   ): Promise<void> => {
     let responseData = {};
 
-    let installationStorage = await this.dbAdapter.getStorage({
+    let installationStorage = await this.dbAdapter.getStorage<Installation>({
       type: 'installation',
       ...event.payload,
     });
@@ -184,7 +184,7 @@ export class PowerApp {
     event: PermissionEvent['eventObject'],
     response: PermissionEvent['response'],
   ): Promise<void> => {
-    let installationStorage = await this.dbAdapter.getStorage({
+    let installationStorage = await this.dbAdapter.getStorage<Installation>({
       type: 'installation',
       ...event.payload,
     });
@@ -209,16 +209,18 @@ export class PowerApp {
   ): Promise<void> => {
     let {params, payload} = event;
 
-    let {token, source} = payload;
+    let {token} = payload;
 
-    let storage = (await this.dbAdapter.getStorage({
+    let storage = await this.dbAdapter.getStorage<PowerItem>({
       type: 'power-item',
       token,
-    })) as PowerItem;
+    });
+
+    // TODO (boen): version where come from
+    let version = (payload as any).version ?? '1.0.0';
 
     let result = getChangeAndMigrations<PowerAppVersion.PowerItem.Change>(
-      // TODO (boen): version where come from
-      (payload as any).version,
+      version,
       storage.get('version'),
       this.definitions,
       getPowerItemChange(params),
@@ -240,10 +242,10 @@ export class PowerApp {
       storage.create({
         type: 'power-item',
         token: payload.token,
-        version: '1.0.0',
+        version,
         storage: {},
       });
-    } else {
+    } else if (params.type === 'update') {
       for (let migration of migrations) {
         await migration(actionStorage);
       }
@@ -267,16 +269,18 @@ export class PowerApp {
   ): Promise<void> => {
     let {params, payload} = event;
 
-    let {token, clock} = payload;
+    let {token, clock, resources, configs} = payload;
 
-    let storage = (await this.dbAdapter.getStorage({
+    let storage = await this.dbAdapter.getStorage<PowerGlance>({
       type: 'power-glance',
       token,
-    })) as PowerGlance;
+    });
+
+    // TODO (boen): version where come from
+    let version = (payload as any).version ?? '1.0.0';
 
     let result = getChangeAndMigrations<PowerAppVersion.PowerGlance.Change>(
-      // TODO (boen): version where come from
-      (payload as any).version,
+      version,
       storage.get('version'),
       this.definitions,
       getPowerGlanceChange(params),
@@ -296,16 +300,24 @@ export class PowerApp {
         type: 'power-glance',
         token: payload.token,
         clock,
-        version: '1.0.0',
+        version,
         storage: {},
       });
     } else {
-      let prevClock = (storage.originalDoc as PowerGlanceDoc)?.['clock'];
+      let prevClock = Number(storage.originalDoc?.['clock']);
 
       if (prevClock + 1 !== clock) {
-        // TODO reinitialize
-        response({});
-        return;
+        //  reinitialize
+        try {
+          let result = await this.api.initializePowerGlance();
+
+          clock = result.clock;
+          resources = result.resources;
+          configs = result.configs;
+        } catch (error) {
+          response({});
+          return;
+        }
       }
 
       storage = mergeOriginalDoc(storage, {clock});
@@ -318,8 +330,8 @@ export class PowerApp {
     let responseData = await change({
       storage: actionStorage,
       api: this.api,
-      resources: payload.resources,
-      configs: payload.configs,
+      resources,
+      configs,
     });
 
     await this.dbAdapter.setStorage(storage);
@@ -464,15 +476,15 @@ app.version('1.0.0', {
           await api.matchUser('1997@boenfu.cn');
           await storage.set(configs);
         },
-        update({storage}) {
-          storage.merge({boen: 666});
+        async update({storage}) {
+          await storage.merge({boen: 666});
 
           return {
             description: 'done',
           };
         },
-        deactivate({storage}) {
-          storage.set(Date.now(), 'hello');
+        async deactivate({storage}) {
+          await storage.set(Date.now(), 'hello');
 
           return {
             description: 'none',
@@ -482,8 +494,8 @@ app.version('1.0.0', {
     },
     powerGlances: {
       'job-glance': {
-        change({storage}) {
-          storage.set(Date.now(), 'hello');
+        async change({storage}) {
+          await storage.set(Date.now(), 'hello');
         },
       },
     },

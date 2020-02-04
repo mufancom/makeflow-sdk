@@ -1,5 +1,6 @@
 import {
   Docs,
+  ExtractDoc,
   IStorageObject,
   Installation,
   InstallationDoc,
@@ -60,16 +61,19 @@ abstract class DBAdapter {
     storage.rebuild();
   }
 
-  async getStorage(
-    query: Partial<Docs> & Required<{type: Docs['type']}>,
-  ): Promise<IStorageObject> {
+  async getStorage<
+    TStorageObject extends IStorageObject,
+    TDoc extends Docs = ExtractDoc<TStorageObject>
+  >(
+    query: Partial<TDoc> & Required<{type: TDoc['type']}>,
+  ): Promise<TStorageObject> {
     await this.ready;
 
-    let type = query.type;
+    let type: Docs['type'] = query.type;
 
-    return new this[type].class(
+    return (new this[type].class(
       await (this[type].query as any).call(this, query),
-    );
+    ) as unknown) as TStorageObject;
   }
 
   protected abstract initialize(): Promise<void>;

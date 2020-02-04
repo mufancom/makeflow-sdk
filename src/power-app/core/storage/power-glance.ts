@@ -16,6 +16,22 @@ export class PowerGlance extends AbstractStorageObject<
   PowerGlanceDoc,
   PowerGlanceStorage
 > {
+  setVersion(version: string): void {
+    if (!this.doc) {
+      return;
+    }
+
+    this.doc.version = version;
+  }
+
+  setClock(clock: number): void {
+    if (!this.doc) {
+      return;
+    }
+
+    this.doc.clock = clock;
+  }
+
   protected extractDocToStorage(doc: PowerGlanceDoc): PowerGlanceStorage {
     return doc.storage;
   }

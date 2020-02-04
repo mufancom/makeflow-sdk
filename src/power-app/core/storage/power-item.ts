@@ -15,6 +15,14 @@ export class PowerItem extends AbstractStorageObject<
   PowerItemDoc,
   PowerItemStorage
 > {
+  setVersion(version: string): void {
+    if (!this.doc) {
+      return;
+    }
+
+    this.doc.version = version;
+  }
+
   protected extractDocToStorage(doc: PowerItemDoc): PowerItemStorage {
     return doc.storage;
   }

@@ -3,10 +3,17 @@ import _ from 'lodash';
 import {InstallationDoc, InstallationStorage} from './installation';
 import {PowerGlanceDoc, PowerGlanceStorage} from './power-glance';
 import {PowerItemDoc, PowerItemStorage} from './power-item';
+import {ExtractStorage} from './utils';
 
-export type ActionStorage<
-  TStorageObject extends IStorageObject = IStorageObject
-> = Pick<TStorageObject, 'get' | 'set' | 'merge'>;
+export interface ActionStorage<
+  TStorageObject extends IStorageObject = IStorageObject,
+  TStorage extends Storages = ExtractStorage<TStorageObject>,
+  TKey extends keyof TStorage = keyof TStorage
+> {
+  get: TStorageObject['get'];
+  set(...args: [TStorage] | [TKey, TStorage[TKey]]): Promise<void>;
+  merge(...args: Parameters<TStorageObject['merge']>): Promise<void>;
+}
 
 export type Docs = InstallationDoc | PowerItemDoc | PowerGlanceDoc;
 
@@ -33,7 +40,7 @@ export type StorageSaveResult<TDoc extends Docs> =
 
 abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
   private storage: TStorage | undefined;
-  private doc: TDoc | undefined;
+  protected doc: TDoc | undefined;
 
   constructor(public originalDoc?: TDoc) {
     this.initialize(originalDoc);
