@@ -33,7 +33,3 @@ debug/
 # Testing files
 
 /test.*
-
-# Default Lowdb file
-
-*db.json
