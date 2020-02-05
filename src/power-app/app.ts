@@ -10,8 +10,8 @@ import {
 } from 'semver';
 import {Constructor} from 'tslang';
 
+import {API} from './api';
 import {
-  API,
   IDBAdapter,
   INetAdapter,
   IStorageObject,
@@ -189,11 +189,16 @@ export class PowerApp {
     });
 
     switch (event.type) {
-      case 'grant':
-        installationStorage.set('accessToken', event.payload.accessToken);
+      case 'grant': {
+        let accessToken = event.payload.accessToken;
+
+        installationStorage.set('accessToken', accessToken);
+        this.api.setAccessToken(accessToken);
         break;
+      }
       case 'revoke':
         installationStorage.set('accessToken', undefined);
+        this.api.setAccessToken(undefined);
         break;
     }
 
@@ -208,7 +213,7 @@ export class PowerApp {
   ): Promise<void> => {
     let {params, payload} = event;
 
-    let {token} = payload;
+    let {token, source} = payload;
 
     let storage = await this.dbAdapter.getStorage<PowerItem>({
       type: 'power-item',
@@ -253,6 +258,9 @@ export class PowerApp {
       let inputs = 'inputs' in payload ? payload.inputs : {};
       let configs = 'configs' in payload ? payload.configs : {};
 
+      this.api.setSource(source);
+      this.api.setResourceToken(token);
+
       responseData = await change({
         storage: actionStorage,
         api: this.api,
@@ -274,7 +282,7 @@ export class PowerApp {
   ): Promise<void> => {
     let {params, payload} = event;
 
-    let {token, clock, resources, configs} = payload;
+    let {token, clock, resources, configs, source} = payload as any;
 
     let storage = await this.dbAdapter.getStorage<PowerGlance>({
       type: 'power-glance',
@@ -299,6 +307,9 @@ export class PowerApp {
     let {change, migrations} = result;
 
     let actionStorage = getActionStorage(storage, this.dbAdapter);
+
+    this.api.setSource(source);
+    this.api.setResourceToken(token);
 
     if (params.type === 'initialize') {
       storage.create({
@@ -468,48 +479,3 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
         ),
   };
 }
-
-let app = new PowerApp({
-  source: {
-    token: '',
-  },
-});
-
-app.version('1.0.0', {
-  contributions: {
-    powerItems: {
-      'basic-job': {
-        async activate({storage, configs, api}) {
-          console.info(await api.matchUser('1997@boenfu.cn'));
-          await storage.set(configs);
-        },
-        async update({storage}) {
-          await storage.merge({boen: 666});
-
-          return {
-            description: 'done',
-          };
-        },
-        async deactivate({storage}) {
-          await storage.set(Date.now(), 'hello');
-
-          return {
-            description: 'none',
-          };
-        },
-        migrations: {},
-      },
-    },
-    powerGlances: {
-      'job-glance': {
-        async change({storage}) {
-          await storage.set(Date.now(), 'hello');
-        },
-      },
-    },
-  },
-});
-
-app.serve();
-
-console.info('http://localhost:9001');

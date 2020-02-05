@@ -25,11 +25,17 @@ export interface RequestOptions {
 export class API {
   readonly version = 'v1';
 
+  private accessToken: string | undefined;
+
   private resourceToken: OperationTokenToken | undefined;
 
   constructor(private source?: APISource) {}
 
-  setResourceToken(token: OperationTokenToken): void {
+  setAccessToken(token: string | undefined): void {
+    this.accessToken = token;
+  }
+
+  setResourceToken(token: OperationTokenToken | undefined): void {
     this.resourceToken = token;
   }
 
@@ -240,8 +246,9 @@ export class API {
     {body, type = JSON_CONTENT_TYPE, requireAccessToken}: RequestOptions = {},
   ): Promise<TData> {
     let source = this.source;
+    let accessToken = this.accessToken;
 
-    if (requireAccessToken && !source?.token) {
+    if (requireAccessToken && !accessToken) {
       throw new Error('ACCESS_TOKEN_IS_REQUIRED');
     }
 
@@ -264,7 +271,7 @@ export class API {
         headers: {
           'Content-Type': type,
           ...(requireAccessToken
-            ? {'x-access-token': source!.token!}
+            ? {'x-access-token': accessToken!}
             : undefined),
         },
       },

@@ -1,7 +1,8 @@
 import {API as APITypes} from '@makeflow/types';
 import {Dict} from 'tslang';
 
-import {API} from './api';
+import {API} from '../api';
+
 import {
   ActionStorage,
   IStorageObject,

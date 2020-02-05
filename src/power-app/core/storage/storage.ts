@@ -129,7 +129,10 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
   }
 
   rebuild(): void {
-    this.initialize(this.doc);
+    let doc = this.doc;
+
+    this.originalDoc = doc;
+    this.initialize(doc);
   }
 
   protected abstract extractDocToStorage(doc: TDoc): TStorage;

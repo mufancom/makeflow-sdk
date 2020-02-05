@@ -1,9 +1,10 @@
 {
-  "name": "makeflow-sdk",
+  "name": "@makeflow/sdk",
   "version": "0.1.0",
   "description": "Makeflow SDK",
   "repository": "https://github.com/makeflow/makeflow-sdk",
   "author": "Chengdu Mufan Technology Co., Ltd.",
+  "main": "bld/power-app/index.js",
   "bin": {
     "mf": "bld/program/cli.js"
   },
@@ -12,8 +13,7 @@
     "bld/program"
   ],
   "scripts": {
-    "watch": "tsc --project src/power-app --watch",
-    "dev": "node-dev --respawn --no-notify bld/power-app/app.js",
+    "watch:power-app": "tsc --project src/power-app --watch",
     "build:program": "yarn tsc --project src/program",
     "build:power-app": "typescript-json-schema --required --out bld/power-app/schema.json src/power-app/tsconfig.json PowerAppSchema",
     "lint:program": "tslint --project src/program",
@@ -38,7 +38,6 @@
     "@types/rc": "^1.1.0",
     "@types/semver": "^6.2.0",
     "biu": "^0.2.20",
-    "node-dev": "^4.0.0",
     "rimraf": "^2.6.3",
     "ts-node": "^8.0.3",
     "tslint": "^5.14.0",
