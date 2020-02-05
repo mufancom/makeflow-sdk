@@ -42,6 +42,10 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
   private storage: TStorage | undefined;
   protected doc: TDoc | undefined;
 
+  get created(): boolean {
+    return !!this.originalDoc;
+  }
+
   constructor(protected originalDoc?: TDoc) {
     this.initialize(originalDoc);
   }

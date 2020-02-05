@@ -13,8 +13,8 @@ export interface NetAdapterOptions {
 }
 
 const DEFAULT_NET_OPTIONS: NetAdapterOptions = {
-  prefix: '/api/mf',
-  port: 9001,
+  prefix: '/',
+  port: 3000,
 };
 
 abstract class NetAdapter extends EventEmitter {

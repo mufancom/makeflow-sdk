@@ -159,16 +159,23 @@ export class PowerApp {
 
     switch (event.type) {
       case 'activate':
-        installationStorage.create({type: 'installation', ...event.payload});
-        break;
-      case 'update':
-        installationStorage.merge(event.payload);
+      case 'update': {
+        if (installationStorage.created) {
+          installationStorage.merge(event.payload);
+        } else {
+          installationStorage.create({
+            type: 'installation',
+            ...event.payload,
+          });
+        }
 
         responseData = {
           granted: !!installationStorage.get('accessToken'),
         };
 
         break;
+      }
+
       case 'deactivate':
         installationStorage.delete();
         break;
@@ -183,10 +190,17 @@ export class PowerApp {
     event: PermissionEvent['eventObject'],
     response: PermissionEvent['response'],
   ): Promise<void> => {
+    let responseData = {};
+
     let installationStorage = await this.dbAdapter.getStorage<Installation>({
       type: 'installation',
       ...event.payload,
     });
+
+    if (!installationStorage.created) {
+      response(responseData);
+      return;
+    }
 
     switch (event.type) {
       case 'grant': {
@@ -204,7 +218,7 @@ export class PowerApp {
 
     await this.dbAdapter.setStorage(installationStorage);
 
-    response({});
+    response(responseData);
   };
 
   private handlePowerItemChange = async (
@@ -239,16 +253,18 @@ export class PowerApp {
 
     let actionStorage = getActionStorage(storage, this.dbAdapter);
 
-    if (params.type === 'activate') {
-      storage.create({
-        type: 'power-item',
-        token: payload.token,
-        version,
-        storage: {},
-      });
-    } else if (params.type === 'update') {
-      for (let migration of migrations) {
-        await migration(actionStorage);
+    if (params.type !== 'deactivate') {
+      if (storage.created) {
+        for (let migration of migrations) {
+          await migration(actionStorage);
+        }
+      } else {
+        storage.create({
+          type: 'power-item',
+          token: payload.token,
+          version,
+          storage: {},
+        });
       }
     }
 
@@ -311,35 +327,37 @@ export class PowerApp {
     this.api.setSource(source);
     this.api.setResourceToken(token);
 
-    if (params.type === 'initialize') {
-      storage.create({
-        type: 'power-glance',
-        token: payload.token,
-        clock,
-        version,
-        storage: {},
-      });
-    } else {
-      let prevClock = Number(storage.clock);
+    if (params.type !== 'dispose') {
+      if (storage.created) {
+        let prevClock = Number(storage.clock);
 
-      if (prevClock + 1 !== clock) {
-        //  reinitialize
-        try {
-          let result = await this.api.initializePowerGlance();
+        if (prevClock + 1 !== clock) {
+          //  reinitialize
+          try {
+            let result = await this.api.initializePowerGlance();
 
-          clock = result.clock;
-          resources = result.resources;
-          configs = result.configs;
-        } catch (error) {
-          response({});
-          return;
+            clock = result.clock;
+            resources = result.resources;
+            configs = result.configs;
+          } catch (error) {
+            response({});
+            return;
+          }
         }
-      }
 
-      storage.setClock(clock);
+        storage.setClock(clock);
 
-      for (let migration of migrations) {
-        await migration(actionStorage);
+        for (let migration of migrations) {
+          await migration(actionStorage);
+        }
+      } else {
+        storage.create({
+          type: 'power-glance',
+          token: payload.token,
+          clock,
+          version,
+          storage: {},
+        });
       }
     }
 
