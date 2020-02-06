@@ -1,3 +1,20 @@
 .app {
   height: 100%;
 }
+
+.app .header {
+  background-color: transparent;
+}
+
+.app > main {
+  overflow-y: auto;
+}
+
+.app .main {
+  box-sizing: border-box;
+  padding: 12px;
+}
+
+.required {
+  border-color: #009960 !important;
+}
