@@ -22,6 +22,8 @@ export class KoaAdapter extends AbstractNetAdapter {
 
     let {prefix} = this.options;
 
+    prefix = prefix !== '/' ? prefix : undefined;
+
     let router = new Router<unknown>({prefix});
 
     router
