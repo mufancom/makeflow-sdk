@@ -8,3 +8,5 @@ export * from './field';
 export * from './inputs';
 export * from './power-custom-checkable-item';
 export * from './power-item-action';
+export * from './setting';
+export * from './start';
