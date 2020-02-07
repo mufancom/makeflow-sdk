@@ -7,6 +7,7 @@ export interface PowerGlanceDoc {
   version: string;
   token: string;
   clock: number;
+  disposed: boolean | undefined;
   storage: Dict<any>;
 }
 
@@ -19,6 +20,14 @@ export class PowerGlance extends AbstractStorageObject<
   version = this.originalDoc?.version;
 
   clock = this.originalDoc?.clock;
+
+  setDisposed(disposed: boolean): void {
+    if (!this.doc) {
+      return;
+    }
+
+    this.doc.disposed = disposed;
+  }
 
   setVersion(version: string): void {
     if (!this.doc) {

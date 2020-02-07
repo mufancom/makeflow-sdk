@@ -82,7 +82,14 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
   }
 
   merge(storage: Partial<TStorage>): void {
-    this.storage = _.merge(this.storage, storage);
+    if (!this.storage) {
+      return;
+    }
+
+    this.storage = {
+      ...this.storage,
+      ...storage,
+    };
   }
 
   create(doc: TDoc): void {
@@ -114,6 +121,8 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
       if (_.isEqual(originalDoc, doc)) {
         return undefined;
       }
+
+      this.doc = doc;
 
       return {
         type: 'update',

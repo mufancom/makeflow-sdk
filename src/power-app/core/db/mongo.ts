@@ -192,7 +192,7 @@ export class MongoAdapter extends AbstractDBAdapter {
 
   protected async updatePowerGlanceDoc(
     {token}: PowerGlanceDoc,
-    {storage, version, clock}: PowerGlanceDoc,
+    {storage, version, clock, disposed}: PowerGlanceDoc,
   ): Promise<void> {
     let collection = this.getCollection('power-glance');
 
@@ -205,6 +205,7 @@ export class MongoAdapter extends AbstractDBAdapter {
           storage,
           version,
           clock,
+          disposed,
         },
       },
     );

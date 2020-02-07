@@ -142,12 +142,13 @@ export class LowdbAdapter extends AbstractDBAdapter {
 
   protected async updatePowerGlanceDoc(
     {token}: PowerGlanceDoc,
-    {storage, clock, version}: PowerGlanceDoc,
+    {storage, clock, version, disposed}: PowerGlanceDoc,
   ): Promise<void> {
     await this.db
       .get('power-glance')
       .find({token})
       .set('clock', clock)
+      .set('disposed', disposed)
       .set('version', version)
       .set('storage', storage)
       .write();
