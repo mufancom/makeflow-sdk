@@ -1,10 +1,10 @@
 import {API as APITypes} from '@makeflow/types';
 import _ from 'lodash';
 import {
+  compare,
   intersects,
   lt,
   minVersion,
-  rcompare,
   satisfies,
   validRange,
 } from 'semver';
@@ -136,7 +136,7 @@ export class PowerApp {
       }
 
       this.definitions = definitions.sort(({range: ra}, {range: rb}) =>
-        rcompare(minVersion(ra)!, minVersion(rb)!),
+        compare(minVersion(ra)!, minVersion(rb)!),
       );
     } catch (error) {
       console.error(error);
@@ -383,9 +383,9 @@ export class PowerApp {
 function matchVersionInfoIndex(
   version: string,
   infos: PowerAppVersionInfo[],
-  initialIndex = infos.length,
+  initialIndex = infos.length - 1,
 ): number {
-  for (let index = initialIndex - 1; index >= 0; index--) {
+  for (let index = initialIndex; index >= 0; index--) {
     let {range} = infos[index];
 
     if (satisfies(version, range)) {
@@ -484,15 +484,19 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
       ? getMigrations(
           'down',
           _.reverse(
-            _.slice(infos, index, matchVersionInfoIndex(savedVersion, infos)),
+            _.slice(
+              infos,
+              index + 1,
+              matchVersionInfoIndex(savedVersion, infos) + 1,
+            ),
           ).map(info => info.definition),
         )
       : getMigrations(
           'up',
           _.slice(
             infos,
-            matchVersionInfoIndex(savedVersion, infos, index),
-            index,
+            matchVersionInfoIndex(savedVersion, infos, index) + 1,
+            index + 1,
           ).map(info => info.definition),
         ),
   };
