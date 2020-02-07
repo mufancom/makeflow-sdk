@@ -1,6 +1,7 @@
 import {Field as FieldTypes} from '@makeflow/types';
 import {Button, DatePicker, Form, Input, Switch, Table} from 'antd';
 import _ from 'lodash';
+import moment from 'moment';
 import React, {FC} from 'react';
 
 interface DataProps<TData = object> {
@@ -121,27 +122,36 @@ const SelectAlikeData: FC<DataProps<FieldTypes.SelectAlikeFieldData>> = ({
 };
 
 const DateData: FC<DataProps<FieldTypes.DateBaseFieldData>> = ({
-  value: {showTime, startsAt, endsAt},
+  value,
   onChange,
-}) => (
-  <>
-    <Form.Item label="选择时间">
-      <Switch checked={showTime} onChange={showTime => onChange({showTime})} />
-    </Form.Item>
-    <Form.Item label="起于 (startsAt)">
-      <DatePicker
-        showTime={showTime}
-        onChange={m => onChange({startsAt: m?.toDate().getTime()})}
-      />
-    </Form.Item>
-    <Form.Item label="止于 (endsAt)">
-      <DatePicker
-        showTime={showTime}
-        onChange={m => onChange({endsAt: m?.toDate().getTime()})}
-      />
-    </Form.Item>
-  </>
-);
+}) => {
+  let {showTime, startsAt, endsAt} = value;
+
+  return (
+    <>
+      <Form.Item label="选择时间 (默认值只能日期)">
+        <Switch
+          checked={showTime}
+          onChange={showTime => onChange({...value, showTime})}
+        />
+      </Form.Item>
+      <Form.Item label="起于 (startsAt)">
+        <DatePicker
+          value={moment(startsAt)}
+          showTime={showTime}
+          onChange={m => onChange({...value, startsAt: m?.toDate().getTime()})}
+        />
+      </Form.Item>
+      <Form.Item label="止于 (endsAt)">
+        <DatePicker
+          value={moment(endsAt)}
+          showTime={showTime}
+          onChange={m => onChange({...value, endsAt: m?.toDate().getTime()})}
+        />
+      </Form.Item>
+    </>
+  );
+};
 
 const LinkData: FC<DataProps<Partial<FieldTypes.LinkBaseFieldData>>> = ({
   value: {description},
