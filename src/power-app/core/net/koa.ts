@@ -28,7 +28,6 @@ export class KoaAdapter extends AbstractNetAdapter {
 
     router
       .all('*', async (context, next) => {
-        // TODO (boen):
         console.info(context.path);
 
         if (!this.authenticate(context.request.body?.source)) {
@@ -42,7 +41,7 @@ export class KoaAdapter extends AbstractNetAdapter {
       })
       .post('/installation/:type', this.handleInstallationRequest)
       .post('/permission/:type', this.handPermissionRequest)
-      .post('/power-item/:name/:type/:actions?', this.handlePowerItemRequest)
+      .post('/power-item/:name/:type/:action?', this.handlePowerItemRequest)
       .post('/power-glance/:name/:type', this.handlePowerGlanceRequest);
 
     this.app

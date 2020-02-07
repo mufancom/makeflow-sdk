@@ -231,7 +231,7 @@ export class PowerApp {
     });
 
     // TODO (boen): version where come from
-    let version = (payload as any).version ?? '1.3.0';
+    let version = (payload as any).version ?? '0.1.0';
 
     let result = getChangeAndMigrations<PowerAppVersion.PowerItem.Change>(
       version,
@@ -292,7 +292,13 @@ export class PowerApp {
   ): Promise<void> => {
     let {params, payload} = event;
 
-    let {token, clock, resources, configs, source} = payload as any;
+    let {
+      token,
+      clock,
+      source,
+      resources = [],
+      configs = {},
+    } = payload as APITypes.PowerGlance.UpdateHookParams;
 
     let storage = await this.dbAdapter.getStorage<PowerGlance>({
       type: 'power-glance',
@@ -300,7 +306,7 @@ export class PowerApp {
     });
 
     // TODO (boen): version where come from
-    let version = (payload as any).version ?? '1.0.0';
+    let version = (payload as any).version ?? '0.1.0';
 
     let result = getChangeAndMigrations<PowerAppVersion.PowerGlance.Change>(
       version,
@@ -322,23 +328,25 @@ export class PowerApp {
     this.api.setResourceToken(token);
 
     if (storage.created) {
-      let prevClock = Number(storage.clock);
+      if (params.type === 'change') {
+        let prevClock = Number(storage.clock);
 
-      if (prevClock + 1 !== clock) {
-        //  reinitialize
-        try {
-          let result = await this.api.initializePowerGlance();
+        if (prevClock + 1 !== clock) {
+          //  reinitialize
+          try {
+            let result = await this.api.initializePowerGlance();
 
-          clock = result.clock;
-          resources = result.resources;
-          configs = result.configs;
-        } catch (error) {
-          response({});
-          return;
+            clock = result.clock;
+            resources = result.resources;
+            configs = result.configs;
+          } catch (error) {
+            response({});
+            return;
+          }
         }
-      }
 
-      storage.setClock(clock);
+        storage.setClock(clock);
+      }
 
       for (let migration of migrations) {
         await migration(actionStorage);
