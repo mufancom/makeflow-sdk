@@ -68,7 +68,16 @@ export const Inputs: FC<{
           <Form.Item label="数据绑定方式">
             <Radio.Group
               value={useBind}
-              onChange={({target: {value}}) => setUseBind(value)}
+              onChange={({target: {value}}) => {
+                setUseBind(value);
+
+                if (value === undefined) {
+                  onPartChange({
+                    bind: undefined,
+                    default: undefined,
+                  });
+                }
+              }}
             >
               <Radio.Button value={undefined}>不绑定</Radio.Button>
               <Radio.Button value={false}>默认值</Radio.Button>
@@ -92,7 +101,7 @@ export const Inputs: FC<{
                   <Radio.Button value={true}>变量</Radio.Button>
                 </Radio.Group>
               </Form.Item>
-              <Form.Item label="值">
+              <Form.Item label="数据值或变量名">
                 <Input
                   placeholder="default"
                   value={

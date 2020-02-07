@@ -10,6 +10,8 @@ import {SettingTabs} from '../tabs';
 import {getData} from './@data';
 import {getOptions} from './@options';
 
+type DataType = 'initialData' | 'data' | 'dataSource' | undefined;
+
 export const Field: FC<{
   value: Procedure.PowerAppProcedureFieldDefinition;
   onChange(value: Procedure.PowerAppProcedureFieldDefinition | undefined): void;
@@ -29,8 +31,14 @@ export const Field: FC<{
     dataSource,
   } = definition;
 
-  const [useData, setUseData] = useState(
-    data ? true : initialData ? false : undefined,
+  const [useData, setUseData] = useState<DataType>(
+    data
+      ? 'data'
+      : initialData
+      ? 'initialData'
+      : dataSource
+      ? 'dataSource'
+      : undefined,
   );
 
   let Options = getOptions(base);
@@ -87,17 +95,6 @@ export const Field: FC<{
             />
           </Form.Item>
 
-          <Form.Item label="基础字段类型" required>
-            <FieldTypeSelect
-              placeholder="base"
-              value={base}
-              onChange={value =>
-                onPartChange({
-                  base: value as FieldTypes.BaseFieldType,
-                })
-              }
-            ></FieldTypeSelect>
-          </Form.Item>
           <Form.Item label="字段图标" required>
             <FieldIconTypeSelect
               placeholder="icon"
@@ -108,6 +105,18 @@ export const Field: FC<{
                 })
               }
             ></FieldIconTypeSelect>
+          </Form.Item>
+
+          <Form.Item label="基础字段类型" required>
+            <FieldTypeSelect
+              placeholder="base"
+              value={base}
+              onChange={value =>
+                onPartChange({
+                  base: value as FieldTypes.BaseFieldType,
+                })
+              }
+            ></FieldTypeSelect>
           </Form.Item>
 
           {Options ? (
@@ -123,81 +132,98 @@ export const Field: FC<{
             undefined
           )}
 
-          <Form.Item label="预设数据">
-            <Radio.Group
-              value={useData}
-              onChange={({target: {value}}) => setUseData(value)}
-            >
-              <Radio.Button value={undefined}>不添加</Radio.Button>
-              <Radio.Button value={false}>默认数据</Radio.Button>
-              <Radio.Button value={true}>固定数据</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
+          {Data ? (
+            <>
+              <Form.Item label="预设数据">
+                <Radio.Group
+                  value={useData}
+                  onChange={({target: {value}}) => {
+                    setUseData(value);
 
-          {Data
-            ? useData === true
-              ? Data.map(DataItem => (
+                    if (value === undefined) {
+                      onPartChange({
+                        data: undefined,
+                        initialData: undefined,
+                        dataSource: undefined,
+                      });
+                    }
+                  }}
+                >
+                  <Radio.Button value={undefined}>不添加</Radio.Button>
+                  <Radio.Button value="initialData">默认数据</Radio.Button>
+                  <Radio.Button value="data">固定数据</Radio.Button>
+                  <Radio.Button value="dataSource">数据源</Radio.Button>
+                </Radio.Group>
+              </Form.Item>
+
+              {useData === 'data' ? (
+                Data.map((DataItem, index) => (
                   <DataItem
+                    key={index}
                     value={data ?? {}}
                     onChange={data =>
                       onPartChange({
                         data,
+                        initialData: undefined,
+                        dataSource: undefined,
                       })
                     }
                   ></DataItem>
                 ))
-              : useData === false
-              ? Data.map(DataItem => (
+              ) : useData === 'initialData' ? (
+                Data.map((DataItem, index) => (
                   <DataItem
+                    key={index}
                     value={initialData ?? {}}
                     onChange={initialData =>
                       onPartChange({
                         initialData,
+                        data: undefined,
+                        dataSource: undefined,
                       })
                     }
                   ></DataItem>
                 ))
-              : undefined
-            : undefined}
-
-          <Form.Item label="数据源-地址" required>
-            <Input
-              placeholder="url"
-              value={dataSource?.url}
-              onChange={({target: {value}}) =>
-                onPartChange({
-                  dataSource: {
-                    ...dataSource,
-                    url: value,
-                  },
-                })
-              }
-            />
-          </Form.Item>
-          <Form.Item label="数据源-输入 (inputs)">
-            <SettingTabs<PowerAppInput.Definition>
-              primaryKey="name"
-              component={Inputs}
-              values={dataSource?.inputs ?? []}
-              onChange={inputs =>
-                onPartChange({
-                  dataSource: {url: dataSource?.url ?? '', inputs},
-                })
-              }
-            ></SettingTabs>
-            <Input
-              placeholder="url"
-              value={dataSource?.url}
-              onChange={({target: {value}}) =>
-                onPartChange({
-                  dataSource: {
-                    ...dataSource,
-                    url: value,
-                  },
-                })
-              }
-            />
-          </Form.Item>
+              ) : useData === 'dataSource' ? (
+                <>
+                  <Form.Item label="数据源地址" required>
+                    <Input
+                      placeholder="url"
+                      value={dataSource?.url}
+                      onChange={({target: {value}}) =>
+                        onPartChange({
+                          data: undefined,
+                          initialData: undefined,
+                          dataSource: {
+                            ...dataSource,
+                            url: value,
+                          },
+                        })
+                      }
+                    />
+                  </Form.Item>
+                  <Form.Item label="输入 (inputs)">
+                    <SettingTabs<PowerAppInput.Definition>
+                      primaryKey="name"
+                      component={Inputs}
+                      values={dataSource?.inputs ?? []}
+                      onChange={inputs =>
+                        onPartChange({
+                          data: undefined,
+                          initialData: undefined,
+                          dataSource: {url: dataSource?.url ?? '', inputs},
+                        })
+                      }
+                    ></SettingTabs>
+                  </Form.Item>
+                </>
+              ) : (
+                undefined
+              )}
+            </>
+          ) : (
+            undefined
+          )}
         </>
       ) : (
         '已折叠'
