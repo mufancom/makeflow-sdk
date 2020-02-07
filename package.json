@@ -13,6 +13,7 @@
     "bld/program"
   ],
   "scripts": {
+    "run:app-builder": "cd src/app-builder && yarn start",
     "build:program": "yarn tsc --project src/program",
     "build:power-app": "typescript-json-schema --required --out bld/power-app/schema.json src/power-app/tsconfig.json PowerAppSchema",
     "lint:program": "tslint --project src/program",

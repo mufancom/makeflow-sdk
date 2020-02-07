@@ -104,7 +104,7 @@ export const PowerItem: FC<{
               onChange={inputs => onPartChange({inputs})}
             ></SettingTabs>
           </Form.Item>
-          <Form.Item label="超级项字段 (fields)">
+          <Form.Item label="字段 (fields)">
             <SettingTabs<PowerItemTypes.PowerItemFieldDefinition>
               primaryKey={undefined}
               component={ItemField}

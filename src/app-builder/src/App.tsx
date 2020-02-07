@@ -6,10 +6,19 @@ import {
   PowerItem as PowerItemTypes,
 } from '@makeflow/types';
 import {PowerAppProcedureFieldDefinition} from '@makeflow/types/procedure';
-import {Button, Checkbox, Col, Form, Icon, Input, Layout, Row} from 'antd';
-import {FormComponentProps} from 'antd/lib/form';
+import {
+  Button,
+  Checkbox,
+  Col,
+  Form,
+  Icon,
+  Input,
+  Layout,
+  Row,
+  notification,
+} from 'antd';
 import _ from 'lodash';
-import React, {FC, forwardRef, useState} from 'react';
+import React, {FC, useState} from 'react';
 
 import './App.css';
 import {
@@ -26,12 +35,14 @@ import {permissionData} from './permission';
 
 const {Header, Footer, Content} = Layout;
 
-const _App: FC<FormComponentProps> = ({form: {getFieldsValue}}, ref) => {
+export const App: FC = () => {
   const [toShowSetting, setToShowSetting] = useState<boolean>(false);
 
   const [state, setState] = useState<PowerApp.RawDefinition>(
     {} as PowerApp.RawDefinition,
   );
+
+  handleLeave(state);
 
   function setContributions(
     partContributions: Partial<PowerApp.RawDefinition['contributions']>,
@@ -44,19 +55,15 @@ const _App: FC<FormComponentProps> = ({form: {getFieldsValue}}, ref) => {
     setState({...state, contributions});
   }
 
-  window.onbeforeunload = () => {
-    if (_.isEmpty(state)) {
-      return undefined;
-    }
-
-    return 'handled';
-  };
-
   return (
-    <Layout className="app" ref={ref}>
+    <Layout className="app">
       <Header className="header">
         Power App 定义工具
-        <Icon type="setting" onClick={() => setToShowSetting(true)}></Icon>
+        {localStorage.WIP ? (
+          <Icon type="setting" onClick={() => setToShowSetting(true)}></Icon>
+        ) : (
+          undefined
+        )}
       </Header>
 
       <Start onChange={importedDefinition => setState(importedDefinition)} />
@@ -187,19 +194,46 @@ const _App: FC<FormComponentProps> = ({form: {getFieldsValue}}, ref) => {
                   }
                 />
               </Form.Item>
-              <Form.Item>
-                <Button type="primary" onClick={() => exportDefinition(state)}>
-                  导出
+              <Form.Item label="资源包">暂未开放</Form.Item>
+              <Form.Item style={{textAlign: 'center'}}>
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={() => exportDefinition(state)}
+                >
+                  导出定义
+                </Button>
+                &nbsp;
+                <Button size="large" onClick={() => copyToClipBoard(state)}>
+                  复制
                 </Button>
               </Form.Item>
             </Form>
           </Col>
         </Row>
       </Content>
-      <Footer>© 2020 成都木帆科技有限公司</Footer>
+      <Footer>
+        © 2020 成都木帆科技有限公司
+        <Button
+          type="link"
+          onClick={() => window.open('https://makeflow.com', '_blank')}
+        >
+          makeflow
+        </Button>
+      </Footer>
     </Layout>
   );
 };
+
+function handleLeave(definition: PowerApp.RawDefinition): void {
+  window.onbeforeunload = () => {
+    if (_.isEmpty(definition)) {
+      return undefined;
+    }
+
+    return 'handled';
+  };
+}
 
 function exportDefinition(definition: PowerApp.RawDefinition): void {
   let anchor = document.createElement('a');
@@ -213,4 +247,30 @@ function exportDefinition(definition: PowerApp.RawDefinition): void {
   URL.revokeObjectURL(anchor.href);
 }
 
-export default Form.create()(forwardRef(_App));
+function copyToClipBoard(definition: PowerApp.RawDefinition): void {
+  let textarea = document.createElement('textarea');
+
+  textarea.setAttribute('readonly', 'readonly');
+  textarea.value = JSON.stringify(definition, undefined, 2);
+
+  document.body.appendChild(textarea);
+
+  textarea.setSelectionRange(0, textarea.value.length);
+  textarea.select();
+
+  if (document.execCommand('copy')) {
+    document.execCommand('copy');
+
+    notification.open({
+      message: '复制完成',
+      description: '已复制到剪贴板',
+    });
+  } else {
+    notification.open({
+      message: '复制失败',
+      description: '请使用导出',
+    });
+  }
+
+  document.body.removeChild(textarea);
+}

@@ -244,7 +244,9 @@ export const ItemField: FC<{
 }> = ({value, onChange}) => {
   const [fold, setFold] = useState(false);
 
-  const [valueType, setValueType] = useState<Value.ResolvableType>('value');
+  const [valueType, setValueType] = useState<Value.ResolvableType | undefined>(
+    undefined,
+  );
 
   let definition = value;
 

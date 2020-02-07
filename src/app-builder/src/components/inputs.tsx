@@ -153,7 +153,7 @@ export const Inputs: FC<{
                   value={'value' in bind ? String(bind.value) : bind?.variable}
                   onChange={({target: {value}}) =>
                     onPartChange({
-                      default:
+                      bind:
                         'value' in bind!
                           ? {
                               type: 'value',
