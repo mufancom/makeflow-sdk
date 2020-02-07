@@ -103,6 +103,7 @@ export const PowerItem: FC<{
           </Form.Item>
           <Form.Item label="输入 (inputs)">
             <SettingTabs<PowerAppInput.Definition>
+              primaryKey="name"
               component={Inputs}
               values={inputs}
               onChange={inputs => onPartChange({inputs})}
@@ -121,6 +122,7 @@ export const PowerItem: FC<{
           </Form.Item>
           <Form.Item label="可执行操作 (actions)">
             <SettingTabs<PowerItemTypes.ActionDefinition>
+              primaryKey="name"
               component={PowerItemAction}
               values={actions}
               onChange={actions => {

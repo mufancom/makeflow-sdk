@@ -82,6 +82,7 @@ export const PowerGlance: FC<{
           </Form.Item>
           <Form.Item label="输入 (inputs)">
             <SettingTabs<PowerAppInput.Definition>
+              primaryKey="name"
               component={Inputs}
               values={inputs}
               onChange={inputs => onPartChange({inputs})}
@@ -89,6 +90,7 @@ export const PowerGlance: FC<{
           </Form.Item>
           <Form.Item label="配置 (configs)">
             <SettingTabs<PowerAppConfig.Definition>
+              primaryKey="name"
               component={Config}
               values={configs}
               onChange={configs => onPartChange({configs})}

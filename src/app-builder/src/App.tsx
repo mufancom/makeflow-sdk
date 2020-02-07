@@ -5,6 +5,7 @@ import {
   PowerGlance as PowerGlanceTypes,
   PowerItem as PowerItemTypes,
 } from '@makeflow/types';
+import {PowerAppProcedureFieldDefinition} from '@makeflow/types/procedure';
 import {Button, Checkbox, Col, Form, Input, Layout, Row} from 'antd';
 import {FormComponentProps} from 'antd/lib/form';
 import React, {FC, forwardRef, useState} from 'react';
@@ -12,6 +13,7 @@ import React, {FC, forwardRef, useState} from 'react';
 import './App.css';
 import {
   Config,
+  Field,
   PowerCustomCheckableItem,
   PowerGlance,
   PowerItem,
@@ -181,16 +183,25 @@ const _App: FC<FormComponentProps> = ({form: {getFieldsValue}}, ref) => {
               </Form.Item>
               <Form.Item label="应用配置参数">
                 <SettingTabs<PowerAppConfig.Definition>
+                  primaryKey="name"
                   component={Config}
                   values={state.configs}
                   onChange={configs => setState({...state, configs})}
                 />
               </Form.Item>
               <Form.Item label="自定义字段">
-                {/* <Field value={state.contributions?.procedureFields}></Field> */}
+                <SettingTabs<PowerAppProcedureFieldDefinition>
+                  primaryKey="type"
+                  component={Field}
+                  values={state.contributions?.procedureFields}
+                  onChange={procedureFields =>
+                    setContributions({procedureFields})
+                  }
+                />
               </Form.Item>
               <Form.Item label="超级流程项">
                 <SettingTabs<PowerItemTypes.Definition>
+                  primaryKey="name"
                   component={PowerItem}
                   values={state.contributions?.powerItems}
                   onChange={powerItems => setContributions({powerItems})}
@@ -198,6 +209,7 @@ const _App: FC<FormComponentProps> = ({form: {getFieldsValue}}, ref) => {
               </Form.Item>
               <Form.Item label="超级概览">
                 <SettingTabs<PowerGlanceTypes.Definition>
+                  primaryKey="name"
                   component={PowerGlance}
                   values={state.contributions?.powerGlances}
                   onChange={powerGlances => setContributions({powerGlances})}
@@ -205,6 +217,7 @@ const _App: FC<FormComponentProps> = ({form: {getFieldsValue}}, ref) => {
               </Form.Item>
               <Form.Item label="超级自定义检查项">
                 <SettingTabs<PowerCustomCheckableItemTypes.Definition>
+                  primaryKey="name"
                   component={PowerCustomCheckableItem}
                   values={state.contributions?.powerCustomCheckableItems}
                   onChange={powerCustomCheckableItems =>

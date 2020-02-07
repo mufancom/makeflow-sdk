@@ -138,7 +138,7 @@ export const Inputs: FC<{
                   <Radio.Button value={true}>变量</Radio.Button>
                 </Radio.Group>
               </Form.Item>
-              <Form.Item label="值">
+              <Form.Item label="数据值或变量名">
                 <Input
                   placeholder="bind"
                   value={'value' in bind ? String(bind.value) : bind?.variable}

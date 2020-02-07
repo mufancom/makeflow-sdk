@@ -110,7 +110,7 @@ function PowerAppInputOptions({
         type="primary"
         style={{marginBottom: 16}}
       >
-        新增一行
+        新增一行输入
       </Button>
       <Table<PowerAppInput.Options>
         rowKey={input => String(_.findIndex(dataSource, input))}
@@ -120,9 +120,8 @@ function PowerAppInputOptions({
         dataSource={dataSource}
         columns={[
           {
-            title: '输入名',
+            title: '名称',
             dataIndex: 'name',
-            width: '30%',
             render: (text, input, index) => (
               <Input
                 placeholder="name"
@@ -137,7 +136,7 @@ function PowerAppInputOptions({
             ),
           },
           {
-            title: '绑定值',
+            title: '值',
             dataIndex: 'value',
             render: (text, input, index) => (
               <Input
@@ -154,11 +153,11 @@ function PowerAppInputOptions({
             ),
           },
           {
-            title: '绑定变量',
+            title: '变量',
             dataIndex: 'variable',
             render: (text, input, index) => (
               <Input
-                placeholder="variable"
+                placeholder="variable 与 value 互斥"
                 value={text}
                 onChange={handlerChange(({target: {value}}) =>
                   dataSource.splice(index, 1, {

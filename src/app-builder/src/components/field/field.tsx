@@ -1,10 +1,13 @@
-import {Field as FieldTypes, Procedure} from '@makeflow/types';
+import {Field as FieldTypes, PowerAppInput, Procedure} from '@makeflow/types';
 import {PowerAppProcedureFieldType} from '@makeflow/types/procedure';
-import {Card, Form, Icon, Input, Tooltip} from 'antd';
+import {Card, Form, Icon, Input, Radio, Tooltip} from 'antd';
 import React, {FC, useState} from 'react';
 
 import {FieldIconTypeSelect, FieldTypeSelect} from '../field-type-select';
+import {Inputs} from '../inputs';
+import {SettingTabs} from '../tabs';
 
+import {getData} from './@data';
 import {getOptions} from './@options';
 
 export const Field: FC<{
@@ -21,20 +24,26 @@ export const Field: FC<{
     options,
     displayName,
     icon,
-    // initialData,
-    // data,
-    // dataSource,
+    initialData,
+    data,
+    dataSource,
   } = definition;
 
+  const [useData, setUseData] = useState(
+    data ? true : initialData ? false : undefined,
+  );
+
   let Options = getOptions(base);
+
+  let Data = getData(base);
 
   let onPartChange = (
     part: Partial<Procedure.PowerAppProcedureFieldDefinition>,
   ): void => {
     onChange({
       ...definition,
-      // ...part,
-    });
+      ...part,
+    } as Procedure.PowerAppProcedureFieldDefinition);
   };
 
   return (
@@ -100,6 +109,7 @@ export const Field: FC<{
               }
             ></FieldIconTypeSelect>
           </Form.Item>
+
           {Options ? (
             <Options
               options={options ?? {}}
@@ -112,6 +122,82 @@ export const Field: FC<{
           ) : (
             undefined
           )}
+
+          <Form.Item label="预设数据">
+            <Radio.Group
+              value={useData}
+              onChange={({target: {value}}) => setUseData(value)}
+            >
+              <Radio.Button value={undefined}>不添加</Radio.Button>
+              <Radio.Button value={false}>默认数据</Radio.Button>
+              <Radio.Button value={true}>固定数据</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+
+          {Data
+            ? useData === true
+              ? Data.map(DataItem => (
+                  <DataItem
+                    value={data ?? {}}
+                    onChange={data =>
+                      onPartChange({
+                        data,
+                      })
+                    }
+                  ></DataItem>
+                ))
+              : useData === false
+              ? Data.map(DataItem => (
+                  <DataItem
+                    value={initialData ?? {}}
+                    onChange={initialData =>
+                      onPartChange({
+                        initialData,
+                      })
+                    }
+                  ></DataItem>
+                ))
+              : undefined
+            : undefined}
+
+          <Form.Item label="数据源-地址" required>
+            <Input
+              placeholder="url"
+              value={dataSource?.url}
+              onChange={({target: {value}}) =>
+                onPartChange({
+                  dataSource: {
+                    ...dataSource,
+                    url: value,
+                  },
+                })
+              }
+            />
+          </Form.Item>
+          <Form.Item label="数据源-输入 (inputs)">
+            <SettingTabs<PowerAppInput.Definition>
+              primaryKey="name"
+              component={Inputs}
+              values={dataSource?.inputs ?? []}
+              onChange={inputs =>
+                onPartChange({
+                  dataSource: {url: dataSource?.url ?? '', inputs},
+                })
+              }
+            ></SettingTabs>
+            <Input
+              placeholder="url"
+              value={dataSource?.url}
+              onChange={({target: {value}}) =>
+                onPartChange({
+                  dataSource: {
+                    ...dataSource,
+                    url: value,
+                  },
+                })
+              }
+            />
+          </Form.Item>
         </>
       ) : (
         '已折叠'

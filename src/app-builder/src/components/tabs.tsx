@@ -5,6 +5,7 @@ import {
   PowerGlance,
   PowerItem,
 } from '@makeflow/types';
+import {PowerAppProcedureFieldDefinition} from '@makeflow/types/procedure';
 import {Button, Icon, Tabs} from 'antd';
 import _ from 'lodash';
 import React, {FC, ReactElement, useState} from 'react';
@@ -17,9 +18,11 @@ type ValueType =
   | PowerGlance.Definition
   | PowerCustomCheckableItem.Definition
   | PowerAppInput.Definition
-  | PowerItem.ActionDefinition;
+  | PowerItem.ActionDefinition
+  | PowerAppProcedureFieldDefinition;
 
 export interface TabsProps<TValueType extends ValueType = ValueType> {
+  primaryKey: keyof TValueType;
   component: FC<{
     value: TValueType;
     onChange(value: TValueType | undefined): void;
@@ -30,6 +33,7 @@ export interface TabsProps<TValueType extends ValueType = ValueType> {
 
 export function SettingTabs<TValueType extends ValueType>({
   component: ValueComponent,
+  primaryKey,
   values = [],
   onChange,
 }: TabsProps<TValueType>): ReactElement {
@@ -56,13 +60,13 @@ export function SettingTabs<TValueType extends ValueType>({
           type="dashed"
           onClick={() => {
             let newValues = _.uniqBy(
-              [...values, {name: '', displayName: ''} as TValueType],
-              'name',
+              [...values, {[primaryKey]: '', displayName: ''} as TValueType],
+              primaryKey,
             );
 
             onChange(newValues);
 
-            setActive(`${newValues.findIndex(value => !value.name)}`);
+            setActive(`${newValues.findIndex(value => !value[primaryKey])}`);
           }}
         >
           <Icon type="plus"></Icon>
