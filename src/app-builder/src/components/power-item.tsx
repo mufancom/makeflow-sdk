@@ -2,6 +2,7 @@ import {PowerAppInput, PowerItem as PowerItemTypes} from '@makeflow/types';
 import {Card, Form, Icon, Input, Radio, Tooltip} from 'antd';
 import React, {FC, useState} from 'react';
 
+import {ItemField} from './field';
 import {Inputs} from './inputs';
 import {PowerItemAction} from './power-item-action';
 import {SettingTabs} from './tabs';
@@ -21,6 +22,7 @@ export const PowerItem: FC<{
     type,
     inputs = [],
     actions = [],
+    fields = [],
   } = definition;
 
   let onPartChange = (part: Partial<PowerItemTypes.Definition>): void => {
@@ -33,13 +35,6 @@ export const PowerItem: FC<{
   return (
     <Card
       actions={[
-        <Tooltip placement="top" title={`安装前必填`}>
-          <Icon
-            type="fire"
-            style={{color: '#009960'}}
-            onClick={() => onPartChange({})}
-          />
-        </Tooltip>,
         <Tooltip placement="top" title={`${fold ? '展开' : '折叠'}超级项`}>
           <Icon type={fold ? 'down' : 'up'} onClick={() => setFold(!fold)} />
         </Tooltip>,
@@ -109,16 +104,17 @@ export const PowerItem: FC<{
               onChange={inputs => onPartChange({inputs})}
             ></SettingTabs>
           </Form.Item>
-          <Form.Item label="超级项字段">
-            <Input
-              placeholder="description"
-              value={description}
-              onChange={({target: {value}}) =>
+          <Form.Item label="超级项字段 (fields)">
+            <SettingTabs<PowerItemTypes.PowerItemFieldDefinition>
+              primaryKey={undefined}
+              component={ItemField}
+              values={fields}
+              onChange={fields => {
                 onPartChange({
-                  description: value,
-                })
-              }
-            />
+                  fields,
+                });
+              }}
+            ></SettingTabs>
           </Form.Item>
           <Form.Item label="可执行操作 (actions)">
             <SettingTabs<PowerItemTypes.ActionDefinition>

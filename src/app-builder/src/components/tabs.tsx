@@ -19,10 +19,11 @@ type ValueType =
   | PowerCustomCheckableItem.Definition
   | PowerAppInput.Definition
   | PowerItem.ActionDefinition
-  | PowerAppProcedureFieldDefinition;
+  | PowerAppProcedureFieldDefinition
+  | PowerItem.PowerItemFieldDefinition;
 
 export interface TabsProps<TValueType extends ValueType = ValueType> {
-  primaryKey: keyof TValueType;
+  primaryKey: keyof TValueType | undefined;
   component: FC<{
     value: TValueType;
     onChange(value: TValueType | undefined): void;
@@ -59,14 +60,25 @@ export function SettingTabs<TValueType extends ValueType>({
         <Button
           type="dashed"
           onClick={() => {
-            let newValues = _.uniqBy(
-              [...values, {[primaryKey]: '', displayName: ''} as TValueType],
-              primaryKey,
-            );
+            let newValues = primaryKey
+              ? _.uniqBy(
+                  [
+                    ...values,
+                    {[primaryKey]: '', displayName: ''} as TValueType,
+                  ],
+                  primaryKey,
+                )
+              : [...values, {displayName: ''} as TValueType];
 
             onChange(newValues);
 
-            setActive(`${newValues.findIndex(value => !value[primaryKey])}`);
+            setActive(
+              `${
+                primaryKey
+                  ? newValues.findIndex(value => !value[primaryKey])
+                  : newValues.length - 1
+              }`,
+            );
           }}
         >
           <Icon type="plus"></Icon>
