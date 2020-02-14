@@ -8,11 +8,13 @@ import {
   InstallationEvent,
   PermissionEvent,
   PowerGlanceEvent,
-  PowerGlanceEventParams,
   PowerItemEvent,
-  PowerItemEventParams,
 } from './events';
-import {AbstractNetAdapter} from './net';
+import {
+  AbstractNetAdapter,
+  isPowerGlanceEventParams,
+  isPowerItemEventParams,
+} from './net';
 
 export class KoaAdapter extends AbstractNetAdapter {
   private app = new Koa();
@@ -39,10 +41,74 @@ export class KoaAdapter extends AbstractNetAdapter {
 
         context.body = await context.body;
       })
-      .post('/installation/:type', this.handleInstallationRequest)
-      .post('/permission/:type', this.handPermissionRequest)
-      .post('/power-item/:name/:type/:action?', this.handlePowerItemRequest)
-      .post('/power-glance/:name/:type', this.handlePowerGlanceRequest);
+      .post('/installation/:type', context => {
+        let {
+          params: {type},
+          request: {body},
+        } = context;
+
+        this.emit<InstallationEvent>(
+          'installation',
+          {
+            type,
+            payload: body,
+          },
+          getResponse<InstallationEvent>(context),
+        );
+      })
+      .post('/permission/:type', context => {
+        let {
+          params: {type},
+          request: {body},
+        } = context;
+
+        this.emit<PermissionEvent>(
+          'permission',
+          {
+            type,
+            payload: body,
+          },
+          getResponse<PermissionEvent>(context),
+        );
+      })
+      .post('/power-item/:name/:type/:action?', context => {
+        let {
+          params,
+          request: {body},
+        } = context;
+
+        if (!isPowerItemEventParams(params)) {
+          return;
+        }
+
+        this.emit<PowerItemEvent>(
+          'power-item',
+          {
+            params,
+            payload: body,
+          },
+          getResponse<PowerItemEvent>(context),
+        );
+      })
+      .post('/power-glance/:name/:type', context => {
+        let {
+          params,
+          request: {body},
+        } = context;
+
+        if (!isPowerGlanceEventParams(params)) {
+          return;
+        }
+
+        this.emit<PowerGlanceEvent>(
+          'power-glance',
+          {
+            payload: body,
+            params,
+          },
+          getResponse<PowerGlanceEvent>(context),
+        );
+      })
 
     this.app
       .use(
@@ -58,110 +124,6 @@ export class KoaAdapter extends AbstractNetAdapter {
 
     this.app.listen(port);
   }
-
-  private emitEvent<TEvent extends Events>(
-    type: TEvent['type'],
-    event: TEvent['eventObject'],
-    context: RouterContext,
-  ): void {
-    let response = getResponse<TEvent>(context);
-
-    let existedListeners = this.emit<TEvent>(type, event, response);
-
-    if (!existedListeners) {
-      response({});
-    }
-  }
-
-  private handPermissionRequest = async (
-    context: RouterContext,
-  ): Promise<void> => {
-    let {
-      params: {type},
-      request: {body},
-    } = context;
-
-    // TODO (boen): check body data validity
-    let payload = body;
-
-    this.emitEvent<PermissionEvent>(
-      'permission',
-      {
-        type,
-        payload,
-      },
-      context,
-    );
-  };
-
-  private handleInstallationRequest = (context: RouterContext): void => {
-    let {
-      params: {type},
-      request: {body},
-    } = context;
-
-    // TODO (boen): check body data validity
-    let payload = body;
-
-    this.emitEvent<InstallationEvent>(
-      'installation',
-      {
-        type,
-        payload,
-      },
-      context,
-    );
-  };
-
-  private handlePowerItemRequest = async (
-    context: RouterContext,
-  ): Promise<void> => {
-    let {
-      params,
-      request: {body},
-    } = context;
-
-    if (!isPowerItemEventParams(params)) {
-      return;
-    }
-
-    // TODO (boen): check body data validity
-    let payload = body;
-
-    this.emitEvent<PowerItemEvent>(
-      'power-item',
-      {
-        payload,
-        params,
-      },
-      context,
-    );
-  };
-
-  private handlePowerGlanceRequest = async (
-    context: RouterContext,
-  ): Promise<void> => {
-    let {
-      params,
-      request: {body},
-    } = context;
-
-    if (!isPowerGlanceEventParams(params)) {
-      return;
-    }
-
-    // TODO (boen): check body data validity
-    let payload = body;
-
-    this.emitEvent<PowerGlanceEvent>(
-      'power-glance',
-      {
-        payload,
-        params,
-      },
-      context,
-    );
-  };
 }
 
 function getResponse<TEvent extends Events>(
@@ -170,34 +132,4 @@ function getResponse<TEvent extends Events>(
   let response!: TEvent['response'];
   context.body = new Promise(resolve => (response = resolve));
   return response;
-}
-
-function isPowerItemEventParams(params: any): params is PowerItemEventParams {
-  let {type, action} = Object(params);
-
-  switch (type) {
-    case 'activate':
-    case 'update':
-    case 'deactivate':
-      return true;
-    case 'action':
-      return !!action;
-    default:
-      return false;
-  }
-}
-
-function isPowerGlanceEventParams(
-  params: any,
-): params is PowerGlanceEventParams {
-  let {type} = Object(params);
-
-  switch (type) {
-    case 'initialize':
-    case 'change':
-    case 'dispose':
-      return true;
-    default:
-      return false;
-  }
 }

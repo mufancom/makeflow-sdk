@@ -3,7 +3,7 @@ import {EventEmitter} from 'events';
 import {API} from '@makeflow/types';
 import _ from 'lodash';
 
-import {Events} from './events';
+import {Events, PowerGlanceEventParams, PowerItemEventParams} from './events';
 
 export interface INetAdapter extends NetAdapter {}
 
@@ -46,7 +46,13 @@ abstract class NetAdapter extends EventEmitter {
     event: TEvent['eventObject'],
     response: TEvent['response'],
   ): boolean {
-    return super.emit(type, event, response);
+    let existedListeners = super.emit(type, event, response);
+
+    if (!existedListeners) {
+      response({});
+    }
+
+    return existedListeners;
   }
 
   authenticate(source: API.PowerApp.Source | undefined): boolean {
@@ -61,6 +67,38 @@ abstract class NetAdapter extends EventEmitter {
     }
 
     return _.isEqual(token, source.token);
+  }
+}
+
+export function isPowerItemEventParams(
+  params: any,
+): params is PowerItemEventParams {
+  let {type, action} = Object(params);
+
+  switch (type) {
+    case 'activate':
+    case 'update':
+    case 'deactivate':
+      return true;
+    case 'action':
+      return !!action;
+    default:
+      return false;
+  }
+}
+
+export function isPowerGlanceEventParams(
+  params: any,
+): params is PowerGlanceEventParams {
+  let {type} = Object(params);
+
+  switch (type) {
+    case 'initialize':
+    case 'change':
+    case 'dispose':
+      return true;
+    default:
+      return false;
   }
 }
 
