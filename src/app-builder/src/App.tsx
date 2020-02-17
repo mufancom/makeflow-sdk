@@ -27,9 +27,12 @@ import {
   PowerCustomCheckableItem,
   PowerGlance,
   PowerItem,
+  Procedure,
   Setting,
   SettingTabs,
   Start,
+  SubFormItem,
+  Tag,
 } from './components';
 import {permissionData} from './permission';
 
@@ -53,6 +56,17 @@ export const App: FC = () => {
     };
 
     setState({...state, contributions});
+  }
+
+  function setResources(
+    partResources: Partial<PowerApp.RawDefinition['resources']>,
+  ): void {
+    let resources: PowerApp.RawDefinition['resources'] = {
+      ...state.resources,
+      ...partResources,
+    };
+
+    setState({...state, resources});
   }
 
   return (
@@ -194,7 +208,24 @@ export const App: FC = () => {
                   }
                 />
               </Form.Item>
-              <Form.Item label="资源包">暂未开放</Form.Item>
+              <Form.Item label="资源包">
+                <SubFormItem label=" 标签">
+                  <SettingTabs<PowerApp.DefinitionTagResource>
+                    primaryKey="name"
+                    component={Tag}
+                    values={state.resources?.tags}
+                    onChange={tags => setResources({tags})}
+                  />
+                </SubFormItem>
+                <SubFormItem label=" 流程">
+                  <SettingTabs<PowerApp.DefinitionProcedureResource>
+                    primaryKey="name"
+                    component={Procedure}
+                    values={state.resources?.procedures}
+                    onChange={procedures => setResources({procedures})}
+                  />
+                </SubFormItem>
+              </Form.Item>
               <Form.Item style={{textAlign: 'center'}}>
                 <Button
                   type="primary"

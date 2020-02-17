@@ -1,4 +1,5 @@
 import {
+  GlanceReport,
   PowerAppConfig,
   PowerAppInput,
   PowerGlance as PowerGlanceTypes,
@@ -8,6 +9,7 @@ import React, {FC, useState} from 'react';
 
 import {Config} from './config';
 import {Inputs} from './inputs';
+import {Report} from './report';
 import {SettingTabs} from './tabs';
 
 export const PowerGlance: FC<{
@@ -18,7 +20,14 @@ export const PowerGlance: FC<{
 
   let config = value;
 
-  let {displayName, name, description, inputs = [], configs = []} = config;
+  let {
+    displayName,
+    name,
+    description,
+    inputs = [],
+    configs = [],
+    reports = [],
+  } = config;
 
   let onPartChange = (part: Partial<PowerGlanceTypes.Definition>): void => {
     onChange({
@@ -96,7 +105,15 @@ export const PowerGlance: FC<{
               onChange={configs => onPartChange({configs})}
             ></SettingTabs>
           </Form.Item>
-          <Form.Item label="报表 (reports)">暂未开放</Form.Item>
+          <Form.Item label="报表 (reports)">
+            <SettingTabs<GlanceReport.Definition>
+              primaryKey="name"
+              displayKey="title"
+              component={Report}
+              values={reports}
+              onChange={reports => onPartChange({reports})}
+            ></SettingTabs>
+          </Form.Item>
           <Form.Item label="匹配源 (matcher)">暂未开放</Form.Item>
         </>
       ) : (

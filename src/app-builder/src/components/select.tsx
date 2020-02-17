@@ -83,3 +83,45 @@ export const FieldIconTypeSelect: FC<SelectProps> = props => {
     </Select>
   );
 };
+
+export const ReportIconTypeSelect: FC<SelectProps> = props => {
+  const types = [
+    'chart-bar',
+    'chart-pie',
+    'star',
+    'in-progress',
+    'chart-line',
+    'chart-area',
+    'bug',
+  ];
+
+  return (
+    <Select defaultValue="text" {...props}>
+      {types.map(type => (
+        <Option key={type} value={type}>
+          {type}
+        </Option>
+      ))}
+    </Select>
+  );
+};
+
+export const ElementTypeSelect: FC<SelectProps> = props => {
+  const types = [
+    'number',
+    'text-line',
+    'number-per-user',
+    'chart',
+    'chart-per-user',
+  ];
+
+  return (
+    <Select defaultValue="text" {...props}>
+      {types.map(type => (
+        <Option key={type} value={type}>
+          {type}
+        </Option>
+      ))}
+    </Select>
+  );
+};

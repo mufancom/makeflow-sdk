@@ -9,8 +9,8 @@ import {PowerAppProcedureFieldType} from '@makeflow/types/procedure';
 import {Card, Form, Icon, Input, Radio, Tooltip} from 'antd';
 import React, {FC, useState} from 'react';
 
-import {FieldIconTypeSelect, FieldTypeSelect} from '../field-type-select';
 import {Inputs} from '../inputs';
+import {FieldIconTypeSelect, FieldTypeSelect} from '../select';
 import {SettingTabs} from '../tabs';
 
 import {getData} from './@data';

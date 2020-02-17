@@ -2,7 +2,7 @@ import {PowerAppConfig} from '@makeflow/types';
 import {Card, Form, Icon, Input, Tooltip} from 'antd';
 import React, {FC, useState} from 'react';
 
-import {ConfigFieldTypeSelect} from './field-type-select';
+import {ConfigFieldTypeSelect} from './select';
 
 export const Config: FC<{
   value: PowerAppConfig.Definition;
