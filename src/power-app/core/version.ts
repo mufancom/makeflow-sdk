@@ -6,6 +6,7 @@ import {API} from '../api';
 import {
   ActionStorage,
   IStorageObject,
+  PowerCustomCheckableItem as PowerCustomCheckableItemObject,
   PowerGlance as PowerGlanceStorageObject,
   PowerItem as PowerItemStorageObject,
 } from './storage';
@@ -19,8 +20,16 @@ export namespace PowerAppVersion {
       powerGlances?: {
         [key in string]: PowerGlance.Definition;
       };
+      powerCustomCheckableItems?: {
+        [key in string]: PowerCustomCheckableItem.Definition;
+      };
     };
   }
+
+  export type Changes =
+    | PowerItem.Change
+    | PowerGlance.Change
+    | PowerCustomCheckableItem.Change;
 
   export type MigrationFunction<TStorageObject extends IStorageObject> = (
     storage: ActionStorage<TStorageObject>,
@@ -36,8 +45,6 @@ export namespace PowerAppVersion {
      */
     down?: MigrationFunction<TStorageObject>;
   }
-
-  export type Changes = PowerItem.Change | PowerGlance.Change;
 
   // power-item
 
@@ -89,5 +96,31 @@ export namespace PowerAppVersion {
       dispose?: Change;
       migrations?: Migrations<PowerGlanceStorageObject>;
     }
+  }
+
+  // power-custom-checkable-item
+
+  export namespace PowerCustomCheckableItem {
+    export interface ChangeParams {
+      storage: ActionStorage<PowerCustomCheckableItemObject>;
+      context: APITypes.PowerCustomCheckableItem.HookContext;
+      api: API;
+      inputs: Dict<unknown>;
+      configs: Dict<unknown>;
+    }
+
+    export interface ChangeResponseData
+      extends APITypes.PowerCustomCheckableItem.HookReturn {}
+
+    export type Change = (
+      params: ChangeParams,
+    ) => Promise<ChangeResponseData | void> | ChangeResponseData | void;
+
+    export type Definition =
+      | {
+          processor?: Change;
+          migrations?: Migrations<PowerItemStorageObject>;
+        }
+      | Change;
   }
 }

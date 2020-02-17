@@ -8,7 +8,13 @@ import {
   UpdateQuery,
 } from 'mongodb';
 
-import {Docs, InstallationDoc, PowerGlanceDoc, PowerItemDoc} from '../storage';
+import {
+  Docs,
+  InstallationDoc,
+  PowerCustomCheckableItemDoc,
+  PowerGlanceDoc,
+  PowerItemDoc,
+} from '../storage';
 
 import {AbstractDBAdapter} from './db';
 
@@ -20,6 +26,7 @@ interface NameToDocs {
   installation: InstallationDoc;
   'power-item': PowerItemDoc;
   'power-glance': PowerGlanceDoc;
+  'power-custom-checkable-item': PowerCustomCheckableItemDoc;
 }
 
 type NameToCollectionDocumentSchemaDict = {
@@ -181,7 +188,7 @@ export class MongoAdapter extends AbstractDBAdapter {
   protected async deletePowerGlanceDoc({
     token,
   }: Partial<PowerGlanceDoc>): Promise<void> {
-    let collection = this.getCollection('power-item');
+    let collection = this.getCollection('power-glance');
 
     if (!token) {
       return;
@@ -206,6 +213,60 @@ export class MongoAdapter extends AbstractDBAdapter {
           version,
           clock,
           disposed,
+        },
+      },
+    );
+  }
+
+  protected async getPowerCustomCheckableItemDoc({
+    token,
+  }: Partial<PowerCustomCheckableItemDoc>): Promise<
+    PowerCustomCheckableItemDoc | undefined
+  > {
+    if (!token) {
+      return undefined;
+    }
+
+    let collection = this.getCollection('power-custom-checkable-item');
+
+    let doc = await collection.findOne({token});
+
+    return doc ? doc : undefined;
+  }
+
+  protected async createPowerCustomCheckableItemDoc(
+    doc: PowerCustomCheckableItemDoc,
+  ): Promise<void> {
+    let collection = this.getCollection('power-custom-checkable-item');
+    await collection.insertOne(doc);
+  }
+
+  protected async deletePowerCustomCheckableItemDoc({
+    token,
+  }: Partial<PowerCustomCheckableItemDoc>): Promise<void> {
+    let collection = this.getCollection('power-custom-checkable-item');
+
+    if (!token) {
+      return;
+    }
+
+    await collection.deleteOne({token});
+  }
+
+  protected async updatePowerCustomCheckableItemDoc(
+    {token}: PowerCustomCheckableItemDoc,
+    {storage, version}: PowerCustomCheckableItemDoc,
+  ): Promise<void> {
+    let collection = this.getCollection('power-custom-checkable-item');
+
+    await collection.updateOne(
+      {
+        token,
+      },
+      {
+        $set: {
+          storage,
+          version,
         },
       },
     );

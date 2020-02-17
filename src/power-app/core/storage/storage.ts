@@ -1,6 +1,10 @@
 import _ from 'lodash';
 
 import {InstallationDoc, InstallationStorage} from './installation';
+import {
+  PowerCustomCheckableItemDoc,
+  PowerCustomCheckableItemStorage,
+} from './power-custom-checkable-item';
 import {PowerGlanceDoc, PowerGlanceStorage} from './power-glance';
 import {PowerItemDoc, PowerItemStorage} from './power-item';
 import {ExtractStorage} from './utils';
@@ -15,12 +19,17 @@ export interface ActionStorage<
   merge(...args: Parameters<TStorageObject['merge']>): Promise<void>;
 }
 
-export type Docs = InstallationDoc | PowerItemDoc | PowerGlanceDoc;
+export type Docs =
+  | InstallationDoc
+  | PowerItemDoc
+  | PowerGlanceDoc
+  | PowerCustomCheckableItemDoc;
 
 export type Storages =
   | InstallationStorage
   | PowerItemStorage
-  | PowerGlanceStorage;
+  | PowerGlanceStorage
+  | PowerCustomCheckableItemStorage;
 
 export interface IStorageObject<
   TDoc extends Docs = Docs,

@@ -25,6 +25,9 @@ import {
   NetAdapterOptions,
   PermissionEvent,
   PowerAppVersion,
+  PowerCustomCheckableItem,
+  PowerCustomCheckableItemEvent,
+  PowerCustomCheckableItemEventParams,
   PowerGlance,
   PowerGlanceEvent,
   PowerGlanceEventParams,
@@ -118,6 +121,10 @@ export class PowerApp {
       .on('permission', this.handlePermission)
       .on('power-item', this.handlePowerItemChange)
       .on('power-glance', this.handlePowerGlanceChange)
+      .on(
+        'power-custom-checkable-item',
+        this.handlePowerCustomCheckableItemChange,
+      )
       .serve();
   }
 
@@ -380,6 +387,77 @@ export class PowerApp {
 
     response(responseData || {});
   };
+
+  private handlePowerCustomCheckableItemChange = async (
+    event: PowerCustomCheckableItemEvent['eventObject'],
+    response: PowerCustomCheckableItemEvent['response'],
+  ): Promise<void> => {
+    let {params, payload} = event;
+
+    let {token, source} = payload;
+
+    let storage = await this.dbAdapter.getStorage<PowerCustomCheckableItem>({
+      type: 'power-custom-checkable-item',
+      token,
+    });
+
+    // TODO (boen): version where come from
+    let version = (payload as any).version ?? '0.1.0';
+
+    let result = getChangeAndMigrations<
+      PowerAppVersion.PowerCustomCheckableItem.Change
+    >(
+      version,
+      storage.version,
+      this.definitions,
+      getPowerCustomCheckableItemChange(params),
+      getMigrations(params),
+    );
+
+    if (!result) {
+      return;
+    }
+
+    let {change, migrations} = result;
+
+    let actionStorage = getActionStorage(storage, this.dbAdapter);
+
+    if (storage.created) {
+      for (let migration of migrations) {
+        await migration(actionStorage);
+      }
+    } else {
+      storage.create({
+        type: 'power-custom-checkable-item',
+        token: payload.token,
+        version,
+        storage: {},
+      });
+    }
+
+    let responseData: PowerAppVersion.PowerCustomCheckableItem.ChangeResponseData | void;
+
+    if (change) {
+      let {inputs, context, configs = {}} = payload;
+
+      this.api.setSource(source);
+      this.api.setResourceToken(token);
+
+      responseData = await change({
+        storage: actionStorage,
+        api: this.api,
+        context,
+        inputs,
+        configs,
+      });
+    }
+
+    storage.setVersion(version);
+
+    await this.dbAdapter.setStorage(storage);
+
+    response(responseData || {});
+  };
 }
 
 function matchVersionInfoIndex(
@@ -433,9 +511,30 @@ function getPowerGlanceChange({
   };
 }
 
+function getPowerCustomCheckableItemChange({
+  name,
+}: PowerCustomCheckableItemEventParams): (
+  definition: PowerAppVersion.Definition,
+) => PowerAppVersion.PowerCustomCheckableItem.Change | undefined {
+  return ({contributions: {powerCustomCheckableItems = {}}}) => {
+    let checkableItem = powerCustomCheckableItems[name];
+
+    if (!checkableItem) {
+      return undefined;
+    }
+
+    return typeof checkableItem === 'function'
+      ? checkableItem
+      : checkableItem['processor'];
+  };
+}
+
 function getMigrations({
   name,
-}: PowerItemEventParams | PowerGlanceEventParams): (
+}:
+  | PowerItemEventParams
+  | PowerGlanceEventParams
+  | PowerCustomCheckableItemEventParams): (
   type: keyof PowerAppVersion.Migrations<IStorageObject>,
   definitions: PowerAppVersion.Definition[],
 ) => PowerAppVersion.MigrationFunction<IStorageObject>[] {

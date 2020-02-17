@@ -1,7 +1,12 @@
 import lowdb, {LowdbSync} from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
 
-import {InstallationDoc, PowerGlanceDoc, PowerItemDoc} from '../storage';
+import {
+  InstallationDoc,
+  PowerCustomCheckableItemDoc,
+  PowerGlanceDoc,
+  PowerItemDoc,
+} from '../storage';
 
 import {AbstractDBAdapter} from './db';
 
@@ -13,6 +18,7 @@ interface Schema {
   installation: InstallationDoc[];
   'power-item': PowerItemDoc[];
   'power-glance': PowerGlanceDoc[];
+  'power-custom-checkable-item': PowerCustomCheckableItemDoc[];
 }
 
 export class LowdbAdapter extends AbstractDBAdapter {
@@ -32,6 +38,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
         installation: [],
         'power-item': [],
         'power-glance': [],
+        'power-custom-checkable-item': [],
       })
       .write();
   }
@@ -149,6 +156,49 @@ export class LowdbAdapter extends AbstractDBAdapter {
       .find({token})
       .set('clock', clock)
       .set('disposed', disposed)
+      .set('version', version)
+      .set('storage', storage)
+      .write();
+  }
+
+  protected async getPowerCustomCheckableItemDoc({
+    token,
+  }: Partial<PowerCustomCheckableItemDoc>): Promise<
+    PowerCustomCheckableItemDoc | undefined
+  > {
+    return this.db
+      .get('power-custom-checkable-item')
+      .find({token})
+      .value();
+  }
+
+  protected async createPowerCustomCheckableItemDoc(
+    doc: PowerCustomCheckableItemDoc,
+  ): Promise<void> {
+    await this.db
+      .get('power-custom-checkable-item')
+      .push(doc)
+      .write();
+  }
+
+  protected async deletePowerCustomCheckableItemDoc({
+    token,
+  }: Partial<PowerCustomCheckableItemDoc>): Promise<void> {
+    await this.db
+      .get('power-custom-checkable-item')
+      .remove({
+        token,
+      })
+      .write();
+  }
+
+  protected async updatePowerCustomCheckableItemDoc(
+    {token}: PowerCustomCheckableItemDoc,
+    {storage, version}: PowerCustomCheckableItemDoc,
+  ): Promise<void> {
+    await this.db
+      .get('power-custom-checkable-item')
+      .find({token})
       .set('version', version)
       .set('storage', storage)
       .write();

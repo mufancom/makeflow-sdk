@@ -4,6 +4,8 @@ import {
   IStorageObject,
   Installation,
   InstallationDoc,
+  PowerCustomCheckableItem,
+  PowerCustomCheckableItemDoc,
   PowerGlance,
   PowerGlanceDoc,
   PowerItem,
@@ -37,6 +39,14 @@ abstract class DBAdapter {
     update: this.updatePowerGlanceDoc,
     query: this.getPowerGlanceDoc,
     class: PowerGlance,
+  };
+
+  private readonly 'power-custom-checkable-item' = {
+    create: this.createPowerCustomCheckableItemDoc,
+    delete: this.deletePowerCustomCheckableItemDoc,
+    update: this.updatePowerCustomCheckableItemDoc,
+    query: this.getPowerCustomCheckableItemDoc,
+    class: PowerCustomCheckableItem,
   };
 
   constructor(protected options: unknown) {}
@@ -131,6 +141,24 @@ abstract class DBAdapter {
   protected abstract async updatePowerGlanceDoc(
     oDoc: PowerGlanceDoc,
     nDoc: PowerGlanceDoc,
+  ): Promise<void>;
+
+  // PowerCustomCheckableItem
+  protected abstract async getPowerCustomCheckableItemDoc(
+    doc: Partial<PowerCustomCheckableItemDoc>,
+  ): Promise<PowerCustomCheckableItemDoc | undefined>;
+
+  protected abstract async createPowerCustomCheckableItemDoc(
+    doc: PowerCustomCheckableItemDoc,
+  ): Promise<void>;
+
+  protected abstract async deletePowerCustomCheckableItemDoc(
+    doc: Partial<PowerCustomCheckableItemDoc>,
+  ): Promise<void>;
+
+  protected abstract async updatePowerCustomCheckableItemDoc(
+    oDoc: PowerCustomCheckableItemDoc,
+    nDoc: PowerCustomCheckableItemDoc,
   ): Promise<void>;
 }
 

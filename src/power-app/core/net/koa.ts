@@ -7,6 +7,7 @@ import {
   Events,
   InstallationEvent,
   PermissionEvent,
+  PowerCustomCheckableItemEvent,
   PowerGlanceEvent,
   PowerItemEvent,
 } from './events';
@@ -109,6 +110,21 @@ export class KoaAdapter extends AbstractNetAdapter {
           getResponse<PowerGlanceEvent>(context),
         );
       })
+      .post('/power-custom-checkable-item/:name', context => {
+        let {
+          params,
+          request: {body},
+        } = context;
+
+        this.emit<PowerCustomCheckableItemEvent>(
+          'power-custom-checkable-item',
+          {
+            payload: body,
+            params,
+          },
+          getResponse<PowerCustomCheckableItemEvent>(context),
+        );
+      });
 
     this.app
       .use(
