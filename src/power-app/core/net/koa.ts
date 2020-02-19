@@ -1,5 +1,6 @@
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
+import mount from 'koa-mount';
 import Router, {RouterContext} from 'koa-router';
 import _ from 'lodash';
 
@@ -18,16 +19,14 @@ import {
 } from './net';
 
 export class KoaAdapter extends AbstractNetAdapter {
-  private app = new Koa();
+  private app: Koa;
 
   constructor(...args: any[]) {
-    super(...args);
+    super(...args.slice(0, -1));
 
-    let {prefix} = this.options;
+    this.app = _.last(args) ?? new Koa();
 
-    prefix = prefix !== '/' ? prefix : undefined;
-
-    let router = new Router<unknown>({prefix});
+    let router = new Router<unknown>();
 
     router
       .all('*', async (context, next) => {
@@ -126,13 +125,19 @@ export class KoaAdapter extends AbstractNetAdapter {
         );
       });
 
-    this.app
+    let hookApp = new Koa();
+
+    let {path} = this.options;
+
+    hookApp
       .use(
         bodyParser({
           onerror: (_, context) => context.throw('body parse error', 422),
         }),
       )
       .use(router.routes());
+
+    this.app.use(mount(path, hookApp));
   }
 
   serve(): void {

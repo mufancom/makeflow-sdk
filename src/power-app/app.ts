@@ -1,4 +1,5 @@
 import {API as APITypes} from '@makeflow/types';
+import Koa from 'koa';
 import _ from 'lodash';
 import {
   compare,
@@ -80,6 +81,10 @@ export class PowerApp {
     this.start(options, KoaAdapter);
   }
 
+  koaWith(koa: Koa, options?: NetAdapterOptions): void {
+    this.start(options, KoaAdapter, koa);
+  }
+
   express(options?: NetAdapterOptions): void {
     this.start(options);
   }
@@ -107,14 +112,15 @@ export class PowerApp {
   }
 
   private start(
-    options?: NetAdapterOptions,
+    options: NetAdapterOptions = {},
     Adapter: Constructor<INetAdapter> = KoaAdapter,
+    app?: Koa,
   ): void {
     if (!this.checkVersionsQualified()) {
       return;
     }
 
-    this.netAdapter = new Adapter(this.options.source?.token, options);
+    this.netAdapter = new Adapter(this.options.source?.token, options, app);
 
     this.netAdapter
       .on('installation', this.handleInstallation)

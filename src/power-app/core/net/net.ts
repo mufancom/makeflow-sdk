@@ -8,18 +8,18 @@ import {Events, PowerGlanceEventParams, PowerItemEventParams} from './events';
 export interface INetAdapter extends NetAdapter {}
 
 export interface NetAdapterOptions {
+  path?: string;
   port?: number;
-  prefix?: string;
 }
 
-const DEFAULT_NET_OPTIONS: NetAdapterOptions = {
-  prefix: '/',
+const DEFAULT_NET_OPTIONS: Required<NetAdapterOptions> = {
+  path: '/',
   port: 3000,
 };
 
 abstract class NetAdapter extends EventEmitter {
-  protected get options(): NetAdapterOptions {
-    return this._options ?? DEFAULT_NET_OPTIONS;
+  protected get options(): Required<NetAdapterOptions> {
+    return {...DEFAULT_NET_OPTIONS, ...this._options};
   }
 
   constructor(
