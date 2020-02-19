@@ -19,17 +19,17 @@
     tslang "^0.1.9"
     tsutils "^2.28.0"
 
-"@makeflow/types-nominal@^0.1.1":
+"@makeflow/types-nominal@^0.1.0":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@makeflow/types-nominal/-/types-nominal-0.1.1.tgz#a0149046ec98de843fec6bb6176237e4589da7e3"
   integrity sha512-c6yHN9RLqlLvJt7gp2280sRLxXBu9RoGPaL9khUZ8c1opiEuVHK7IdgPizi3hM6HLL7J0O2lUpWSx/+hxX8Wbg==
   dependencies:
     tslang "^0.1.21"
 
-"@makeflow/types@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.1.tgz#a3cf2a4a00b79f9f709475a79dcc923d23c99851"
-  integrity sha512-iPAo3zTH0MgvyZdyhHPxfHuid4k0QG+KYDpZ0PLmTWJXVpmspnOSVnZjZZh6exELAklYGAo4XNB3PwIEffy7Qg==
+"@makeflow/types@^0.1.0":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.2.tgz#4e72092230b103f503cc0ed3279873be689bb8d5"
+  integrity sha512-pDJOpApi58LBIzVqecFoe8YEVtq30PNo9useS6F1G4XAlWFSIEnXH4KaexLXo43VugWUy8C3Gyp9t4xyU2X+Xg==
   dependencies:
     "@types/draft-js" "^0.10.38"
     tslang "^0.1.21"

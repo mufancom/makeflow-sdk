@@ -159,10 +159,15 @@ export class PowerApp {
   ): Promise<void> => {
     let responseData = {};
 
+    let {payload, type} = event;
+
     let installationStorage = await this.dbAdapter.getStorage<Installation>({
       type: 'installation',
-      ...event.payload,
+      installation: payload.installation,
     });
+
+    let prevConfigs = installationStorage.get('configs');
+    let nextConfigs = 'configs' in payload ? payload.configs : {};
 
     switch (event.type) {
       case 'activate':
@@ -185,6 +190,27 @@ export class PowerApp {
     }
 
     await this.dbAdapter.setStorage(installationStorage);
+
+    // TODO (boen): version where come from
+    let version = (payload as any).version ?? '0.1.0';
+
+    let result = getChangeAndMigrations<PowerAppVersion.Installation.Change>(
+      version,
+      undefined,
+      this.definitions,
+      getInstallationChange({type}),
+    );
+
+    if (result?.change) {
+      this.api.setSource(payload.source);
+      this.api.setAccessToken(installationStorage.get('accessToken'));
+
+      await result.change({
+        api: this.api,
+        prevConfigs,
+        nextConfigs,
+      });
+    }
 
     response(responseData);
   };
@@ -476,6 +502,14 @@ function matchVersionInfoIndex(
   throw Error('没有匹配的版本');
 }
 
+function getInstallationChange({
+  type,
+}: Pick<InstallationEvent['eventObject'], 'type'>): (
+  definition: PowerAppVersion.Definition,
+) => PowerAppVersion.Installation.Change | undefined {
+  return ({installation}) => installation?.[type];
+}
+
 function getPowerItemChange({
   name,
   type,
@@ -552,7 +586,7 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
   savedVersion: string | undefined,
   infos: PowerAppVersionInfo[],
   getChange: (definition: PowerAppVersion.Definition) => TChange | undefined,
-  getMigrations: (
+  getMigrations?: (
     type: keyof PowerAppVersion.Migrations<IStorageObject>,
     definitions: PowerAppVersion.Definition[],
   ) => PowerAppVersion.MigrationFunction<IStorageObject>[],
@@ -572,7 +606,7 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
 
   let change = getChange(definition);
 
-  if (!savedVersion || satisfies(savedVersion, range)) {
+  if (!savedVersion || !getMigrations || satisfies(savedVersion, range)) {
     return {
       change,
       migrations: [],

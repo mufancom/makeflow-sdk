@@ -13,6 +13,7 @@ import {
 
 export namespace PowerAppVersion {
   export interface Definition {
+    installation?: Installation.Definition;
     contributions: {
       powerItems?: {
         [key in string]: PowerItem.Definition;
@@ -27,6 +28,7 @@ export namespace PowerAppVersion {
   }
 
   export type Changes =
+    | Installation.Change
     | PowerItem.Change
     | PowerGlance.Change
     | PowerCustomCheckableItem.Change;
@@ -44,6 +46,24 @@ export namespace PowerAppVersion {
      * down 是把当前版本的数据降级成前一个版本
      */
     down?: MigrationFunction<TStorageObject>;
+  }
+
+  // installation
+
+  export namespace Installation {
+    export interface ChangeParams {
+      api: API;
+      prevConfigs: Dict<unknown>;
+      nextConfigs: Dict<unknown>;
+    }
+
+    export type Change = (params: ChangeParams) => Promise<void> | void;
+
+    export interface Definition {
+      activate?: Change;
+      update?: Change;
+      deactivate?: Change;
+    }
   }
 
   // power-item

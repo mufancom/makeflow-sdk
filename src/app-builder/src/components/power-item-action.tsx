@@ -11,7 +11,7 @@ export const PowerItemAction: FC<{
 
   let config = value;
 
-  let {displayName, name, inputs} = config;
+  let {displayName, name, inputs, target} = config;
 
   let onPartChange = (part: Partial<PowerItem.ActionDefinition>): void => {
     onChange({
@@ -55,6 +55,17 @@ export const PowerItemAction: FC<{
               onChange={({target: {value}}) =>
                 onPartChange({
                   displayName: value,
+                })
+              }
+            />
+          </Form.Item>
+          <Form.Item label="目标网页 (target)">
+            <Input
+              placeholder="target"
+              value={target}
+              onChange={({target: {value}}) =>
+                onPartChange({
+                  target: value,
                 })
               }
             />
