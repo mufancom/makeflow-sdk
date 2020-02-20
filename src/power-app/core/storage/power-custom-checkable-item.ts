@@ -15,6 +15,8 @@ export class PowerCustomCheckableItem extends AbstractStorageObject<
   PowerCustomCheckableItemDoc,
   PowerCustomCheckableItemStorage
 > {
+  token = this.originalDoc?.token;
+
   version = this.originalDoc?.version;
 
   setVersion(version: string): void {
@@ -25,13 +27,13 @@ export class PowerCustomCheckableItem extends AbstractStorageObject<
     this.doc.version = version;
   }
 
-  protected extractDocToStorage(
+  extractDocToStorage(
     doc: PowerCustomCheckableItemDoc,
   ): PowerCustomCheckableItemStorage {
     return doc.storage;
   }
 
-  protected mergeStorageToDoc(
+  mergeStorageToDoc(
     doc: PowerCustomCheckableItemDoc,
     storage: PowerCustomCheckableItemStorage,
   ): PowerCustomCheckableItemDoc {

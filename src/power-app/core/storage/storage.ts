@@ -157,9 +157,9 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
     this.initialize(doc);
   }
 
-  protected abstract extractDocToStorage(doc: TDoc): TStorage;
+  abstract extractDocToStorage(doc: TDoc): TStorage;
 
-  protected abstract mergeStorageToDoc(doc: TDoc, storage: TStorage): TDoc;
+  abstract mergeStorageToDoc(doc: TDoc, storage: TStorage): TDoc;
 
   private initialize(doc?: TDoc): void {
     if (doc) {

@@ -17,6 +17,8 @@ export class PowerGlance extends AbstractStorageObject<
   PowerGlanceDoc,
   PowerGlanceStorage
 > {
+  token = this.originalDoc?.token;
+
   version = this.originalDoc?.version;
 
   clock = this.originalDoc?.clock;
@@ -45,11 +47,11 @@ export class PowerGlance extends AbstractStorageObject<
     this.doc.clock = clock;
   }
 
-  protected extractDocToStorage(doc: PowerGlanceDoc): PowerGlanceStorage {
+  extractDocToStorage(doc: PowerGlanceDoc): PowerGlanceStorage {
     return doc.storage;
   }
 
-  protected mergeStorageToDoc(
+  mergeStorageToDoc(
     doc: PowerGlanceDoc,
     storage: PowerGlanceStorage,
   ): PowerGlanceDoc {

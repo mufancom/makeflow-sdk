@@ -13,11 +13,11 @@ export class Installation extends AbstractStorageObject<
   InstallationDoc,
   InstallationStorage
 > {
-  protected extractDocToStorage(doc: InstallationDoc): InstallationStorage {
+  extractDocToStorage(doc: InstallationDoc): InstallationStorage {
     return doc;
   }
 
-  protected mergeStorageToDoc(
+  mergeStorageToDoc(
     {source, organization, installation, team, ...rest}: InstallationDoc,
     storage: InstallationStorage,
   ): InstallationDoc {

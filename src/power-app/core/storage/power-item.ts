@@ -15,6 +15,8 @@ export class PowerItem extends AbstractStorageObject<
   PowerItemDoc,
   PowerItemStorage
 > {
+  token = this.originalDoc?.token;
+
   version = this.originalDoc?.version;
 
   setVersion(version: string): void {
@@ -25,11 +27,11 @@ export class PowerItem extends AbstractStorageObject<
     this.doc.version = version;
   }
 
-  protected extractDocToStorage(doc: PowerItemDoc): PowerItemStorage {
+  extractDocToStorage(doc: PowerItemDoc): PowerItemStorage {
     return doc.storage;
   }
 
-  protected mergeStorageToDoc(
+  mergeStorageToDoc(
     doc: PowerItemDoc,
     storage: PowerItemStorage,
   ): PowerItemDoc {
