@@ -1,57 +1,29 @@
-import {
-  Docs,
-  ExtractDoc,
-  IStorageObject,
-  Installation,
-  InstallationDoc,
-  PowerCustomCheckableItem,
-  PowerCustomCheckableItemDoc,
-  PowerGlance,
-  PowerGlanceDoc,
-  PowerItem,
-  PowerItemDoc,
-} from '../storage';
+import {Model, typeToModelDefinitionDict} from '../model';
+import {StorageObject} from '../storage';
 
 export interface IDBAdapter extends DBAdapter {}
+
+export type DefaultQueryType<TModel extends Model> = Partial<TModel> &
+  Required<{type: TModel['type']}>;
+
+export interface StorageQueryType<TModel extends Model> {
+  type: TModel['type'];
+  storage: TModel['storage'];
+}
+
+export interface StorageDefinitionInfo<TModel extends Model> {
+  primaryField: keyof TModel;
+  allowedFields: (keyof TModel)[];
+}
 
 abstract class DBAdapter {
   private readonly ready = this.initialize();
 
-  private readonly 'installation' = {
-    create: this.createInstallationDoc,
-    delete: this.deleteInstallationDoc,
-    update: this.updateInstallationDoc,
-    query: this.getInstallationDoc,
-    class: Installation,
-  };
-
-  private readonly 'power-item' = {
-    create: this.createPowerItemDoc,
-    delete: this.deletePowerItemDoc,
-    update: this.updatePowerItemDoc,
-    query: this.getPowerItemDoc,
-    class: PowerItem,
-  };
-
-  private readonly 'power-glance' = {
-    create: this.createPowerGlanceDoc,
-    delete: this.deletePowerGlanceDoc,
-    update: this.updatePowerGlanceDoc,
-    query: this.getPowerGlanceDoc,
-    class: PowerGlance,
-  };
-
-  private readonly 'power-custom-checkable-item' = {
-    create: this.createPowerCustomCheckableItemDoc,
-    delete: this.deletePowerCustomCheckableItemDoc,
-    update: this.updatePowerCustomCheckableItemDoc,
-    query: this.getPowerCustomCheckableItemDoc,
-    class: PowerCustomCheckableItem,
-  };
-
   constructor(protected options: unknown) {}
 
-  async setStorage(storage: IStorageObject): Promise<void> {
+  async setStorage<TModel extends Model>(
+    storage: StorageObject<TModel>,
+  ): Promise<void> {
     await this.ready;
 
     let result = storage.save();
@@ -60,106 +32,80 @@ abstract class DBAdapter {
       return;
     }
 
-    let type = 'docs' in result ? result.docs.old.type : result.doc.type;
+    switch (result.type) {
+      case 'create':
+        await this.createModel(result.model);
+        break;
 
-    let params = ('docs' in result
-      ? [result.docs.old, result.docs.new]
-      : [result.doc]) as any;
-
-    await this[type][result.type].apply(this, params);
+      case 'update': {
+        let {prev, next} = result.models;
+        await this.updateModel(prev, next);
+        break;
+      }
+      case 'delete':
+        await this.deleteModel(result.model);
+        break;
+    }
 
     storage.rebuild();
   }
 
-  async getStorage<
-    TStorageObject extends IStorageObject,
-    TDoc extends Docs = ExtractDoc<TStorageObject>
-  >(
-    query: Partial<TDoc> & Required<{type: TDoc['type']}>,
-  ): Promise<TStorageObject> {
+  async getStorage<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel>,
+  ): Promise<StorageObject<TModel>> {
     await this.ready;
 
-    let type: Docs['type'] = query.type;
+    let model = await this.getModel(partialModel);
 
-    return (new this[type].class(
-      await (this[type].query as any).call(this, query),
-    ) as unknown) as TStorageObject;
+    return new StorageObject(model);
+  }
+
+  async getStorageObjectsByStorage<TModel extends Model>(
+    partialModel: StorageQueryType<TModel>,
+  ): Promise<StorageObject<TModel>[]> {
+    await this.ready;
+
+    let models = await this.getModelList(partialModel);
+
+    return models.map(model => new StorageObject(model));
   }
 
   protected abstract initialize(): Promise<void>;
 
-  // Installation
+  protected abstract async getModel<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel>,
+  ): Promise<TModel | undefined>;
 
-  protected abstract async getInstallationDoc(
-    doc: Partial<InstallationDoc>,
-  ): Promise<InstallationDoc | undefined>;
+  protected abstract async getModelList<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel> | StorageQueryType<TModel>,
+  ): Promise<TModel[]>;
 
-  protected abstract async createInstallationDoc(
-    doc: InstallationDoc,
+  protected abstract async deleteModel<TModel extends Model>(
+    model: TModel,
   ): Promise<void>;
 
-  protected abstract async deleteInstallationDoc(
-    doc: Partial<InstallationDoc>,
+  protected abstract async createModel<TModel extends Model>(
+    model: TModel,
   ): Promise<void>;
 
-  protected abstract async updateInstallationDoc(
-    oDoc: InstallationDoc,
-    nDoc: InstallationDoc,
+  protected abstract async updateModel<TModel extends Model>(
+    prevModel: TModel,
+    nextModel: TModel,
   ): Promise<void>;
 
-  // PowerItem
+  protected getStorageDefinitionInfo<TModel extends Model>(
+    type: TModel['type'],
+  ): StorageDefinitionInfo<TModel> {
+    let definition = typeToModelDefinitionDict[type];
 
-  protected abstract async getPowerItemDoc(
-    doc: Partial<PowerItemDoc>,
-  ): Promise<PowerItemDoc | undefined>;
+    let primaryField = definition.primaryField as keyof TModel;
+    let allowedFields = definition.allowedFields as (keyof TModel)[];
 
-  protected abstract async createPowerItemDoc(doc: PowerItemDoc): Promise<void>;
-
-  protected abstract async deletePowerItemDoc(
-    doc: Partial<PowerItemDoc>,
-  ): Promise<void>;
-
-  protected abstract async updatePowerItemDoc(
-    oDoc: PowerItemDoc,
-    nDoc: PowerItemDoc,
-  ): Promise<void>;
-
-  // PowerGlance
-
-  protected abstract async getPowerGlanceDoc(
-    doc: Partial<PowerGlanceDoc>,
-  ): Promise<PowerGlanceDoc | undefined>;
-
-  protected abstract async createPowerGlanceDoc(
-    doc: PowerGlanceDoc,
-  ): Promise<void>;
-
-  protected abstract async deletePowerGlanceDoc(
-    doc: Partial<PowerGlanceDoc>,
-  ): Promise<void>;
-
-  protected abstract async updatePowerGlanceDoc(
-    oDoc: PowerGlanceDoc,
-    nDoc: PowerGlanceDoc,
-  ): Promise<void>;
-
-  // PowerCustomCheckableItem
-  protected abstract async getPowerCustomCheckableItemDoc(
-    doc: Partial<PowerCustomCheckableItemDoc>,
-  ): Promise<PowerCustomCheckableItemDoc | undefined>;
-
-  protected abstract async createPowerCustomCheckableItemDoc(
-    doc: PowerCustomCheckableItemDoc,
-  ): Promise<void>;
-
-  protected abstract async deletePowerCustomCheckableItemDoc(
-    doc: Partial<PowerCustomCheckableItemDoc>,
-  ): Promise<void>;
-
-  protected abstract async updatePowerCustomCheckableItemDoc(
-    oDoc: PowerCustomCheckableItemDoc,
-    nDoc: PowerCustomCheckableItemDoc,
-  ): Promise<void>;
+    return {
+      primaryField,
+      allowedFields: [...allowedFields, 'version'],
+    };
+  }
 }
 
 export const AbstractDBAdapter = DBAdapter;

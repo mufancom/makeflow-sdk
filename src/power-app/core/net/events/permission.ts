@@ -14,5 +14,7 @@ export interface PermissionGrantEventObject {
 
 export interface PermissionRevokeEventObject {
   type: 'revoke';
-  payload: API.PowerApp.PermissionRevokeHookParams;
+  payload: API.PowerApp.PermissionRevokeHookParams & {
+    accessToken: undefined;
+  };
 }

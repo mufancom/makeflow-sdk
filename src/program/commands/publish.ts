@@ -78,7 +78,7 @@ export default class extends Command {
 
 function loadDefinitionJSONSchema(): object {
   let schemaJSON = FS.readFileSync(
-    Path.join(__dirname, '../../power-app/schema.json'),
+    Path.join(__dirname, '../../power-app-schema/schema.json'),
     'utf-8',
   );
 

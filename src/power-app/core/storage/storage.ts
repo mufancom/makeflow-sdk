@@ -1,70 +1,48 @@
 import _ from 'lodash';
+import {Dict} from 'tslang';
 
-import {InstallationDoc, InstallationStorage} from './installation';
-import {
-  PowerCustomCheckableItemDoc,
-  PowerCustomCheckableItemStorage,
-} from './power-custom-checkable-item';
-import {PowerGlanceDoc, PowerGlanceStorage} from './power-glance';
-import {PowerItemDoc, PowerItemStorage} from './power-item';
-import {ExtractStorage} from './utils';
+import {Model, ModelToDefinition} from '../model';
 
-export interface ActionStorage<
-  TStorageObject extends IStorageObject = IStorageObject,
-  TStorage extends Storages = ExtractStorage<TStorageObject>,
-  TKey extends keyof TStorage = keyof TStorage
-> {
-  get: TStorageObject['get'];
-  set(...args: [TStorage] | [TKey, TStorage[TKey]]): Promise<void>;
-  merge(...args: Parameters<TStorageObject['merge']>): Promise<void>;
-}
-
-export type Docs =
-  | InstallationDoc
-  | PowerItemDoc
-  | PowerGlanceDoc
-  | PowerCustomCheckableItemDoc;
-
-export type Storages =
-  | InstallationStorage
-  | PowerItemStorage
-  | PowerGlanceStorage
-  | PowerCustomCheckableItemStorage;
-
-export interface IStorageObject<
-  TDoc extends Docs = Docs,
-  TStorage extends Storages = Storages
-> extends StorageObject<TDoc, TStorage> {}
-
-export type StorageSaveResult<TDoc extends Docs> =
-  | {type: 'create'; doc: TDoc}
-  | {type: 'delete'; doc: TDoc}
+type StorageSaveResult<TModel extends Model> =
+  | {type: 'create'; model: TModel}
+  | {type: 'delete'; model: TModel}
   | {
       type: 'update';
-      docs: {
-        old: TDoc;
-        new: TDoc;
+      models: {
+        prev: TModel;
+        next: TModel;
       };
     };
 
-abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
-  private storage: TStorage | undefined;
-  protected doc: TDoc | undefined;
+export class StorageObject<
+  TModel extends Model,
+  TStorage extends Dict<any> = Dict<any>
+> {
+  protected model: TModel | undefined;
+  private storage: Dict<any> | undefined;
+
+  get version(): string {
+    return this.originalModel?.version || this.model?.version || '';
+  }
 
   get created(): boolean {
-    return !!this.originalDoc;
+    return !!this.originalModel;
   }
 
-  constructor(protected originalDoc?: TDoc) {
-    this.initialize(originalDoc);
+  constructor(protected originalModel?: TModel) {
+    this.initialize(originalModel);
   }
 
-  get(): TStorage;
-  get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey];
-  get<TKey extends keyof TStorage>(
-    key?: TKey | undefined,
-  ): TStorage | TStorage[TKey] | undefined {
-    let storage = this.storage;
+  get<TTStorage extends Dict<any> = TStorage>(): TTStorage;
+  get<
+    TTStorage extends Dict<any> = TStorage,
+    TKey extends keyof TTStorage = keyof TTStorage
+  >(key: TKey): TTStorage[TKey];
+  get<
+    TTStorage extends Dict<any> = TStorage,
+    TKey extends keyof TTStorage = keyof TTStorage
+  >(key?: TKey | undefined): TTStorage | TTStorage[TKey] | undefined {
+    let storage = this.storage as TTStorage | undefined;
 
     if (!storage) {
       return undefined;
@@ -77,20 +55,29 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
     return storage[key];
   }
 
-  set(storage: TStorage): void;
-  set<TKey extends keyof TStorage>(key: TKey, value: TStorage[TKey]): void;
-  set<TKey extends keyof TStorage>(
-    storageOrKey: TStorage | TKey,
-    value?: TStorage[TKey],
-  ): void {
+  set<TTStorage extends Dict<any> = TStorage>(storage: TTStorage): void;
+  set<
+    TTStorage extends Dict<any> = TStorage,
+    TKey extends keyof TTStorage = keyof TTStorage
+  >(key: TKey, value: TTStorage[TKey]): void;
+  set<
+    TTStorage extends Dict<any> = TStorage,
+    TKey extends keyof TTStorage = keyof TTStorage
+  >(storageOrKey: TTStorage | TKey, value?: TTStorage[TKey]): void {
     if (typeof storageOrKey === 'object') {
       this.storage = storageOrKey;
-    } else if (this.storage) {
+    } else if (
+      this.storage &&
+      storageOrKey &&
+      typeof storageOrKey === 'string'
+    ) {
       this.storage[storageOrKey] = value!;
     }
   }
 
-  merge(storage: Partial<TStorage>): void {
+  merge<TTStorage extends Dict<any> = TStorage>(
+    storage: Partial<TTStorage>,
+  ): void {
     if (!this.storage) {
       return;
     }
@@ -101,49 +88,79 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
     };
   }
 
-  create(doc: TDoc): void {
-    if (this.originalDoc) {
+  create(model: TModel): void {
+    if (this.originalModel) {
       return;
     }
 
-    this.initialize(doc);
+    this.initialize(model);
   }
 
   delete(): void {
-    this.doc = undefined;
+    this.model = undefined;
   }
 
-  save(): StorageSaveResult<TDoc> | undefined {
-    let originalDoc = this.originalDoc;
-    let doc = this.doc;
+  getField(key: ModelToDefinition<TModel>['allowedFields'][number]): any {
+    let model = this.model;
 
-    if (originalDoc) {
-      if (!doc) {
+    return model?.[(key as unknown) as keyof TModel];
+  }
+
+  setField(
+    key: ModelToDefinition<TModel>['allowedFields'][number],
+    value: any,
+  ): this {
+    let model = this.model;
+
+    if (!model) {
+      return this;
+    }
+
+    model[(key as unknown) as keyof TModel] = value;
+
+    return this;
+  }
+
+  upgrade(version: string): void {
+    let model = this.model;
+
+    if (!model) {
+      return;
+    }
+
+    model.version = version;
+  }
+
+  save(): StorageSaveResult<TModel> | undefined {
+    let storage = this.storage;
+    let originalModel = this.originalModel;
+    let model = this.model;
+
+    if (originalModel) {
+      if (!model) {
         return {
           type: 'delete',
-          doc: originalDoc,
+          model: originalModel,
         };
       }
 
-      doc = this.mergeStorageToDoc(doc, this.storage!);
+      model.storage = storage;
 
-      if (_.isEqual(originalDoc, doc)) {
+      if (_.isEqual(originalModel, model)) {
         return undefined;
       }
 
-      this.doc = doc;
-
       return {
         type: 'update',
-        docs: {
-          old: originalDoc,
-          new: doc,
+        models: {
+          prev: originalModel,
+          next: model,
         },
       };
-    } else if (doc) {
+    } else if (model) {
       return {
         type: 'create',
-        doc: this.mergeStorageToDoc(doc, this.storage!),
+        model,
       };
     }
 
@@ -151,25 +168,19 @@ abstract class StorageObject<TDoc extends Docs, TStorage extends Storages> {
   }
 
   rebuild(): void {
-    let doc = this.doc;
+    let model = this.model;
+    this.originalModel = model;
 
-    this.originalDoc = doc;
-    this.initialize(doc);
+    this.initialize(model);
   }
 
-  abstract extractDocToStorage(doc: TDoc): TStorage;
-
-  abstract mergeStorageToDoc(doc: TDoc, storage: TStorage): TDoc;
-
-  private initialize(doc?: TDoc): void {
-    if (doc) {
-      this.storage = _.cloneDeep(this.extractDocToStorage(doc));
-      this.doc = _.cloneDeep(doc);
+  private initialize(model?: TModel): void {
+    if (model) {
+      this.storage = _.cloneDeep(model);
+      this.model = _.cloneDeep(model);
     } else {
       this.storage = undefined;
-      this.doc = undefined;
+      this.model = undefined;
     }
   }
 }
-
-export const AbstractStorageObject = StorageObject;

@@ -4,12 +4,12 @@ import {Dict} from 'tslang';
 import {API} from '../api';
 
 import {
-  ActionStorage,
-  IStorageObject,
-  PowerCustomCheckableItem as PowerCustomCheckableItemObject,
-  PowerGlance as PowerGlanceStorageObject,
-  PowerItem as PowerItemStorageObject,
-} from './storage';
+  Model,
+  PowerCustomCheckableItemModel,
+  PowerGlanceModel,
+  PowerItemModel,
+} from './model';
+import {ActionStorage} from './storage';
 
 export namespace PowerAppVersion {
   export interface Definition {
@@ -33,19 +33,19 @@ export namespace PowerAppVersion {
     | PowerGlance.Change
     | PowerCustomCheckableItem.Change;
 
-  export type MigrationFunction<TStorageObject extends IStorageObject> = (
-    storage: ActionStorage<TStorageObject>,
+  export type MigrationFunction<TModel extends Model> = (
+    storage: ActionStorage<TModel>,
   ) => Promise<void> | void;
 
-  export interface Migrations<TStorageObject extends IStorageObject> {
+  export interface Migrations<TModel extends Model> {
     /**
      * up 是把前一个版本的数据升级成当前版本
      */
-    up?: MigrationFunction<TStorageObject>;
+    up?: MigrationFunction<TModel>;
     /**
      * down 是把当前版本的数据降级成前一个版本
      */
-    down?: MigrationFunction<TStorageObject>;
+    down?: MigrationFunction<TModel>;
   }
 
   // installation
@@ -70,7 +70,7 @@ export namespace PowerAppVersion {
 
   export namespace PowerItem {
     export interface ChangeParams {
-      storage: ActionStorage<PowerItemStorageObject>;
+      storage: ActionStorage<PowerItemModel>;
       api: API;
       inputs: Dict<unknown>;
       configs: Dict<unknown>;
@@ -89,7 +89,7 @@ export namespace PowerAppVersion {
       action?: {
         [key in string]: Change;
       };
-      migrations?: Migrations<PowerItemStorageObject>;
+      migrations?: Migrations<PowerItemModel>;
     }
   }
 
@@ -97,7 +97,7 @@ export namespace PowerAppVersion {
 
   export namespace PowerGlance {
     export interface ChangeParams {
-      storage: ActionStorage<PowerGlanceStorageObject>;
+      storage: ActionStorage<PowerGlanceModel>;
       api: API;
       resources: APITypes.PowerGlance.ResourceEntry[];
       configs: Dict<unknown>;
@@ -114,7 +114,7 @@ export namespace PowerAppVersion {
       initialize?: Change;
       change?: Change;
       dispose?: Change;
-      migrations?: Migrations<PowerGlanceStorageObject>;
+      migrations?: Migrations<PowerGlanceModel>;
     }
   }
 
@@ -122,7 +122,7 @@ export namespace PowerAppVersion {
 
   export namespace PowerCustomCheckableItem {
     export interface ChangeParams {
-      storage: ActionStorage<PowerCustomCheckableItemObject>;
+      storage: ActionStorage<PowerCustomCheckableItemModel>;
       context: APITypes.PowerCustomCheckableItem.HookContext;
       api: API;
       inputs: Dict<unknown>;
@@ -139,7 +139,7 @@ export namespace PowerAppVersion {
     export type Definition =
       | {
           processor?: Change;
-          migrations?: Migrations<PowerItemStorageObject>;
+          migrations?: Migrations<PowerCustomCheckableItemModel>;
         }
       | Change;
   }

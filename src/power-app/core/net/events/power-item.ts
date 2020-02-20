@@ -31,7 +31,10 @@ export interface PowerItemActivateEventObject {
 }
 
 export interface PowerItemDeactivateEventObject {
-  payload: API.PowerItem.DeactivateHookParams;
+  payload: API.PowerItem.DeactivateHookParams & {
+    inputs: undefined;
+    configs: undefined;
+  };
 }
 
 export interface PowerItemUpdateEventObject {

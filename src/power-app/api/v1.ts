@@ -252,7 +252,12 @@ export class API {
       throw new Error('ACCESS_TOKEN_IS_REQUIRED');
     }
 
-    let baseURL = source?.url ?? '';
+    let baseURL = source?.url;
+
+    if (!baseURL) {
+      throw new Error('BASE_URL_IS_REQUIRED');
+    }
+
     let version = this.version;
 
     if (typeof body === 'object' && type === JSON_CONTENT_TYPE) {

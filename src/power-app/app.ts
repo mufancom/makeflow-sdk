@@ -13,28 +13,30 @@ import {Constructor} from 'tslang';
 
 import {API} from './api';
 import {
+  ActionStorage,
   IDBAdapter,
   INetAdapter,
-  IStorageObject,
-  Installation,
   InstallationEvent,
+  InstallationModel,
   KoaAdapter,
   LowdbAdapter,
   LowdbOptions,
+  Model,
   MongoAdapter,
   MongoOptions,
   NetAdapterOptions,
   PermissionEvent,
   PowerAppVersion,
-  PowerCustomCheckableItem,
   PowerCustomCheckableItemEvent,
   PowerCustomCheckableItemEventParams,
-  PowerGlance,
+  PowerCustomCheckableItemModel,
   PowerGlanceEvent,
   PowerGlanceEventParams,
-  PowerItem,
+  PowerGlanceModel,
   PowerItemEvent,
   PowerItemEventParams,
+  PowerItemModel,
+  StorageObject,
   getActionStorage,
 } from './core';
 
@@ -56,7 +58,7 @@ export class PowerApp {
   private netAdapter!: INetAdapter;
   private dbAdapter!: IDBAdapter;
 
-  private api!: API;
+  api!: API;
 
   constructor(private options: PowerAppOptions = {}) {
     this.initialize();
@@ -91,6 +93,29 @@ export class PowerApp {
 
   hapi(options?: NetAdapterOptions): void {
     this.start(options);
+  }
+
+  async emitChanges<TModel extends Model = Model>(
+    type: TModel['type'],
+    storage: TModel['storage'],
+    change: (params: {
+      storage: ActionStorage<TModel>;
+      api: API;
+    }) => Promise<void>,
+  ): Promise<void> {
+    let db = this.dbAdapter;
+    let api = this.api;
+
+    let storages: StorageObject<TModel>[] = await db.getStorageObjectsByStorage<
+      TModel
+    >({
+      type,
+      storage,
+    });
+
+    for (let storage of storages) {
+      await change({storage: getActionStorage(storage, db), api});
+    }
   }
 
   private initialize(): void {
@@ -167,7 +192,9 @@ export class PowerApp {
 
     let {payload, type} = event;
 
-    let installationStorage = await this.dbAdapter.getStorage<Installation>({
+    let installationStorage = await this.dbAdapter.getStorage<
+      InstallationModel
+    >({
       type: 'installation',
       installation: payload.installation,
     });
@@ -175,15 +202,35 @@ export class PowerApp {
     let prevConfigs = installationStorage.get('configs');
     let nextConfigs = 'configs' in payload ? payload.configs : {};
 
+    let {
+      team,
+      configs,
+      resources,
+      source,
+      organization,
+      installation,
+      // TODO (boen): waiting makeflow app version
+      version = '0.1.0',
+    } = event.payload as any;
+
     switch (event.type) {
       case 'activate':
       case 'update': {
         if (installationStorage.created) {
-          installationStorage.merge(event.payload);
+          installationStorage
+            .setField('configs', configs)
+            .setField('resources', resources);
         } else {
           installationStorage.create({
             type: 'installation',
-            ...event.payload,
+            team,
+            configs,
+            resources,
+            source,
+            organization,
+            installation,
+            version,
+            storage: {},
           });
         }
 
@@ -195,10 +242,9 @@ export class PowerApp {
       }
     }
 
-    await this.dbAdapter.setStorage(installationStorage);
+    installationStorage.upgrade(version);
 
-    // TODO (boen): version where come from
-    let version = (payload as any).version ?? '0.1.0';
+    await this.dbAdapter.setStorage(installationStorage);
 
     let result = getChangeAndMigrations<PowerAppVersion.Installation.Change>(
       version,
@@ -226,10 +272,13 @@ export class PowerApp {
     response: PermissionEvent['response'],
   ): Promise<void> => {
     let responseData = {};
+    let {installation, accessToken} = event.payload;
 
-    let installationStorage = await this.dbAdapter.getStorage<Installation>({
+    let installationStorage = await this.dbAdapter.getStorage<
+      InstallationModel
+    >({
       type: 'installation',
-      ...event.payload,
+      installation,
     });
 
     if (!installationStorage.created) {
@@ -237,19 +286,8 @@ export class PowerApp {
       return;
     }
 
-    switch (event.type) {
-      case 'grant': {
-        let accessToken = event.payload.accessToken;
-
-        installationStorage.set('accessToken', accessToken);
-        this.api.setAccessToken(accessToken);
-        break;
-      }
-      case 'revoke':
-        installationStorage.set('accessToken', undefined);
-        this.api.setAccessToken(undefined);
-        break;
-    }
+    installationStorage.setField('accessToken', accessToken);
+    this.api.setAccessToken(accessToken);
 
     await this.dbAdapter.setStorage(installationStorage);
 
@@ -262,15 +300,21 @@ export class PowerApp {
   ): Promise<void> => {
     let {params, payload} = event;
 
-    let {token, source} = payload;
+    let {
+      token,
+      source,
+      organization,
+      installation,
+      inputs = {},
+      configs = {},
+      // TODO (boen): waiting makeflow app version
+      version = '0.1.0',
+    } = payload as any;
 
-    let storage = await this.dbAdapter.getStorage<PowerItem>({
+    let storage = await this.dbAdapter.getStorage<PowerItemModel>({
       type: 'power-item',
       token,
     });
-
-    // TODO (boen): version where come from
-    let version = (payload as any).version ?? '0.1.0';
 
     let result = getChangeAndMigrations<PowerAppVersion.PowerItem.Change>(
       version,
@@ -295,7 +339,10 @@ export class PowerApp {
     } else {
       storage.create({
         type: 'power-item',
-        token: payload.token,
+        source,
+        organization,
+        installation,
+        token,
         version,
         storage: {},
       });
@@ -304,9 +351,6 @@ export class PowerApp {
     let responseData: PowerAppVersion.PowerItem.ChangeResponseData | void;
 
     if (change) {
-      let inputs = 'inputs' in payload ? payload.inputs : {};
-      let configs = 'configs' in payload ? payload.configs : {};
-
       this.api.setSource(source);
       this.api.setResourceToken(token);
 
@@ -318,7 +362,7 @@ export class PowerApp {
       });
     }
 
-    storage.setVersion(version);
+    storage.upgrade(version);
 
     await this.dbAdapter.setStorage(storage);
 
@@ -333,19 +377,20 @@ export class PowerApp {
 
     let {
       token,
-      clock,
       source,
+      organization,
+      installation,
+      clock,
       resources = [],
       configs = {},
-    } = payload as APITypes.PowerGlance.UpdateHookParams;
+      // TODO (boen): waiting makeflow app version
+      version = '0.1.0',
+    } = payload as any;
 
-    let storage = await this.dbAdapter.getStorage<PowerGlance>({
+    let storage = await this.dbAdapter.getStorage<PowerGlanceModel>({
       type: 'power-glance',
       token,
     });
-
-    // TODO (boen): version where come from
-    let version = (payload as any).version ?? '0.1.0';
 
     let result = getChangeAndMigrations<PowerAppVersion.PowerGlance.Change>(
       version,
@@ -368,7 +413,7 @@ export class PowerApp {
 
     if (storage.created) {
       if (params.type === 'change') {
-        let prevClock = Number(storage.clock);
+        let prevClock = Number(storage.getField('clock'));
 
         if (prevClock + 1 !== clock) {
           //  reinitialize
@@ -384,7 +429,7 @@ export class PowerApp {
           }
         }
 
-        storage.setClock(clock);
+        storage.setField('clock', clock);
       }
 
       for (let migration of migrations) {
@@ -393,6 +438,9 @@ export class PowerApp {
     } else {
       storage.create({
         type: 'power-glance',
+        source,
+        organization,
+        installation,
         token: payload.token,
         clock,
         version,
@@ -412,8 +460,8 @@ export class PowerApp {
       });
     }
 
-    storage.setDisposed(params.type === 'dispose');
-    storage.setVersion(version);
+    storage.setField('disposed', params.type === 'dispose');
+    storage.upgrade(version);
 
     await this.dbAdapter.setStorage(storage);
 
@@ -426,15 +474,24 @@ export class PowerApp {
   ): Promise<void> => {
     let {params, payload} = event;
 
-    let {token, source} = payload;
+    let {
+      token,
+      source,
+      organization,
+      installation,
+      inputs = {},
+      configs = {},
+      context,
+      // TODO (boen): waiting makeflow app version
+      version = '0.1.0',
+    } = payload as any;
 
-    let storage = await this.dbAdapter.getStorage<PowerCustomCheckableItem>({
+    let storage = await this.dbAdapter.getStorage<
+      PowerCustomCheckableItemModel
+    >({
       type: 'power-custom-checkable-item',
       token,
     });
-
-    // TODO (boen): version where come from
-    let version = (payload as any).version ?? '0.1.0';
 
     let result = getChangeAndMigrations<
       PowerAppVersion.PowerCustomCheckableItem.Change
@@ -461,7 +518,10 @@ export class PowerApp {
     } else {
       storage.create({
         type: 'power-custom-checkable-item',
-        token: payload.token,
+        source,
+        organization,
+        installation,
+        token,
         version,
         storage: {},
       });
@@ -470,8 +530,6 @@ export class PowerApp {
     let responseData: PowerAppVersion.PowerCustomCheckableItem.ChangeResponseData | void;
 
     if (change) {
-      let {inputs, context, configs = {}} = payload;
-
       this.api.setSource(source);
       this.api.setResourceToken(token);
 
@@ -484,7 +542,7 @@ export class PowerApp {
       });
     }
 
-    storage.setVersion(version);
+    storage.upgrade(version);
 
     await this.dbAdapter.setStorage(storage);
 
@@ -575,9 +633,9 @@ function getMigrations({
   | PowerItemEventParams
   | PowerGlanceEventParams
   | PowerCustomCheckableItemEventParams): (
-  type: keyof PowerAppVersion.Migrations<IStorageObject>,
+  type: keyof PowerAppVersion.Migrations<Model>,
   definitions: PowerAppVersion.Definition[],
-) => PowerAppVersion.MigrationFunction<IStorageObject>[] {
+) => PowerAppVersion.MigrationFunction<Model>[] {
   return (type, definitions) =>
     _.compact(
       definitions.map(
@@ -593,13 +651,13 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
   infos: PowerAppVersionInfo[],
   getChange: (definition: PowerAppVersion.Definition) => TChange | undefined,
   getMigrations?: (
-    type: keyof PowerAppVersion.Migrations<IStorageObject>,
+    type: keyof PowerAppVersion.Migrations<Model>,
     definitions: PowerAppVersion.Definition[],
-  ) => PowerAppVersion.MigrationFunction<IStorageObject>[],
+  ) => PowerAppVersion.MigrationFunction<Model>[],
 ):
   | {
       change: TChange | undefined;
-      migrations: PowerAppVersion.MigrationFunction<IStorageObject>[];
+      migrations: PowerAppVersion.MigrationFunction<Model>[];
     }
   | undefined {
   if (!comingVersion) {

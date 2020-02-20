@@ -2,36 +2,15 @@ import _ from 'lodash';
 import {
   Collection,
   Db,
+  FilterQuery,
   MongoClient,
-  ObjectId,
   OnlyFieldsOfType,
   UpdateQuery,
 } from 'mongodb';
 
-import {
-  Docs,
-  InstallationDoc,
-  PowerCustomCheckableItemDoc,
-  PowerGlanceDoc,
-  PowerItemDoc,
-} from '../storage';
+import {Model} from '../model';
 
-import {AbstractDBAdapter} from './db';
-
-interface IDocument {
-  _id: ObjectId;
-}
-
-interface NameToDocs {
-  installation: InstallationDoc;
-  'power-item': PowerItemDoc;
-  'power-glance': PowerGlanceDoc;
-  'power-custom-checkable-item': PowerCustomCheckableItemDoc;
-}
-
-type NameToCollectionDocumentSchemaDict = {
-  [TKey in keyof NameToDocs]: NameToDocs[TKey] & IDocument;
-};
+import {AbstractDBAdapter, DefaultQueryType} from './db';
 
 export interface MongoOptions {
   uri: string;
@@ -57,239 +36,111 @@ export class MongoAdapter extends AbstractDBAdapter {
     this.db = client.db(name);
   }
 
-  protected async getInstallationDoc({
-    installation,
-    organization,
-    team,
-  }: Partial<InstallationDoc>): Promise<InstallationDoc | undefined> {
-    let collection = this.getCollection('installation');
+  protected async getModel<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel>,
+  ): Promise<TModel | undefined> {
+    let {primaryField} = this.getStorageDefinitionInfo(partialModel.type);
 
-    if (!installation || !organization || !team) {
-      return undefined;
-    }
+    let model = await this.getCollection<TModel>(partialModel).findOne({
+      [primaryField]: partialModel[primaryField],
+    } as FilterQuery<TModel>);
 
-    let doc = await collection.findOne({
-      installation,
-      organization,
-      team,
-    });
-
-    return doc ? doc : undefined;
+    return model ?? undefined;
   }
 
-  protected async createInstallationDoc(doc: InstallationDoc): Promise<void> {
-    let collection = this.getCollection('installation');
-    await collection.insertOne(doc);
+  protected async getModelList<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel>,
+  ): Promise<TModel[]> {
+    return this.getCollection<TModel>(partialModel)
+      .find(getDictFilterQuery(partialModel))
+      .toArray();
   }
 
-  protected async deleteInstallationDoc({
-    installation,
-    organization,
-    team,
-  }: Partial<InstallationDoc>): Promise<void> {
-    let collection = this.getCollection('installation');
-
-    if (!installation || !organization || !team) {
-      return;
-    }
-
-    await collection.deleteOne({
-      installation,
-      organization,
-      team,
-    });
-  }
-
-  protected async updateInstallationDoc(
-    {installation, organization, team}: InstallationDoc,
-    nDoc: InstallationDoc,
+  protected async deleteModel<TModel extends Model>(
+    model: TModel,
   ): Promise<void> {
-    let collection = this.getCollection('installation');
+    let {primaryField} = this.getStorageDefinitionInfo(model.type);
+    await this.getCollection<TModel>(model).deleteOne({
+      [primaryField]: model[primaryField],
+    } as FilterQuery<TModel>);
+  }
 
-    await collection.updateOne(
+  protected async createModel<TModel extends Model>(
+    model: TModel,
+  ): Promise<void> {
+    await this.getCollection<TModel>(model).insertOne(model as any);
+  }
+
+  protected async updateModel<TModel extends Model>(
+    prevModel: TModel,
+    nextModel: TModel,
+  ): Promise<void> {
+    let {primaryField, allowedFields} = this.getStorageDefinitionInfo<TModel>(
+      prevModel.type,
+    );
+
+    await this.getCollection<TModel>(prevModel).updateOne(
       {
-        installation,
-        organization,
-        team,
-      },
-      getUpdateQuery(nDoc),
+        [primaryField]: prevModel[primaryField],
+      } as FilterQuery<TModel>,
+      getUpdateQuery({
+        ..._.pick(nextModel, allowedFields),
+        storage: nextModel.storage,
+      }),
     );
   }
 
-  protected async getPowerItemDoc({
-    token,
-  }: Partial<PowerItemDoc>): Promise<PowerItemDoc | undefined> {
-    if (!token) {
-      return undefined;
-    }
-
-    let collection = this.getCollection('power-item');
-
-    let doc = await collection.findOne({token});
-
-    return doc ? doc : undefined;
-  }
-
-  protected async createPowerItemDoc(doc: PowerItemDoc): Promise<void> {
-    let collection = this.getCollection('power-item');
-    await collection.insertOne(doc);
-  }
-
-  protected async deletePowerItemDoc({
-    token,
-  }: Partial<PowerItemDoc>): Promise<void> {
-    let collection = this.getCollection('power-item');
-
-    if (!token) {
-      return;
-    }
-
-    await collection.deleteOne({token});
-  }
-
-  protected async updatePowerItemDoc(
-    {token}: PowerItemDoc,
-    {storage, version}: PowerItemDoc,
-  ): Promise<void> {
-    let collection = this.getCollection('power-item');
-
-    await collection.updateOne(
-      {
-        token,
-      },
-      {
-        $set: {
-          version,
-          storage,
-        },
-      },
-    );
-  }
-
-  protected async getPowerGlanceDoc({
-    token,
-  }: Partial<PowerGlanceDoc>): Promise<PowerGlanceDoc | undefined> {
-    if (!token) {
-      return undefined;
-    }
-
-    let collection = this.getCollection('power-glance');
-
-    let doc = await collection.findOne({token});
-
-    return doc ? doc : undefined;
-  }
-
-  protected async createPowerGlanceDoc(doc: PowerGlanceDoc): Promise<void> {
-    let collection = this.getCollection('power-glance');
-    await collection.insertOne(doc);
-  }
-
-  protected async deletePowerGlanceDoc({
-    token,
-  }: Partial<PowerGlanceDoc>): Promise<void> {
-    let collection = this.getCollection('power-glance');
-
-    if (!token) {
-      return;
-    }
-
-    await collection.deleteOne({token});
-  }
-
-  protected async updatePowerGlanceDoc(
-    {token}: PowerGlanceDoc,
-    {storage, version, clock, disposed}: PowerGlanceDoc,
-  ): Promise<void> {
-    let collection = this.getCollection('power-glance');
-
-    await collection.updateOne(
-      {
-        token,
-      },
-      {
-        $set: {
-          storage,
-          version,
-          clock,
-          disposed,
-        },
-      },
-    );
-  }
-
-  protected async getPowerCustomCheckableItemDoc({
-    token,
-  }: Partial<PowerCustomCheckableItemDoc>): Promise<
-    PowerCustomCheckableItemDoc | undefined
-  > {
-    if (!token) {
-      return undefined;
-    }
-
-    let collection = this.getCollection('power-custom-checkable-item');
-
-    let doc = await collection.findOne({token});
-
-    return doc ? doc : undefined;
-  }
-
-  protected async createPowerCustomCheckableItemDoc(
-    doc: PowerCustomCheckableItemDoc,
-  ): Promise<void> {
-    let collection = this.getCollection('power-custom-checkable-item');
-    await collection.insertOne(doc);
-  }
-
-  protected async deletePowerCustomCheckableItemDoc({
-    token,
-  }: Partial<PowerCustomCheckableItemDoc>): Promise<void> {
-    let collection = this.getCollection('power-custom-checkable-item');
-
-    if (!token) {
-      return;
-    }
-
-    await collection.deleteOne({token});
-  }
-
-  protected async updatePowerCustomCheckableItemDoc(
-    {token}: PowerCustomCheckableItemDoc,
-    {storage, version}: PowerCustomCheckableItemDoc,
-  ): Promise<void> {
-    let collection = this.getCollection('power-custom-checkable-item');
-
-    await collection.updateOne(
-      {
-        token,
-      },
-      {
-        $set: {
-          storage,
-          version,
-        },
-      },
-    );
-  }
-
-  private getCollection<TName extends keyof NameToCollectionDocumentSchemaDict>(
-    name: TName,
-  ): Collection<NameToCollectionDocumentSchemaDict[TName]> {
-    return this.db.collection(name);
+  private getCollection<TModel extends Model>({
+    type,
+  }: {
+    type: TModel['type'];
+  }): Collection<TModel> {
+    return this.db.collection(type);
   }
 }
 
-function getUpdateQuery<TDoc extends Docs>(doc: TDoc): UpdateQuery<TDoc> {
+function getDictFilterQuery<TModel extends Model>(
+  doc: DefaultQueryType<TModel> | TModel,
+): FilterQuery<Model> {
+  function isObject(obj: unknown): obj is object {
+    return _.isObjectLike(obj);
+  }
+
+  let query: FilterQuery<any> = {};
+
+  for (let [key, value] of Object.entries(doc)) {
+    if (!isObject(value)) {
+      query[key] = value;
+      continue;
+    }
+
+    query = {
+      ...query,
+      ..._.fromPairs(
+        Object.entries(value).map(([property, value]) => [
+          `${key}.${property}`,
+          value,
+        ]),
+      ),
+    };
+  }
+
+  return query;
+}
+
+function getUpdateQuery<TModel extends Model>(
+  model: Partial<TModel>,
+): UpdateQuery<TModel> {
   let unset = _.fromPairs(
-    _.toPairsIn(_.pickBy(doc, _.isUndefined)).map(([key]) => [key, '']),
+    _.toPairsIn(_.pickBy(model, _.isUndefined)).map(([key]) => [key, '']),
   );
 
   return {
-    $set: doc,
+    $set: model,
     ...((!_.isEmpty(unset)
       ? {
           $unset: unset,
         }
-      : {}) as OnlyFieldsOfType<TDoc, any, ''>),
+      : {}) as OnlyFieldsOfType<TModel, any, ''>),
   };
 }

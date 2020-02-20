@@ -1,25 +1,18 @@
+import {CollectionChain} from 'lodash';
 import lowdb, {LowdbSync} from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
 
-import {
-  InstallationDoc,
-  PowerCustomCheckableItemDoc,
-  PowerGlanceDoc,
-  PowerItemDoc,
-} from '../storage';
+import {Model} from '../model';
 
-import {AbstractDBAdapter} from './db';
+import {AbstractDBAdapter, DefaultQueryType} from './db';
 
 export interface LowdbOptions {
   file?: string;
 }
 
-interface Schema {
-  installation: InstallationDoc[];
-  'power-item': PowerItemDoc[];
-  'power-glance': PowerGlanceDoc[];
-  'power-custom-checkable-item': PowerCustomCheckableItemDoc[];
-}
+type Schema<TModel extends Model = Model> = {
+  [key in TModel['type']]: TModel[];
+};
 
 export class LowdbAdapter extends AbstractDBAdapter {
   private db!: LowdbSync<Schema>;
@@ -43,164 +36,68 @@ export class LowdbAdapter extends AbstractDBAdapter {
       .write();
   }
 
-  protected async getInstallationDoc({
-    installation,
-  }: Partial<InstallationDoc>): Promise<InstallationDoc | undefined> {
-    return this.db
-      .get('installation')
-      .find({installation})
-      .value();
+  protected async getModel<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel>,
+  ): Promise<TModel | undefined> {
+    let {primaryField} = this.getStorageDefinitionInfo(partialModel.type);
+
+    return this.getCollection(partialModel)
+      .find({[primaryField]: partialModel[primaryField]})
+      .value() as TModel | undefined;
   }
 
-  protected async createInstallationDoc(doc: InstallationDoc): Promise<void> {
-    await this.db
-      .get('installation')
-      .push(doc)
-      .write();
+  protected async getModelList<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel>,
+  ): Promise<TModel[]> {
+    return this.getCollection(partialModel)
+      .filter(partialModel as any)
+      .value() as TModel[];
   }
 
-  protected async deleteInstallationDoc({
-    installation,
-  }: Partial<InstallationDoc>): Promise<void> {
-    await this.db
-      .get('installation')
-      .remove({
-        installation,
-      })
-      .write();
-  }
-
-  protected async updateInstallationDoc(
-    {installation}: InstallationDoc,
-    nDoc: InstallationDoc,
+  protected async deleteModel<TModel extends Model>(
+    model: TModel,
   ): Promise<void> {
-    await this.db
-      .get('installation')
-      .find({installation})
-      .assign(nDoc)
+    let {primaryField} = this.getStorageDefinitionInfo(model.type);
+
+    await this.getCollection(model)
+      .remove({[primaryField]: model[primaryField]})
       .write();
   }
 
-  protected async getPowerItemDoc({
-    token,
-  }: Partial<PowerItemDoc>): Promise<PowerItemDoc | undefined> {
-    return this.db
-      .get('power-item')
-      .find({token})
-      .value();
-  }
-
-  protected async createPowerItemDoc(doc: PowerItemDoc): Promise<void> {
-    await this.db
-      .get('power-item')
-      .push(doc)
-      .write();
-  }
-
-  protected async deletePowerItemDoc({
-    token,
-  }: Partial<PowerItemDoc>): Promise<void> {
-    await this.db
-      .get('power-item')
-      .remove({
-        token,
-      })
-      .write();
-  }
-
-  protected async updatePowerItemDoc(
-    {token}: PowerItemDoc,
-    {storage, version}: PowerItemDoc,
+  protected async createModel<TModel extends Model>(
+    model: TModel,
   ): Promise<void> {
-    await this.db
-      .get('power-item')
-      .find({token})
-      .set('storage', storage)
-      .set('version', version)
+    await this.getCollection(model)
+      .push(model)
       .write();
   }
 
-  protected async getPowerGlanceDoc({
-    token,
-  }: Partial<PowerGlanceDoc>): Promise<PowerGlanceDoc | undefined> {
-    return this.db
-      .get('power-glance')
-      .find({token})
-      .value();
-  }
-
-  protected async createPowerGlanceDoc(doc: PowerGlanceDoc): Promise<void> {
-    await this.db
-      .get('power-glance')
-      .push(doc)
-      .write();
-  }
-
-  protected async deletePowerGlanceDoc({
-    token,
-  }: Partial<PowerGlanceDoc>): Promise<void> {
-    await this.db
-      .get('power-glance')
-      .remove({
-        token,
-      })
-      .write();
-  }
-
-  protected async updatePowerGlanceDoc(
-    {token}: PowerGlanceDoc,
-    {storage, clock, version, disposed}: PowerGlanceDoc,
+  protected async updateModel<TModel extends Model>(
+    prevModel: TModel,
+    nextModel: TModel,
   ): Promise<void> {
-    await this.db
-      .get('power-glance')
-      .find({token})
-      .set('clock', clock)
-      .set('disposed', disposed)
-      .set('version', version)
-      .set('storage', storage)
-      .write();
+    let {primaryField, allowedFields} = this.getStorageDefinitionInfo(
+      prevModel.type,
+    );
+
+    let model = this.getCollection(prevModel).find({
+      [primaryField]: prevModel[primaryField],
+    });
+
+    for (let allowedField of allowedFields) {
+      model.set(allowedField, nextModel[allowedField]);
+    }
+
+    model.set('storage', nextModel.storage);
+
+    await model.write();
   }
 
-  protected async getPowerCustomCheckableItemDoc({
-    token,
-  }: Partial<PowerCustomCheckableItemDoc>): Promise<
-    PowerCustomCheckableItemDoc | undefined
-  > {
-    return this.db
-      .get('power-custom-checkable-item')
-      .find({token})
-      .value();
-  }
-
-  protected async createPowerCustomCheckableItemDoc(
-    doc: PowerCustomCheckableItemDoc,
-  ): Promise<void> {
-    await this.db
-      .get('power-custom-checkable-item')
-      .push(doc)
-      .write();
-  }
-
-  protected async deletePowerCustomCheckableItemDoc({
-    token,
-  }: Partial<PowerCustomCheckableItemDoc>): Promise<void> {
-    await this.db
-      .get('power-custom-checkable-item')
-      .remove({
-        token,
-      })
-      .write();
-  }
-
-  protected async updatePowerCustomCheckableItemDoc(
-    {token}: PowerCustomCheckableItemDoc,
-    {storage, version}: PowerCustomCheckableItemDoc,
-  ): Promise<void> {
-    await this.db
-      .get('power-custom-checkable-item')
-      .find({token})
-      .set('version', version)
-      .set('storage', storage)
-      .write();
+  private getCollection<TModel extends Model>({
+    type,
+  }: {
+    type: TModel['type'];
+  }): CollectionChain<Model> {
+    return this.db.get(type) as CollectionChain<Model>;
   }
 }

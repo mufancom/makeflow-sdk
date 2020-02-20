@@ -1,21 +1,21 @@
 import {IDBAdapter} from '../db';
+import {Model} from '../model';
 
-import {ActionStorage, IStorageObject} from './storage';
+import {StorageObject} from './storage';
 
-export type ExtractDoc<
-  TStorageObject extends IStorageObject
-> = TStorageObject extends IStorageObject<infer R> ? R : never;
+export interface ActionStorage<
+  TModel extends Model,
+  TKey extends keyof TModel = keyof TModel
+> {
+  get: StorageObject<TModel>['get'];
+  set(...args: [TModel] | [TKey, TModel[TKey]]): Promise<void>;
+  merge(...args: Parameters<StorageObject<TModel>['merge']>): Promise<void>;
+}
 
-export type ExtractStorage<
-  TStorageObject extends IStorageObject
-> = TStorageObject extends IStorageObject<any, infer R> ? R : never;
-
-export function getActionStorage<
-  TStorageObject extends IStorageObject = IStorageObject
->(
-  storageObject: TStorageObject,
+export function getActionStorage<TModel extends Model>(
+  storageObject: StorageObject<TModel>,
   db: IDBAdapter,
-): ActionStorage<TStorageObject> {
+): ActionStorage<TModel> {
   let get = storageObject.get.bind(storageObject);
 
   async function set(...args: any[]): Promise<void> {
@@ -24,7 +24,7 @@ export function getActionStorage<
   }
 
   async function merge(
-    storage: Parameters<TStorageObject['merge']>[0],
+    storage: Parameters<StorageObject<TModel>['merge']>[0],
   ): Promise<void> {
     storageObject.merge(storage);
     await db.setStorage(storageObject);

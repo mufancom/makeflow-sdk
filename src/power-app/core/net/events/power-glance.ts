@@ -33,5 +33,9 @@ export interface PowerGlanceUpdateEventObject {
 }
 
 export interface PowerGlanceDisposeEventObject {
-  payload: API.PowerGlance.DisposeHookParams;
+  payload: API.PowerGlance.DisposeHookParams & {
+    clock: undefined;
+    resources: undefined;
+    configs: undefined;
+  };
 }
