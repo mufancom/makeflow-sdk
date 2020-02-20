@@ -1,4 +1,4 @@
-import {CollectionChain} from 'lodash';
+import _ from 'lodash';
 import lowdb, {LowdbSync} from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
 
@@ -80,24 +80,24 @@ export class LowdbAdapter extends AbstractDBAdapter {
       prevModel.type,
     );
 
-    let model = this.getCollection(prevModel).find({
-      [primaryField]: prevModel[primaryField],
-    });
-
-    for (let allowedField of allowedFields) {
-      model.set(allowedField, nextModel[allowedField]);
-    }
-
-    model.set('storage', nextModel.storage);
-
-    await model.write();
+    await [
+      ...Object.entries(_.pick(nextModel, allowedFields)),
+      ['storage', nextModel.storage],
+    ]
+      .reduce<any>(
+        (model, [key, value]) => model.set(key, value),
+        this.getCollection(prevModel).find({
+          [primaryField]: prevModel[primaryField],
+        }),
+      )
+      .write();
   }
 
   private getCollection<TModel extends Model>({
     type,
   }: {
     type: TModel['type'];
-  }): CollectionChain<Model> {
-    return this.db.get(type) as CollectionChain<Model>;
+  }): _.CollectionChain<Model> {
+    return this.db.get(type) as _.CollectionChain<Model>;
   }
 }

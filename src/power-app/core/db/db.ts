@@ -39,6 +39,7 @@ abstract class DBAdapter {
 
       case 'update': {
         let {prev, next} = result.models;
+
         await this.updateModel(prev, next);
         break;
       }

@@ -66,11 +66,7 @@ export class StorageObject<
   >(storageOrKey: TTStorage | TKey, value?: TTStorage[TKey]): void {
     if (typeof storageOrKey === 'object') {
       this.storage = storageOrKey;
-    } else if (
-      this.storage &&
-      storageOrKey &&
-      typeof storageOrKey === 'string'
-    ) {
+    } else if (this.storage && typeof storageOrKey === 'string') {
       this.storage[storageOrKey] = value!;
     }
   }
@@ -144,7 +140,7 @@ export class StorageObject<
         };
       }
 
-      model.storage = storage;
+      model.storage = _.cloneDeep(storage);
 
       if (_.isEqual(originalModel, model)) {
         return undefined;
@@ -158,6 +154,8 @@ export class StorageObject<
         },
       };
     } else if (model) {
+      model.storage = _.cloneDeep(storage);
+
       return {
         type: 'create',
         model,
@@ -169,14 +167,14 @@ export class StorageObject<
 
   rebuild(): void {
     let model = this.model;
-    this.originalModel = model;
+    this.originalModel = _.cloneDeep(model);
 
     this.initialize(model);
   }
 
   private initialize(model?: TModel): void {
     if (model) {
-      this.storage = _.cloneDeep(model);
+      this.storage = _.cloneDeep(model.storage ?? {});
       this.model = _.cloneDeep(model);
     } else {
       this.storage = undefined;
