@@ -13,6 +13,7 @@ import {ActionStorage} from './storage';
 
 export namespace PowerAppVersion {
   export interface Definition {
+    ancestor?: string;
     installation?: Installation.Definition;
     contributions: {
       powerItems?: {

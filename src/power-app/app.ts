@@ -164,6 +164,10 @@ export class PowerApp {
     try {
       let definitions = _.clone(this.definitions);
 
+      if (!definitions.length) {
+        throw Error('至少需要一个版本定义');
+      }
+
       let intersectionDefinitions = _.intersectionWith(
         definitions,
         definitions,
@@ -174,9 +178,32 @@ export class PowerApp {
         throw Error('版本定义有交集');
       }
 
-      this.definitions = definitions.sort(({range: ra}, {range: rb}) =>
+      definitions = definitions.sort(({range: ra}, {range: rb}) =>
         compare(minVersion(ra)!, minVersion(rb)!),
       );
+
+      let headInfo = definitions[0];
+
+      if (headInfo.definition.ancestor) {
+        warning(`${headInfo.range} 不应该有 ancestor`);
+      }
+
+      for (let index = 1; index < definitions.length; index++) {
+        let info = definitions[index];
+
+        let ancestor = info.definition.ancestor;
+
+        if (!ancestor) {
+          warning(`${info.range} 未指定 ancestor`);
+          continue;
+        }
+
+        if (ancestor !== definitions[index - 1].range) {
+          warning(`${headInfo.range} 的 ancestor 不是前一个版本的版本号`);
+        }
+      }
+
+      this.definitions = definitions;
     } catch (error) {
       console.error(error);
       return false;
@@ -724,4 +751,10 @@ function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
           ).map(info => info.definition),
         ),
   };
+}
+
+function warning(message: string): void {
+  console.warn(
+    `[\x1b[34m makeflow-sdk \x1b[0m${new Date().toISOString()}]: \x1b[33m ${message} \x1b[0m`,
+  );
 }

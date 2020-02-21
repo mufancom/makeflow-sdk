@@ -30,8 +30,6 @@ export class KoaAdapter extends AbstractNetAdapter {
 
     router
       .all('*', async (context, next) => {
-        console.info(context.path);
-
         if (!this.authenticate(context.request.body?.source)) {
           context.throw('authenticate failed', 416);
           return;
