@@ -18,11 +18,15 @@ export class StorageObject<
   TModel extends Model,
   TStorage extends Dict<any> = Dict<any>
 > {
-  protected model: TModel | undefined;
+  private model: TModel | undefined;
   private storage: Dict<any> | undefined;
 
-  get version(): string {
-    return this.originalModel?.version || this.model?.version || '';
+  get type(): TModel['type'] | undefined {
+    return this.getField('type');
+  }
+
+  get version(): string | undefined {
+    return this.getField('version');
   }
 
   get created(): boolean {
@@ -96,10 +100,10 @@ export class StorageObject<
     this.model = undefined;
   }
 
-  getField(key: ModelToDefinition<TModel>['allowedFields'][number]): any {
+  getField<TKey extends keyof TModel>(key: TKey): TModel[TKey] | undefined {
     let model = this.model;
 
-    return model?.[(key as unknown) as keyof TModel];
+    return model?.[key];
   }
 
   setField(
@@ -132,6 +136,10 @@ export class StorageObject<
     let originalModel = this.originalModel;
     let model = this.model;
 
+    if (model) {
+      model.storage = _.cloneDeep(storage);
+    }
+
     if (originalModel) {
       if (!model) {
         return {
@@ -139,8 +147,6 @@ export class StorageObject<
           model: originalModel,
         };
       }
-
-      model.storage = _.cloneDeep(storage);
 
       if (_.isEqual(originalModel, model)) {
         return undefined;
@@ -154,8 +160,6 @@ export class StorageObject<
         },
       };
     } else if (model) {
-      model.storage = _.cloneDeep(storage);
-
       return {
         type: 'create',
         model,
@@ -167,8 +171,8 @@ export class StorageObject<
 
   rebuild(): void {
     let model = this.model;
-    this.originalModel = _.cloneDeep(model);
 
+    this.originalModel = model;
     this.initialize(model);
   }
 

@@ -58,10 +58,12 @@ export class PowerApp {
   private netAdapter!: INetAdapter;
   private dbAdapter!: IDBAdapter;
 
-  api!: API;
-
   constructor(private options: PowerAppOptions = {}) {
     this.initialize();
+  }
+
+  getAPI(): API {
+    return new API(this.options.source);
   }
 
   version(range: string, definition: PowerAppVersion.Definition): void {
@@ -95,7 +97,7 @@ export class PowerApp {
     this.start(options);
   }
 
-  async emitChanges<TModel extends Model = Model>(
+  async emitChanges<TModel extends Model>(
     type: TModel['type'],
     storage: TModel['storage'],
     change: (params: {
@@ -104,7 +106,6 @@ export class PowerApp {
     }) => Promise<void>,
   ): Promise<void> {
     let db = this.dbAdapter;
-    let api = this.api;
 
     let storages: StorageObject<TModel>[] = await db.getStorageObjectsByStorage<
       TModel
@@ -114,14 +115,14 @@ export class PowerApp {
     });
 
     for (let storage of storages) {
+      let api = await this.generateAPI(storage);
+
       await change({storage: getActionStorage(storage, db), api});
     }
   }
 
   private initialize(): void {
-    let {db, source} = this.options;
-
-    this.api = new API(source);
+    let {db} = this.options;
 
     switch (db?.type) {
       case 'mongo':
@@ -254,11 +255,10 @@ export class PowerApp {
     );
 
     if (result?.change) {
-      this.api.setSource(payload.source);
-      this.api.setAccessToken(installationStorage.get('accessToken'));
+      let api = await this.generateAPI(installationStorage);
 
       await result.change({
-        api: this.api,
+        api,
         prevConfigs,
         nextConfigs,
       });
@@ -287,7 +287,6 @@ export class PowerApp {
     }
 
     installationStorage.setField('accessToken', accessToken);
-    this.api.setAccessToken(accessToken);
 
     await this.dbAdapter.setStorage(installationStorage);
 
@@ -351,12 +350,11 @@ export class PowerApp {
     let responseData: PowerAppVersion.PowerItem.ChangeResponseData | void;
 
     if (change) {
-      this.api.setSource(source);
-      this.api.setResourceToken(token);
+      let api = await this.generateAPI(storage);
 
       responseData = await change({
         storage: actionStorage,
-        api: this.api,
+        api,
         inputs,
         configs,
       });
@@ -408,8 +406,7 @@ export class PowerApp {
 
     let actionStorage = getActionStorage(storage, this.dbAdapter);
 
-    this.api.setSource(source);
-    this.api.setResourceToken(token);
+    let api = await this.generateAPI(storage);
 
     if (storage.created) {
       if (params.type === 'change') {
@@ -418,7 +415,7 @@ export class PowerApp {
         if (prevClock + 1 !== clock) {
           //  reinitialize
           try {
-            let result = await this.api.initializePowerGlance();
+            let result = await api.initializePowerGlance();
 
             clock = result.clock;
             resources = result.resources;
@@ -454,7 +451,7 @@ export class PowerApp {
     if (change) {
       responseData = await change({
         storage: actionStorage,
-        api: this.api,
+        api,
         resources,
         configs,
       });
@@ -530,12 +527,11 @@ export class PowerApp {
     let responseData: PowerAppVersion.PowerCustomCheckableItem.ChangeResponseData | void;
 
     if (change) {
-      this.api.setSource(source);
-      this.api.setResourceToken(token);
+      let api = await this.generateAPI(storage);
 
       responseData = await change({
         storage: actionStorage,
-        api: this.api,
+        api,
         context,
         inputs,
         configs,
@@ -548,6 +544,35 @@ export class PowerApp {
 
     response(responseData || {});
   };
+
+  private async generateAPI(storage: StorageObject<any>): Promise<API> {
+    let api = new API(storage.getField('source'));
+
+    switch (storage.type) {
+      case 'installation': {
+        api.setAccessToken(storage.getField('accessToken'));
+        break;
+      }
+      case 'power-item':
+      case 'power-glance':
+      case 'power-custom-checkable-item': {
+        let storageWithToken = storage;
+
+        let installationStorage = await this.dbAdapter.getStorage<
+          InstallationModel
+        >({
+          type: 'installation',
+          installation: storage.getField('installation'),
+        });
+
+        api.setResourceToken(storageWithToken.getField('token'));
+        api.setAccessToken(installationStorage.getField('accessToken'));
+
+        break;
+      }
+    }
+    return api;
+  }
 }
 
 function matchVersionInfoIndex(

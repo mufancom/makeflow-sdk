@@ -1,6 +1,7 @@
 import {API} from '@makeflow/types';
 import {
   AppInstallationId,
+  OperationTokenToken,
   OrganizationId,
   TeamId,
 } from '@makeflow/types-nominal';
@@ -63,7 +64,7 @@ export type InstallationDefinition = __Definition<
 // power-item
 
 export interface PowerItemModel extends IModel<'power-item'> {
-  token: string;
+  token: OperationTokenToken;
 }
 
 export type PowerItemDefinition = __Definition<PowerItemModel, 'token'>;
@@ -71,7 +72,7 @@ export type PowerItemDefinition = __Definition<PowerItemModel, 'token'>;
 // power-glance
 
 export interface PowerGlanceModel extends IModel<'power-glance'> {
-  token: string;
+  token: OperationTokenToken;
   clock: number;
   disposed: boolean | undefined;
 }
@@ -82,7 +83,7 @@ export type PowerGlanceDefinition = __Definition<PowerGlanceModel, 'token'>;
 
 export interface PowerCustomCheckableItemModel
   extends IModel<'power-custom-checkable-item'> {
-  token: string;
+  token: OperationTokenToken;
 }
 
 export type PowerCustomCheckableItemDefinition = __Definition<
