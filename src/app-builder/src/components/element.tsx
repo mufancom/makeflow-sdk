@@ -30,6 +30,10 @@ export const Element: FC<{
     );
   } else if (config.type === 'number' || config.type === 'number-per-user') {
     Options = NumberOptions(config.options, options => onPartChange({options}));
+  } else {
+    if (!config.options) {
+      onPartChange({options: {}});
+    }
   }
 
   return (
