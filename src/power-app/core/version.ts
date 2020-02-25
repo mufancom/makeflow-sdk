@@ -4,6 +4,7 @@ import {Dict} from 'tslang';
 import {API} from '../api';
 
 import {
+  InstallationModel,
   Model,
   PowerCustomCheckableItemModel,
   PowerGlanceModel,
@@ -15,7 +16,7 @@ export namespace PowerAppVersion {
   export interface Definition {
     ancestor?: string;
     installation?: Installation.Definition;
-    contributions: {
+    contributions?: {
       powerItems?: {
         [key in string]: PowerItem.Definition;
       };
@@ -53,9 +54,9 @@ export namespace PowerAppVersion {
 
   export namespace Installation {
     export interface ChangeParams {
+      storage: ActionStorage<InstallationModel>;
       api: API;
-      prevConfigs: Dict<unknown>;
-      nextConfigs: Dict<unknown>;
+      configs: Dict<unknown>;
     }
 
     export type Change = (params: ChangeParams) => Promise<void> | void;

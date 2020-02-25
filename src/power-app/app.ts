@@ -227,9 +227,6 @@ export class PowerApp {
       installation: payload.installation,
     });
 
-    let prevConfigs = installationStorage.get('configs');
-    let nextConfigs = 'configs' in payload ? payload.configs : {};
-
     let {
       team,
       configs,
@@ -263,7 +260,7 @@ export class PowerApp {
         }
 
         responseData = {
-          granted: !!installationStorage.get('accessToken'),
+          granted: !!installationStorage.getField('accessToken'),
         };
 
         break;
@@ -286,8 +283,8 @@ export class PowerApp {
 
       await result.change({
         api,
-        prevConfigs,
-        nextConfigs,
+        configs,
+        storage: getActionStorage(installationStorage, this.dbAdapter),
       });
     }
 
@@ -633,7 +630,7 @@ function getPowerItemChange({
 }: PowerItemEventParams): (
   definition: PowerAppVersion.Definition,
 ) => PowerAppVersion.PowerItem.Change | undefined {
-  return ({contributions: {powerItems = {}}}) => {
+  return ({contributions: {powerItems = {}} = {}}) => {
     let powerItem = powerItems[name];
 
     if (!powerItem) {
@@ -650,7 +647,7 @@ function getPowerGlanceChange({
 }: PowerGlanceEventParams): (
   definition: PowerAppVersion.Definition,
 ) => PowerAppVersion.PowerGlance.Change | undefined {
-  return ({contributions: {powerGlances = {}}}) => {
+  return ({contributions: {powerGlances = {}} = {}}) => {
     let powerGlance = powerGlances[name];
 
     if (!powerGlance) {
@@ -666,7 +663,7 @@ function getPowerCustomCheckableItemChange({
 }: PowerCustomCheckableItemEventParams): (
   definition: PowerAppVersion.Definition,
 ) => PowerAppVersion.PowerCustomCheckableItem.Change | undefined {
-  return ({contributions: {powerCustomCheckableItems = {}}}) => {
+  return ({contributions: {powerCustomCheckableItems = {}} = {}}) => {
     let checkableItem = powerCustomCheckableItems[name];
 
     if (!checkableItem) {
@@ -692,7 +689,7 @@ function getMigrations({
     _.compact(
       definitions.map(
         definition =>
-          definition.contributions.powerItems?.[name]?.migrations?.[type],
+          definition.contributions?.powerItems?.[name]?.migrations?.[type],
       ),
     );
 }
