@@ -16,6 +16,7 @@ export const ConfigFieldTypeSelect: FC<SelectProps> = props => {
     'procedure-array',
     'tag-array',
     'file',
+    'date',
   ];
 
   return (
