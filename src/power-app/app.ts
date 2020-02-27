@@ -89,8 +89,8 @@ export class PowerApp {
     this.buildServeAdapter(KoaAdapter, options).serve();
   }
 
-  koa(): Koa.Middleware {
-    return this.buildServeAdapter(KoaAdapter).middleware();
+  koa(path: ServeOptions['path']): Koa.Middleware {
+    return this.buildServeAdapter(KoaAdapter, {path}).middleware();
   }
 
   express(): void {}
