@@ -47,6 +47,15 @@ export interface PowerAppOptions {
     | {type: 'lowdb'; options: LowdbOptions};
 }
 
+export interface MatchContextsOptions<TModel extends Model = Model> {
+  storage: TModel['storage'];
+}
+
+export interface MatchContextsResult<TModel extends Model = Model> {
+  storage: ActionStorage<TModel>;
+  api: API;
+}
+
 interface PowerAppVersionInfo {
   range: string;
   definition: PowerAppVersion.Definition;
@@ -97,14 +106,10 @@ export class PowerApp {
     this.start(options);
   }
 
-  async emitChanges<TModel extends Model>(
+  async *getContextIterable<TModel extends Model>(
     type: TModel['type'],
-    storage: TModel['storage'],
-    change: (params: {
-      storage: ActionStorage<TModel>;
-      api: API;
-    }) => Promise<void>,
-  ): Promise<void> {
+    {storage}: MatchContextsOptions<TModel>,
+  ): AsyncGenerator<MatchContextsResult<TModel>> {
     let db = this.dbAdapter;
 
     let storages: StorageObject<TModel>[] = await db.getStorageObjectsByStorage<
@@ -116,9 +121,21 @@ export class PowerApp {
 
     for (let storage of storages) {
       let api = await this.generateAPI(storage);
-
-      await change({storage: getActionStorage(storage, db), api});
+      yield {storage: getActionStorage(storage, db), api};
     }
+  }
+
+  async getContexts<TModel extends Model>(
+    type: TModel['type'],
+    options: MatchContextsOptions<TModel>,
+  ): Promise<MatchContextsResult<TModel>[]> {
+    let contexts = [];
+
+    for await (let context of this.getContextIterable(type, options)) {
+      contexts.push(context);
+    }
+
+    return contexts;
   }
 
   private initialize(): void {
