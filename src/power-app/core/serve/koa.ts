@@ -13,20 +13,26 @@ import {
   PowerItemEvent,
 } from './events';
 import {
-  AbstractNetAdapter,
+  AbstractServeAdapter,
+  ServeOptions,
   isPowerGlanceEventParams,
   isPowerItemEventParams,
-} from './net';
+} from './serve';
 
-export class KoaAdapter extends AbstractNetAdapter {
-  private app: Koa;
+export class KoaAdapter extends AbstractServeAdapter {
+  private app = new Koa();
 
-  constructor(...args: any[]) {
-    super(...args.slice(0, -1));
+  constructor(
+    readonly sourceToken?: string,
+    readonly options: ServeOptions = {},
+  ) {
+    super(sourceToken, options);
 
-    this.app = _.last(args) ?? new Koa();
+    let {path} = this.options;
 
-    let router = new Router<unknown>();
+    let prefix = path !== '/' ? path : undefined;
+
+    let router = new Router<unknown>({prefix});
 
     router
       .all('*', async (context, next) => {
@@ -123,25 +129,23 @@ export class KoaAdapter extends AbstractNetAdapter {
         );
       });
 
-    let hookApp = new Koa();
-
-    let {path} = this.options;
-
-    hookApp
+    this.app
       .use(
         bodyParser({
           onerror: (_, context) => context.throw('body parse error', 422),
         }),
       )
       .use(router.routes());
-
-    this.app.use(mount(path, hookApp));
   }
 
   serve(): void {
-    let {port} = this.options;
+    let {port, host} = this.options;
 
-    this.app.listen(port);
+    this.app.listen(port, host);
+  }
+
+  middleware(): Koa.Middleware {
+    return mount(this.app);
   }
 }
 

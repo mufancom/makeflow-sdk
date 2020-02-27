@@ -5,31 +5,25 @@ import _ from 'lodash';
 
 import {Events, PowerGlanceEventParams, PowerItemEventParams} from './events';
 
-export interface INetAdapter extends NetAdapter {}
+export interface IServeAdapter extends ServeAdapter {}
 
-export interface NetAdapterOptions {
+export interface ServeOptions {
+  host?: string;
   path?: string;
   port?: number;
 }
 
-const DEFAULT_NET_OPTIONS: Required<NetAdapterOptions> = {
-  path: '/',
-  port: 3000,
-};
-
-abstract class NetAdapter extends EventEmitter {
-  protected get options(): Required<NetAdapterOptions> {
-    return {...DEFAULT_NET_OPTIONS, ...this._options};
-  }
-
+abstract class ServeAdapter extends EventEmitter {
   constructor(
-    readonly accessToken?: string,
-    readonly _options?: NetAdapterOptions,
+    readonly sourceToken?: string,
+    readonly options: ServeOptions = {},
   ) {
     super();
   }
 
   abstract serve(): void;
+
+  abstract middleware(): any;
 
   on<TEvent extends Events>(
     type: TEvent['type'],
@@ -56,7 +50,7 @@ abstract class NetAdapter extends EventEmitter {
   }
 
   authenticate(source: API.PowerApp.Source | undefined): boolean {
-    let token = this.accessToken;
+    let token = this.sourceToken;
 
     if (!token) {
       return true;
@@ -102,4 +96,4 @@ export function isPowerGlanceEventParams(
   }
 }
 
-export const AbstractNetAdapter = NetAdapter;
+export const AbstractServeAdapter = ServeAdapter;

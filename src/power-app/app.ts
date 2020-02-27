@@ -15,7 +15,7 @@ import {API} from './api';
 import {
   ActionStorage,
   IDBAdapter,
-  INetAdapter,
+  IServeAdapter,
   InstallationEvent,
   InstallationModel,
   KoaAdapter,
@@ -24,7 +24,6 @@ import {
   Model,
   MongoAdapter,
   MongoOptions,
-  NetAdapterOptions,
   PermissionEvent,
   PowerAppVersion,
   PowerCustomCheckableItemEvent,
@@ -36,6 +35,7 @@ import {
   PowerItemEvent,
   PowerItemEventParams,
   PowerItemModel,
+  ServeOptions,
   StorageObject,
   getActionStorage,
 } from './core';
@@ -64,7 +64,6 @@ interface PowerAppVersionInfo {
 export class PowerApp {
   private definitions: PowerAppVersionInfo[] = [];
 
-  private netAdapter!: INetAdapter;
   private dbAdapter!: IDBAdapter;
 
   constructor(private options: PowerAppOptions = {}) {
@@ -86,25 +85,17 @@ export class PowerApp {
     });
   }
 
-  serve(options?: NetAdapterOptions): void {
-    this.start(options);
+  serve(options?: ServeOptions): void {
+    this.buildServeAdapter(KoaAdapter, options).serve();
   }
 
-  koa(options?: NetAdapterOptions): void {
-    this.start(options, KoaAdapter);
+  koa(): Koa.Middleware {
+    return this.buildServeAdapter(KoaAdapter).middleware();
   }
 
-  koaWith(koa: Koa, options?: NetAdapterOptions): void {
-    this.start(options, KoaAdapter, koa);
-  }
+  express(): void {}
 
-  express(options?: NetAdapterOptions): void {
-    this.start(options);
-  }
-
-  hapi(options?: NetAdapterOptions): void {
-    this.start(options);
-  }
+  hapi(): void {}
 
   async *getContextIterable<TModel extends Model>(
     type: TModel['type'],
@@ -154,18 +145,15 @@ export class PowerApp {
     }
   }
 
-  private start(
-    options: NetAdapterOptions = {},
-    Adapter: Constructor<INetAdapter> = KoaAdapter,
-    app?: Koa,
-  ): void {
-    if (!this.checkVersionsQualified()) {
-      return;
-    }
+  private buildServeAdapter(
+    Adapter: Constructor<IServeAdapter>,
+    options?: ServeOptions,
+  ): IServeAdapter {
+    this.checkVersionsQualified();
 
-    this.netAdapter = new Adapter(this.options.source?.token, options, app);
+    let serveAdapter = new Adapter(this.options.source?.token, options);
 
-    this.netAdapter
+    serveAdapter
       .on('installation', this.handleInstallation)
       .on('permission', this.handlePermission)
       .on('power-item', this.handlePowerItemChange)
@@ -173,60 +161,54 @@ export class PowerApp {
       .on(
         'power-custom-checkable-item',
         this.handlePowerCustomCheckableItemChange,
-      )
-      .serve();
+      );
+
+    return serveAdapter;
   }
 
-  private checkVersionsQualified(): boolean {
-    try {
-      let definitions = _.clone(this.definitions);
+  private checkVersionsQualified(): void {
+    let definitions = _.clone(this.definitions);
 
-      if (!definitions.length) {
-        throw Error('至少需要一个版本定义');
-      }
-
-      let intersectionDefinitions = _.intersectionWith(
-        definitions,
-        definitions,
-        ({range: ra}, {range: rb}) => !_.isEqual(ra, rb) && intersects(ra, rb),
-      );
-
-      if (intersectionDefinitions.length) {
-        throw Error('版本定义有交集');
-      }
-
-      definitions = definitions.sort(({range: ra}, {range: rb}) =>
-        compare(minVersion(ra)!, minVersion(rb)!),
-      );
-
-      let headInfo = definitions[0];
-
-      if (headInfo.definition.ancestor) {
-        warning(`${headInfo.range} 不应该有 ancestor`);
-      }
-
-      for (let index = 1; index < definitions.length; index++) {
-        let info = definitions[index];
-
-        let ancestor = info.definition.ancestor;
-
-        if (!ancestor) {
-          warning(`${info.range} 未指定 ancestor`);
-          continue;
-        }
-
-        if (ancestor !== definitions[index - 1].range) {
-          warning(`${headInfo.range} 的 ancestor 不是前一个版本的版本号`);
-        }
-      }
-
-      this.definitions = definitions;
-    } catch (error) {
-      console.error(error);
-      return false;
+    if (!definitions.length) {
+      throw Error('至少需要一个版本定义');
     }
 
-    return true;
+    let intersectionDefinitions = _.intersectionWith(
+      definitions,
+      definitions,
+      ({range: ra}, {range: rb}) => !_.isEqual(ra, rb) && intersects(ra, rb),
+    );
+
+    if (intersectionDefinitions.length) {
+      throw Error('版本定义有交集');
+    }
+
+    definitions = definitions.sort(({range: ra}, {range: rb}) =>
+      compare(minVersion(ra)!, minVersion(rb)!),
+    );
+
+    let headInfo = definitions[0];
+
+    if (headInfo.definition.ancestor) {
+      warning(`${headInfo.range} 不应该有 ancestor`);
+    }
+
+    for (let index = 1; index < definitions.length; index++) {
+      let info = definitions[index];
+
+      let ancestor = info.definition.ancestor;
+
+      if (!ancestor) {
+        warning(`${info.range} 未指定 ancestor`);
+        continue;
+      }
+
+      if (ancestor !== definitions[index - 1].range) {
+        warning(`${headInfo.range} 的 ancestor 不是前一个版本的版本号`);
+      }
+    }
+
+    this.definitions = definitions;
   }
 
   private handleInstallation = async (
