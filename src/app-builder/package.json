@@ -2,6 +2,7 @@
   "name": "app-builder",
   "version": "0.1.0",
   "private": true,
+  "homepage": "http://makeflow.github.io/app-builder",
   "dependencies": {
     "@makeflow/types": "^0.1.0",
     "@makeflow/types-nominal": "^0.1.0",
@@ -23,7 +24,9 @@
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "yarn build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -50,6 +53,7 @@
     "@types/react-dom": "^16.9.5",
     "@types/uuid": "^7.0.2",
     "eslint": "6.7.2",
+    "gh-pages": "^2.2.0",
     "less": "^3.10.3",
     "less-loader": "^5.0.0"
   }
