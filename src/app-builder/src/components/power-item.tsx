@@ -102,7 +102,7 @@ export const PowerItem: FC<{
               component={Inputs}
               values={inputs}
               onChange={inputs => onPartChange({inputs})}
-            ></SettingTabs>
+            />
           </Form.Item>
           <Form.Item label="字段 (fields)">
             <SettingTabs<PowerItemTypes.PowerItemFieldDefinition>
@@ -114,7 +114,7 @@ export const PowerItem: FC<{
                   fields,
                 });
               }}
-            ></SettingTabs>
+            />
           </Form.Item>
           <Form.Item label="可执行操作 (actions)">
             <SettingTabs<PowerItemTypes.ActionDefinition>
@@ -126,7 +126,7 @@ export const PowerItem: FC<{
                   actions,
                 });
               }}
-            ></SettingTabs>
+            />
           </Form.Item>
         </>
       ) : (

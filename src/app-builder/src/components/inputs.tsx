@@ -88,26 +88,28 @@ export const Inputs: FC<{
             <>
               <Form.Item label="数据类型">
                 <Radio.Group
-                  value={defaultValue?.type === 'variable'}
+                  value={defaultValue?.type === 'expression'}
                   onChange={({target: {value}}) => {
                     onPartChange({
                       default: value
-                        ? {type: 'variable', variable: ''}
+                        ? {type: 'expression', expression: ''}
                         : {type: 'value', value: ''},
                     });
                   }}
                 >
                   <Radio.Button value={false}>值</Radio.Button>
-                  <Radio.Button value={true}>变量</Radio.Button>
+                  <Radio.Button value={true}>表达式</Radio.Button>
                 </Radio.Group>
               </Form.Item>
-              <Form.Item label="数据值或变量名">
+              <Form.Item label="数据值 或 表达式">
                 <Input
                   placeholder="default"
                   value={
                     'value' in defaultValue
                       ? String(defaultValue.value)
-                      : defaultValue?.variable
+                      : 'variable' in defaultValue
+                      ? defaultValue?.variable
+                      : defaultValue?.expression
                   }
                   onChange={({target: {value}}) =>
                     onPartChange({
@@ -118,8 +120,8 @@ export const Inputs: FC<{
                               value,
                             }
                           : {
-                              type: 'variable',
-                              variable: value,
+                              type: 'expression',
+                              expression: value,
                             },
                     })
                   }
@@ -134,23 +136,29 @@ export const Inputs: FC<{
             <>
               <Form.Item label="数据类型">
                 <Radio.Group
-                  value={bind?.type === 'variable'}
+                  value={bind?.type === 'expression'}
                   onChange={({target: {value}}) => {
                     onPartChange({
                       bind: value
-                        ? {type: 'variable', variable: ''}
+                        ? {type: 'expression', expression: ''}
                         : {type: 'value', value: ''},
                     });
                   }}
                 >
                   <Radio.Button value={false}>值</Radio.Button>
-                  <Radio.Button value={true}>变量</Radio.Button>
+                  <Radio.Button value={true}>表达式</Radio.Button>
                 </Radio.Group>
               </Form.Item>
-              <Form.Item label="数据值或变量名">
+              <Form.Item label="数据值 或 表达式">
                 <Input
                   placeholder="bind"
-                  value={'value' in bind ? String(bind.value) : bind?.variable}
+                  value={
+                    'value' in bind
+                      ? String(bind.value)
+                      : 'variable' in bind
+                      ? bind?.variable
+                      : bind?.expression
+                  }
                   onChange={({target: {value}}) =>
                     onPartChange({
                       bind:
@@ -160,8 +168,8 @@ export const Inputs: FC<{
                               value,
                             }
                           : {
-                              type: 'variable',
-                              variable: value,
+                              type: 'expression',
+                              expression: value,
                             },
                     })
                   }

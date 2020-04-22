@@ -1,15 +1,17 @@
 import {
+  AccessControl,
   PowerApp,
   PowerAppConfig,
+  PowerAppProcedureField,
   PowerCustomCheckableItem as PowerCustomCheckableItemTypes,
   PowerGlance as PowerGlanceTypes,
   PowerItem as PowerItemTypes,
 } from '@makeflow/types';
-import {PowerAppProcedureFieldDefinition} from '@makeflow/types/procedure';
 import {
   Button,
   Checkbox,
   Col,
+  Collapse,
   Form,
   Icon,
   Input,
@@ -19,6 +21,7 @@ import {
 } from 'antd';
 import _ from 'lodash';
 import React, {FC, useState} from 'react';
+import {v4 as uuid} from 'uuid';
 
 import './App.css';
 import {
@@ -37,8 +40,10 @@ import {
 import {permissionData} from './permission';
 
 const {Header, Footer, Content} = Layout;
+const {Panel} = Collapse;
 
 export const App: FC = () => {
+  // TODO (boen): 直接发布的设置
   const [toShowSetting, setToShowSetting] = useState<boolean>(false);
 
   const [state, setState] = useState<PowerApp.RawDefinition>(
@@ -98,135 +103,163 @@ export const App: FC = () => {
             xl={{span: 14, offset: 5}}
           >
             <Form layout="horizontal" labelAlign="left">
-              <Form.Item label="名称 (英文)" required>
-                <Input
-                  value={state.name}
-                  placeholder="name"
-                  onChange={({target: {value}}) =>
-                    setState({...state, name: value})
-                  }
-                />
-              </Form.Item>
-              <Form.Item label="版本号" required>
-                <Input
-                  value={state.version}
-                  placeholder="version"
-                  onChange={({target: {value}}) =>
-                    setState({...state, version: value})
-                  }
-                />
-              </Form.Item>
-              <Form.Item label="展示名称 (别名)" required>
-                <Input
-                  value={state.displayName}
-                  placeholder="displayName"
-                  onChange={({target: {value}}) =>
-                    setState({...state, displayName: value})
-                  }
-                />
-              </Form.Item>
-              <Form.Item label="描述">
-                <Input
-                  value={state.description}
-                  placeholder="description"
-                  onChange={({target: {value}}) =>
-                    setState({...state, description: value})
-                  }
-                />
-              </Form.Item>
-              <Form.Item label="官网主页">
-                <Input
-                  value={state.homePageURL}
-                  placeholder="homePageURL"
-                  onChange={({target: {value}}) =>
-                    setState({...state, homePageURL: value})
-                  }
-                />
-              </Form.Item>
-              <Form.Item label="服务器地址">
-                <Input
-                  value={state.hookBaseURL}
-                  placeholder="hookBaseURL"
-                  onChange={({target: {value}}) =>
-                    setState({...state, hookBaseURL: value})
-                  }
-                />
-              </Form.Item>
-              <Form.Item label="所需权限">
-                <Checkbox.Group
-                  value={state.permissions}
-                  options={permissionData}
-                  onChange={values =>
-                    setState({
-                      ...state,
-                      permissions: values as any,
-                    })
-                  }
-                />
-              </Form.Item>
-              <Form.Item label="应用配置参数">
-                <SettingTabs<PowerAppConfig.Definition>
-                  primaryKey="name"
-                  component={Config}
-                  values={state.configs}
-                  onChange={configs => setState({...state, configs})}
-                />
-              </Form.Item>
-              <Form.Item label="自定义字段">
-                <SettingTabs<PowerAppProcedureFieldDefinition>
-                  primaryKey="type"
-                  component={AppField}
-                  values={state.contributions?.procedureFields}
-                  onChange={procedureFields =>
-                    setContributions({procedureFields})
-                  }
-                />
-              </Form.Item>
-              <Form.Item label="超级流程项">
-                <SettingTabs<PowerItemTypes.Definition>
-                  primaryKey="name"
-                  component={PowerItem}
-                  values={state.contributions?.powerItems}
-                  onChange={powerItems => setContributions({powerItems})}
-                />
-              </Form.Item>
-              <Form.Item label="超级概览">
-                <SettingTabs<PowerGlanceTypes.Definition>
-                  primaryKey="name"
-                  component={PowerGlance}
-                  values={state.contributions?.powerGlances}
-                  onChange={powerGlances => setContributions({powerGlances})}
-                />
-              </Form.Item>
-              <Form.Item label="超级自定义检查项">
-                <SettingTabs<PowerCustomCheckableItemTypes.Definition>
-                  primaryKey="name"
-                  component={PowerCustomCheckableItem}
-                  values={state.contributions?.powerCustomCheckableItems}
-                  onChange={powerCustomCheckableItems =>
-                    setContributions({powerCustomCheckableItems})
-                  }
-                />
-              </Form.Item>
-              <Form.Item label="资源包">
-                <SubFormItem label=" 标签">
-                  <SettingTabs<PowerApp.DefinitionTagResource>
+              <Collapse defaultActiveKey={['basic']}>
+                <Panel header="基础信息" key="basic">
+                  <Form.Item label="名称 (英文)" required>
+                    <Input
+                      value={state.name}
+                      placeholder="name"
+                      onChange={({target: {value}}) =>
+                        setState({...state, name: value})
+                      }
+                    />
+                  </Form.Item>
+                  <Form.Item label="版本号" required>
+                    <Input
+                      value={state.version}
+                      placeholder="version"
+                      onChange={({target: {value}}) =>
+                        setState({...state, version: value})
+                      }
+                    />
+                  </Form.Item>
+                  <Form.Item label="展示名称 (别名)" required>
+                    <Input
+                      value={state.displayName}
+                      placeholder="displayName"
+                      onChange={({target: {value}}) =>
+                        setState({...state, displayName: value})
+                      }
+                    />
+                  </Form.Item>
+                  <Form.Item label="描述">
+                    <Input
+                      value={state.description}
+                      placeholder="description"
+                      onChange={({target: {value}}) =>
+                        setState({...state, description: value})
+                      }
+                    />
+                  </Form.Item>
+                  <Form.Item label="官网主页">
+                    <Input
+                      value={state.homePageURL}
+                      placeholder="homePageURL"
+                      onChange={({target: {value}}) =>
+                        setState({...state, homePageURL: value})
+                      }
+                    />
+                  </Form.Item>
+                  <Form.Item label="服务器地址">
+                    <Input
+                      value={state.hookBaseURL}
+                      placeholder="hookBaseURL"
+                      onChange={({target: {value}}) =>
+                        setState({...state, hookBaseURL: value})
+                      }
+                    />
+                  </Form.Item>
+                  <Form.Item label="所需权限">
+                    <Checkbox.Group
+                      value={state.permissions}
+                      options={permissionData}
+                      onChange={values =>
+                        setState({
+                          ...state,
+                          permissions: values as AccessControl.PermissionName[],
+                        })
+                      }
+                    />
+                  </Form.Item>
+                </Panel>
+                <Panel
+                  header={`应用配置参数 (${state.configs?.length ?? 0})`}
+                  key="configs"
+                >
+                  <SettingTabs<PowerAppConfig.Definition>
                     primaryKey="name"
-                    component={Tag}
-                    values={state.resources?.tags}
-                    onChange={tags => setResources({tags})}
+                    component={Config}
+                    values={state.configs}
+                    onChange={configs => setState({...state, configs})}
                   />
-                </SubFormItem>
-                <SubFormItem label=" 流程">
-                  <SettingTabs<PowerApp.DefinitionProcedureResource>
+                </Panel>
+                <Panel
+                  header={`自定义字段 (${state.contributions?.procedureFields
+                    ?.length ?? 0})`}
+                  key="fields"
+                >
+                  <SettingTabs<PowerAppProcedureField.FieldBaseDefinition>
+                    primaryKey="type"
+                    component={AppField}
+                    values={state.contributions?.procedureFields}
+                    onChange={procedureFields =>
+                      setContributions({procedureFields})
+                    }
+                  />
+                </Panel>
+                <Panel
+                  header={`超级流程项 (${state.contributions?.powerItems
+                    ?.length ?? 0})`}
+                  key="power-item"
+                >
+                  <SettingTabs<PowerItemTypes.Definition>
                     primaryKey="name"
-                    component={Procedure}
-                    values={state.resources?.procedures}
-                    onChange={procedures => setResources({procedures})}
+                    component={PowerItem}
+                    values={state.contributions?.powerItems}
+                    onChange={powerItems => setContributions({powerItems})}
                   />
-                </SubFormItem>
-              </Form.Item>
-              <Form.Item style={{textAlign: 'center'}}>
+                </Panel>
+                <Panel
+                  header={`超级概览 (${state.contributions?.powerGlances
+                    ?.length ?? 0})`}
+                  key="power-glance"
+                >
+                  <SettingTabs<PowerGlanceTypes.Definition>
+                    primaryKey="name"
+                    component={PowerGlance}
+                    values={state.contributions?.powerGlances}
+                    onChange={powerGlances => setContributions({powerGlances})}
+                  />
+                </Panel>
+                <Panel
+                  header={`超级自定义检查项 (${state.contributions
+                    ?.powerCustomCheckableItems?.length ?? 0})`}
+                  key="power-custom-checkable-item"
+                >
+                  <SettingTabs<PowerCustomCheckableItemTypes.Definition>
+                    primaryKey="name"
+                    component={PowerCustomCheckableItem}
+                    values={state.contributions?.powerCustomCheckableItems}
+                    onChange={powerCustomCheckableItems =>
+                      setContributions({powerCustomCheckableItems})
+                    }
+                  />
+                </Panel>
+                <Panel
+                  header={`资源包 => 标签(${state?.resources?.tags?.length ??
+                    0}) 流程(${state?.resources?.procedures?.length ?? 0})`}
+                  key="resources"
+                >
+                  <SubFormItem label=" 标签">
+                    <SettingTabs<PowerApp.DefinitionTagResource>
+                      primaryKey="name"
+                      component={Tag}
+                      values={state.resources?.tags}
+                      onChange={tags => setResources({tags})}
+                    />
+                  </SubFormItem>
+                  <SubFormItem label=" 流程">
+                    <SettingTabs<PowerApp.DefinitionProcedureResource>
+                      primaryKey="name"
+                      component={Procedure}
+                      values={state.resources?.procedures}
+                      onChange={procedures => setResources({procedures})}
+                    />
+                  </SubFormItem>
+                </Panel>
+              </Collapse>
+
+              <Form.Item style={{textAlign: 'center', marginTop: 24}}>
                 <Button
                   type="primary"
                   size="large"
@@ -266,7 +299,48 @@ function handleLeave(definition: PowerApp.RawDefinition): void {
   };
 }
 
+/**
+ * 格式化 definition
+ */
+function formatDefinition(
+  definition: PowerApp.RawDefinition,
+): PowerApp.RawDefinition {
+  let powerItem = definition.contributions?.powerItems;
+
+  if (powerItem?.length) {
+    definition.contributions!.powerItems = powerItem.map(item => {
+      let fields = item.fields;
+
+      // 添加 uuid
+
+      if (fields?.length) {
+        item.fields = fields.map(({id, ...rest}) => ({
+          ...rest,
+          id: id ?? uuid(),
+        }));
+      }
+
+      // 清空未填的 action target
+
+      let actions = item.actions;
+
+      if (actions?.length) {
+        item.actions = actions.map(({target, ...rest}) => ({
+          ...rest,
+          target: target || undefined,
+        }));
+      }
+
+      return item;
+    });
+  }
+
+  return definition;
+}
+
 function exportDefinition(definition: PowerApp.RawDefinition): void {
+  definition = formatDefinition(definition);
+
   let anchor = document.createElement('a');
 
   anchor.download = `${definition.displayName}.json`;
@@ -279,6 +353,8 @@ function exportDefinition(definition: PowerApp.RawDefinition): void {
 }
 
 function copyToClipBoard(definition: PowerApp.RawDefinition): void {
+  definition = formatDefinition(definition);
+
   let textarea = document.createElement('textarea');
 
   textarea.setAttribute('readonly', 'readonly');

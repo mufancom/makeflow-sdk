@@ -1,4 +1,4 @@
-import {Field as FieldTypes} from '@makeflow/types';
+import {Field, Field as FieldTypes, ProcedureField} from '@makeflow/types';
 import {Button, DatePicker, Form, Input, Switch, Table} from 'antd';
 import _ from 'lodash';
 import moment from 'moment';
@@ -170,17 +170,51 @@ const LinkData: FC<DataProps<Partial<FieldTypes.LinkBaseFieldData>>> = ({
   </Form.Item>
 );
 
-const BaseFieldDataDict: {[key: string]: FC<DataProps>[]} = {
+const BaseFieldDataDict: {[key in Field.BaseFieldType]: FC<DataProps>[]} = {
   'input-array': [PrefixedArrayData],
   select: [SelectAlikeData],
   'select-array': [PrefixedArrayData, SelectAlikeData],
   radio: [SelectAlikeData],
   link: [LinkData],
   date: [DateData],
+  input: [],
+  user: [],
+  team: [],
+  file: [],
+  'team-array': [],
+  'procedure-array': [],
+  'tag-array': [],
+  'file-array': [],
 };
 
-export function getData(
+const BuildInFieldDataDict: {
+  [key in ProcedureField.BuiltInProcedureFieldType]: FC<DataProps>[];
+} = {
+  'text-array': [PrefixedArrayData],
+  select: [SelectAlikeData],
+  'select-array': [PrefixedArrayData, SelectAlikeData],
+  radio: [SelectAlikeData],
+  link: [LinkData],
+  date: [DateData],
+  text: [],
+  user: [],
+  team: [],
+  file: [],
+  password: [],
+  'team-array': [],
+  'procedure-array': [],
+  'tag-array': [],
+  'file-array': [],
+};
+
+export function getBaseFieldData(
   base: FieldTypes.BaseFieldType,
 ): FC<DataProps>[] | undefined {
   return BaseFieldDataDict[base];
+}
+
+export function getBuiltInProcedureFieldData(
+  base: ProcedureField.BuiltInProcedureFieldType,
+): FC<DataProps>[] | undefined {
+  return BuildInFieldDataDict[base];
 }

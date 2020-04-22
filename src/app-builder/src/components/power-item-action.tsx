@@ -164,17 +164,17 @@ function PowerAppInputOptions({
             ),
           },
           {
-            title: '变量',
-            dataIndex: 'variable',
+            title: '表达式',
+            dataIndex: 'expression',
             render: (text, input, index) => (
               <Input
-                placeholder="variable 与 value 互斥"
+                placeholder="expression 与 value 互斥"
                 value={text}
                 onChange={handlerChange(({target: {value}}) =>
                   dataSource.splice(index, 1, {
                     name: input.name,
-                    type: 'variable',
-                    variable: value,
+                    type: 'expression',
+                    expression: value,
                   }),
                 )}
               />

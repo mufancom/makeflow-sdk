@@ -1,11 +1,44 @@
+import {PowerAppConfig, ProcedureField} from '@makeflow/types';
 import {Select} from 'antd';
 import {SelectProps} from 'antd/lib/select';
 import React, {FC} from 'react';
 
 const {Option} = Select;
 
+export const BuiltInProcedureFieldSelect: FC<SelectProps<
+  ProcedureField.BuiltInProcedureFieldType
+>> = props => {
+  const types: ProcedureField.BuiltInProcedureFieldType[] = [
+    'date',
+    'select',
+    'select-array',
+    'radio',
+    'user',
+    'team',
+    'team-array',
+    'procedure-array',
+    'tag-array',
+    'file',
+    'file-array',
+    'link',
+    'text',
+    'text-array',
+    'password',
+  ];
+
+  return (
+    <Select defaultValue="text" {...props}>
+      {types.map(type => (
+        <Option key={type} value={type}>
+          {type}
+        </Option>
+      ))}
+    </Select>
+  );
+};
+
 export const ConfigFieldTypeSelect: FC<SelectProps> = props => {
-  const types = [
+  const types: PowerAppConfig.ConfigFieldType[] = [
     'text',
     'password',
     'select',

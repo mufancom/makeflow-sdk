@@ -3,11 +3,11 @@ import {
   PowerApp,
   PowerAppConfig,
   PowerAppInput,
+  PowerAppProcedureField,
   PowerCustomCheckableItem,
   PowerGlance,
   PowerItem,
 } from '@makeflow/types';
-import {PowerAppProcedureFieldDefinition} from '@makeflow/types/procedure';
 import {Button, Icon, Tabs} from 'antd';
 import _ from 'lodash';
 import React, {FC, ReactElement, useState} from 'react';
@@ -21,10 +21,10 @@ type ValueType =
   | PowerCustomCheckableItem.Definition
   | PowerAppInput.Definition
   | PowerItem.ActionDefinition
-  | PowerAppProcedureFieldDefinition
   | PowerItem.PowerItemFieldDefinition
   | PowerApp.DefinitionTagResource
   | PowerApp.DefinitionProcedureResource
+  | PowerAppProcedureField.FieldBaseDefinition
   | GlanceReport.Definition;
 
 export interface TabsProps<TValueType extends ValueType = ValueType> {
@@ -69,13 +69,10 @@ export function SettingTabs<TValueType extends ValueType>({
           onClick={() => {
             let newValues = primaryKey
               ? _.uniqBy(
-                  [
-                    ...values,
-                    {[primaryKey]: '', [displayKey]: ''} as TValueType,
-                  ],
+                  [...values, {[primaryKey]: '', [displayKey]: ''} as any],
                   primaryKey,
                 )
-              : [...values, {[displayKey]: ''} as TValueType];
+              : [...values, {[displayKey]: ''} as any];
 
             onChange(newValues);
 
