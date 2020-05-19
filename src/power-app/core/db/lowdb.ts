@@ -26,6 +26,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
 
     this.db = lowdb(new FileSync(file));
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.db
       .defaults<Schema>({
         installation: [],
@@ -33,8 +34,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
         'power-glance': [],
         'power-custom-checkable-item': [],
       })
-      .write()
-      .catch(console.error);
+      .write();
   }
 
   protected async getModel<TModel extends Model>(
