@@ -64,7 +64,7 @@ export const Start: FC<{
     <Modal
       title="选择一种方式"
       visible={toShow}
-      // tslint:disable-next-line: no-null-keyword
+      // eslint-disable-next-line no-null/no-null
       footer={null}
       closable={false}
       maskClosable={false}

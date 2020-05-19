@@ -22,14 +22,14 @@ export interface RequestOptions {
   requireAccessToken?: boolean;
 }
 
-export class API {
+export class API<TSourceObject extends APISource = APISource> {
   readonly version = 'v1';
 
   private accessToken: string | undefined;
 
   private resourceToken: OperationTokenToken | undefined;
 
-  constructor(private source?: APISource) {}
+  constructor(private source?: TSourceObject) {}
 
   setAccessToken(token: string | undefined): void {
     this.accessToken = token;
@@ -37,10 +37,6 @@ export class API {
 
   setResourceToken(token: OperationTokenToken | undefined): void {
     this.resourceToken = token;
-  }
-
-  setSource(source: APISource): void {
-    this.source = source;
   }
 
   // account

@@ -1,9 +1,10 @@
-// tslint:disable-next-line: scoped-modules
+// eslint-disable-next-line @magicspace/scoped-modules
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {App} from './App';
 import './index.css';
+
+import {App} from './App';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(<App />, document.getElementById('root'));

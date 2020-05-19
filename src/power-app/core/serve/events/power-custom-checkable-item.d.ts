@@ -12,5 +12,7 @@ export interface PowerCustomCheckableItemEventParams {
 
 export interface PowerCustomCheckableItemEventObject {
   params: PowerCustomCheckableItemEventParams;
-  payload: API.PowerCustomCheckableItem.HookParams;
+  payload: API.PowerCustomCheckableItem.HookParams & {
+    source: API.PowerApp.Source;
+  };
 }

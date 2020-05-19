@@ -1,21 +1,12 @@
 import {API} from '@makeflow/types';
-import {
-  AppInstallationId,
-  OperationTokenToken,
-  OrganizationId,
-  TeamId,
-} from '@makeflow/types-nominal';
+import {OperationTokenToken} from '@makeflow/types-nominal';
 import {Dict} from 'tslang';
 
 export interface IModel<
   TType extends string,
   TStorage extends Dict<any> = Dict<any>
-> {
-  source: API.PowerApp.Source;
+> extends API.PowerApp.Source {
   type: TType;
-  organization: OrganizationId;
-  installation: AppInstallationId;
-  version: string;
   storage: TStorage | undefined;
 }
 
@@ -50,7 +41,6 @@ type __Definition<
 // installation
 
 export interface InstallationModel extends IModel<'installation'> {
-  team: TeamId;
   configs: Dict<unknown>;
   resources: API.PowerApp.ResourcesMapping;
   accessToken?: string | undefined;
@@ -61,34 +51,38 @@ export type InstallationDefinition = __Definition<
   'installation'
 >;
 
-// power-item
-
-export interface PowerItemModel extends IModel<'power-item'> {
-  token: OperationTokenToken;
+export interface IPowerAppResourceModel<TType extends string>
+  extends IModel<TType> {
+  resourceToken: OperationTokenToken;
 }
 
-export type PowerItemDefinition = __Definition<PowerItemModel, 'token'>;
+// power-item
+
+export interface PowerItemModel extends IPowerAppResourceModel<'power-item'> {}
+
+export type PowerItemDefinition = __Definition<PowerItemModel, 'resourceToken'>;
 
 // power-glance
 
-export interface PowerGlanceModel extends IModel<'power-glance'> {
-  token: OperationTokenToken;
+export interface PowerGlanceModel
+  extends IPowerAppResourceModel<'power-glance'> {
   clock: number;
   disposed: boolean | undefined;
 }
 
-export type PowerGlanceDefinition = __Definition<PowerGlanceModel, 'token'>;
+export type PowerGlanceDefinition = __Definition<
+  PowerGlanceModel,
+  'resourceToken'
+>;
 
 // power-custom-checkable-item
 
 export interface PowerCustomCheckableItemModel
-  extends IModel<'power-custom-checkable-item'> {
-  token: OperationTokenToken;
-}
+  extends IPowerAppResourceModel<'power-custom-checkable-item'> {}
 
 export type PowerCustomCheckableItemDefinition = __Definition<
   PowerCustomCheckableItemModel,
-  'token'
+  'resourceToken'
 >;
 
 type ModelTypeToDefinition<TType extends Model['type']> = Extract<
@@ -106,17 +100,17 @@ export const typeToModelDefinitionDict: {
   },
   'power-item': {
     type: 'power-item',
-    primaryField: 'token',
+    primaryField: 'resourceToken',
     allowedFields: [],
   },
   'power-glance': {
     type: 'power-glance',
-    primaryField: 'token',
+    primaryField: 'resourceToken',
     allowedFields: ['clock', 'disposed'],
   },
   'power-custom-checkable-item': {
     type: 'power-custom-checkable-item',
-    primaryField: 'token',
+    primaryField: 'resourceToken',
     allowedFields: [],
   },
 };

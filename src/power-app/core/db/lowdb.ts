@@ -33,7 +33,8 @@ export class LowdbAdapter extends AbstractDBAdapter {
         'power-glance': [],
         'power-custom-checkable-item': [],
       })
-      .write();
+      .write()
+      .catch(console.error);
   }
 
   protected async getModel<TModel extends Model>(
@@ -67,9 +68,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
   protected async createModel<TModel extends Model>(
     model: TModel,
   ): Promise<void> {
-    await this.getCollection(model)
-      .push(model)
-      .write();
+    await this.getCollection(model).push(model).write();
   }
 
   protected async updateModel<TModel extends Model>(

@@ -15,6 +15,7 @@ import {API} from './api';
 import {
   ActionStorage,
   IDBAdapter,
+  IPowerAppResourceModel,
   IServeAdapter,
   InstallationEvent,
   InstallationModel,
@@ -219,27 +220,31 @@ export class PowerApp {
 
     let {payload, type} = event;
 
+    let {
+      token,
+      url,
+      installation,
+      version,
+      organization,
+      team,
+    } = payload.source;
+
+    if (!installation) {
+      return;
+    }
+
     let installationStorage = await this.dbAdapter.getStorage<
       InstallationModel
     >({
       type: 'installation',
-      installation: payload.installation,
-    });
-
-    let {
-      team,
-      configs,
-      resources,
-      source,
-      organization,
       installation,
-      // TODO (boen): waiting makeflow app version
-      version = '0.1.0',
-    } = event.payload as any;
+    });
 
     switch (event.type) {
       case 'activate':
       case 'update': {
+        let {configs, resources} = event.payload;
+
         if (installationStorage.created) {
           installationStorage
             .setField('configs', configs)
@@ -247,13 +252,14 @@ export class PowerApp {
         } else {
           installationStorage.create({
             type: 'installation',
+            token,
+            url,
+            installation,
+            version,
+            organization,
             team,
             configs,
             resources,
-            source,
-            organization,
-            installation,
-            version,
             storage: {},
           });
         }
@@ -282,7 +288,7 @@ export class PowerApp {
 
       await result.change({
         api,
-        configs,
+        configs: installationStorage.getField('configs') ?? {},
         storage: getActionStorage(installationStorage, this.dbAdapter),
       });
     }
@@ -295,7 +301,10 @@ export class PowerApp {
     response: PermissionEvent['response'],
   ): Promise<void> => {
     let responseData = {};
-    let {installation, accessToken} = event.payload;
+    let {
+      source: {installation},
+      accessToken,
+    } = event.payload;
 
     let installationStorage = await this.dbAdapter.getStorage<
       InstallationModel
@@ -323,15 +332,11 @@ export class PowerApp {
     let {params, payload} = event;
 
     let {
-      token,
-      source,
-      organization,
-      installation,
+      token: resourceToken,
+      source: {token, url, installation, organization, team, version},
       inputs = {},
       configs = {},
-      // TODO (boen): waiting makeflow app version
-      version = '0.1.0',
-    } = payload as any;
+    } = payload;
 
     let storage = await this.dbAdapter.getStorage<PowerItemModel>({
       type: 'power-item',
@@ -343,7 +348,7 @@ export class PowerApp {
       storage.version,
       this.definitions,
       getPowerItemChange(params),
-      getMigrations(params),
+      getPowerItemMigrations(params),
     );
 
     if (!result) {
@@ -361,10 +366,12 @@ export class PowerApp {
     } else {
       storage.create({
         type: 'power-item',
-        source,
-        organization,
-        installation,
         token,
+        url,
+        installation,
+        organization,
+        team,
+        resourceToken,
         version,
         storage: {},
       });
@@ -397,16 +404,12 @@ export class PowerApp {
     let {params, payload} = event;
 
     let {
-      token,
-      source,
-      organization,
-      installation,
-      clock,
+      token: resourceToken,
+      source: {token, url, installation, organization, team, version},
+      clock = 0,
       resources = [],
       configs = {},
-      // TODO (boen): waiting makeflow app version
-      version = '0.1.0',
-    } = payload as any;
+    } = payload;
 
     let storage = await this.dbAdapter.getStorage<PowerGlanceModel>({
       type: 'power-glance',
@@ -418,7 +421,7 @@ export class PowerApp {
       storage.version,
       this.definitions,
       getPowerGlanceChange(params),
-      getMigrations(params),
+      getPowerGlanceMigrations(params),
     );
 
     if (!result) {
@@ -458,12 +461,14 @@ export class PowerApp {
     } else {
       storage.create({
         type: 'power-glance',
-        source,
-        organization,
+        token,
+        url,
         installation,
-        token: payload.token,
-        clock,
+        organization,
+        team,
         version,
+        resourceToken,
+        clock,
         disposed: undefined,
         storage: {},
       });
@@ -495,22 +500,18 @@ export class PowerApp {
     let {params, payload} = event;
 
     let {
-      token,
-      source,
-      organization,
-      installation,
+      token: resourceToken,
+      source: {token, url, installation, organization, team, version},
       inputs = {},
       configs = {},
       context,
-      // TODO (boen): waiting makeflow app version
-      version = '0.1.0',
-    } = payload as any;
+    } = payload;
 
     let storage = await this.dbAdapter.getStorage<
       PowerCustomCheckableItemModel
     >({
       type: 'power-custom-checkable-item',
-      token,
+      resourceToken,
     });
 
     let result = getChangeAndMigrations<
@@ -520,7 +521,7 @@ export class PowerApp {
       storage.version,
       this.definitions,
       getPowerCustomCheckableItemChange(params),
-      getMigrations(params),
+      getPowerCustomCheckableItemMigrations(params),
     );
 
     if (!result) {
@@ -538,11 +539,13 @@ export class PowerApp {
     } else {
       storage.create({
         type: 'power-custom-checkable-item',
-        source,
-        organization,
-        installation,
         token,
+        url,
+        installation,
+        organization,
+        team,
         version,
+        resourceToken,
         storage: {},
       });
     }
@@ -569,7 +572,7 @@ export class PowerApp {
   };
 
   private async generateAPI(storage: StorageObject<any>): Promise<API> {
-    let api = new API(storage.getField('source'));
+    let api = new API(storage);
 
     switch (storage.type) {
       case 'installation': {
@@ -579,7 +582,9 @@ export class PowerApp {
       case 'power-item':
       case 'power-glance':
       case 'power-custom-checkable-item': {
-        let storageWithToken = storage;
+        let storageWithResourceToken: StorageObject<IPowerAppResourceModel<
+          any
+        >> = storage;
 
         let installationStorage = await this.dbAdapter.getStorage<
           InstallationModel
@@ -588,7 +593,9 @@ export class PowerApp {
           installation: storage.getField('installation'),
         });
 
-        api.setResourceToken(storageWithToken.getField('token'));
+        api.setResourceToken(
+          storageWithResourceToken.getField('resourceToken'),
+        );
         api.setAccessToken(installationStorage.getField('accessToken'));
 
         break;
@@ -675,7 +682,22 @@ function getPowerCustomCheckableItemChange({
   };
 }
 
-function getMigrations({
+function getPowerItemMigrations({
+  name,
+}: PowerItemEventParams): (
+  type: keyof PowerAppVersion.Migrations<Model>,
+  definitions: PowerAppVersion.Definition[],
+) => PowerAppVersion.MigrationFunction<Model>[] {
+  return (type, definitions) =>
+    _.compact(
+      definitions.map(
+        definition =>
+          definition.contributions?.powerItems?.[name]?.migrations?.[type],
+      ),
+    );
+}
+
+function getPowerGlanceMigrations({
   name,
 }:
   | PowerItemEventParams
@@ -688,8 +710,32 @@ function getMigrations({
     _.compact(
       definitions.map(
         definition =>
-          definition.contributions?.powerItems?.[name]?.migrations?.[type],
+          definition.contributions?.powerGlances?.[name]?.migrations?.[type],
       ),
+    );
+}
+
+function getPowerCustomCheckableItemMigrations({
+  name,
+}:
+  | PowerItemEventParams
+  | PowerGlanceEventParams
+  | PowerCustomCheckableItemEventParams): (
+  type: keyof PowerAppVersion.Migrations<Model>,
+  definitions: PowerAppVersion.Definition[],
+) => PowerAppVersion.MigrationFunction<Model>[] {
+  return (type, definitions) =>
+    _.compact(
+      definitions.map(definition => {
+        let powerCustomCheckableItem =
+          definition.contributions?.powerCustomCheckableItems?.[name];
+
+        if (typeof powerCustomCheckableItem === 'function') {
+          return undefined;
+        }
+
+        return powerCustomCheckableItem?.migrations?.[type];
+      }),
     );
 }
 
