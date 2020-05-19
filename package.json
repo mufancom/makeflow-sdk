@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/sdk",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "description": "Makeflow SDK",
   "repository": "https://github.com/makeflow/makeflow-sdk",
   "author": "Chengdu Mufan Technology Co., Ltd.",
@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "prepublishOnly": "yarn build-ts",
-    "prerelease":"npm version prerelease --preid=beta",
+    "prerelease": "npm version prerelease --preid=beta",
     "run:app-builder": "cd src/app-builder && yarn start",
     "build:program": "yarn tsc --project src/program",
     "build:power-app": "yarn tsc --project src/power-app",
