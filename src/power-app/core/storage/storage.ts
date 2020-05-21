@@ -3,6 +3,15 @@ import {Dict} from 'tslang';
 
 import {Model, ModelToDefinition} from '../model';
 
+export interface ActionStorage<
+  TModel extends Model,
+  TKey extends keyof TModel = keyof TModel
+> {
+  get: StorageObject<TModel>['get'];
+  set(...args: [TModel] | [TKey, TModel[TKey]]): Promise<void>;
+  merge(...args: Parameters<StorageObject<TModel>['merge']>): Promise<void>;
+}
+
 type StorageSaveResult<TModel extends Model> =
   | {type: 'create'; model: TModel}
   | {type: 'delete'; model: TModel}

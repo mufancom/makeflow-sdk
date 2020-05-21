@@ -13,12 +13,14 @@ export interface IModel<
 export type Model =
   | InstallationModel
   | PowerItemModel
+  | PowerNodeModel
   | PowerGlanceModel
   | PowerCustomCheckableItemModel;
 
 export type Definition =
   | InstallationDefinition
   | PowerItemDefinition
+  | PowerNodeDefinition
   | PowerGlanceDefinition
   | PowerCustomCheckableItemDefinition;
 
@@ -62,6 +64,12 @@ export interface PowerItemModel extends IPowerAppResourceModel<'power-item'> {}
 
 export type PowerItemDefinition = __Definition<PowerItemModel, 'resourceToken'>;
 
+// power-node
+
+export interface PowerNodeModel extends IPowerAppResourceModel<'power-node'> {}
+
+export type PowerNodeDefinition = __Definition<PowerNodeModel, 'resourceToken'>;
+
 // power-glance
 
 export interface PowerGlanceModel
@@ -100,6 +108,11 @@ export const typeToModelDefinitionDict: {
   },
   'power-item': {
     type: 'power-item',
+    primaryField: 'resourceToken',
+    allowedFields: [],
+  },
+  'power-node': {
+    type: 'power-node',
     primaryField: 'resourceToken',
     allowedFields: [],
   },

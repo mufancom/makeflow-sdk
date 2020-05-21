@@ -1,16 +1,16 @@
 import {API as APITypes} from '@makeflow/types';
 import {Dict} from 'tslang';
 
-import {API} from '../api';
-
+import {API} from '../../api';
 import {
   InstallationModel,
   Model,
   PowerCustomCheckableItemModel,
   PowerGlanceModel,
   PowerItemModel,
-} from './model';
-import {ActionStorage} from './storage';
+  PowerNodeModel,
+} from '../model';
+import {ActionStorage} from '../storage';
 
 export namespace PowerAppVersion {
   export interface Definition {
@@ -19,6 +19,9 @@ export namespace PowerAppVersion {
     contributions?: {
       powerItems?: {
         [key in string]: PowerItem.Definition;
+      };
+      powerNodes?: {
+        [key in string]: PowerNode.Definition;
       };
       powerGlances?: {
         [key in string]: PowerGlance.Definition;
@@ -32,6 +35,7 @@ export namespace PowerAppVersion {
   export type Changes =
     | Installation.Change
     | PowerItem.Change
+    | PowerNode.Change
     | PowerGlance.Change
     | PowerCustomCheckableItem.Change;
 
@@ -92,6 +96,33 @@ export namespace PowerAppVersion {
         [key in string]: Change;
       };
       migrations?: Migrations<PowerItemModel>;
+    }
+  }
+
+  // power-node
+
+  export namespace PowerNode {
+    export interface ChangeParams {
+      storage: ActionStorage<PowerNodeModel>;
+      api: API;
+      inputs: Dict<unknown>;
+      configs: Dict<unknown>;
+    }
+
+    export interface ChangeResponseData extends APITypes.PowerNode.HookReturn {}
+
+    export type Change = (
+      params: ChangeParams,
+    ) => Promise<ChangeResponseData | void> | ChangeResponseData | void;
+
+    export interface Definition {
+      activate?: Change;
+      update?: Change;
+      deactivate?: Change;
+      action?: {
+        [key in string]: Change;
+      };
+      migrations?: Migrations<PowerNodeModel>;
     }
   }
 

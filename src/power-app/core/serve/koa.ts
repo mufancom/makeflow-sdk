@@ -11,12 +11,13 @@ import {
   PowerCustomCheckableItemEvent,
   PowerGlanceEvent,
   PowerItemEvent,
+  PowerNodeEvent,
 } from './events';
 import {
   AbstractServeAdapter,
   ServeOptions,
   isPowerGlanceEventParams,
-  isPowerItemEventParams,
+  isPowerItemOrPowerNOdeEventParams,
 } from './serve';
 
 export class KoaAdapter extends AbstractServeAdapter {
@@ -81,7 +82,7 @@ export class KoaAdapter extends AbstractServeAdapter {
           request: {body},
         } = context;
 
-        if (!isPowerItemEventParams(params)) {
+        if (!isPowerItemOrPowerNOdeEventParams(params)) {
           return;
         }
 
@@ -92,6 +93,25 @@ export class KoaAdapter extends AbstractServeAdapter {
             payload: body,
           },
           getResponse<PowerItemEvent>(context),
+        );
+      })
+      .post('/power-node/:name/:type/:action?', context => {
+        let {
+          params,
+          request: {body},
+        } = context;
+
+        if (!isPowerItemOrPowerNOdeEventParams(params)) {
+          return;
+        }
+
+        this.emit<PowerNodeEvent>(
+          'power-node',
+          {
+            params,
+            payload: body,
+          },
+          getResponse<PowerNodeEvent>(context),
         );
       })
       .post('/power-glance/:name/:type', context => {

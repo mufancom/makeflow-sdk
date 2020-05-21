@@ -1,6 +1,6 @@
 import {API} from '@makeflow/types';
 
-import {PowerAppVersion} from '../../version';
+import {PowerAppVersion} from '../../types';
 
 export interface PowerGlanceEvent {
   type: 'power-glance';

@@ -31,6 +31,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
       .defaults<Schema>({
         installation: [],
         'power-item': [],
+        'power-node': [],
         'power-glance': [],
         'power-custom-checkable-item': [],
       })
