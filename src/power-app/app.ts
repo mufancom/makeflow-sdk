@@ -3,7 +3,7 @@ import _ from 'lodash';
 import {validRange} from 'semver';
 import {Constructor} from 'tslang';
 
-import {API} from './api';
+import {API, APISource} from './api';
 import {
   ActionStorage,
   IDBAdapter,
@@ -54,12 +54,18 @@ export class PowerApp implements IPowerApp {
     this.initialize();
   }
 
-  getAPI(): API {
-    return new API(this.options.source);
+  getAPI(source?: APISource): API {
+    let options = this.options;
+
+    if (!source && !options.source?.url) {
+      throw Error('初始化未传递 source 的情况下，`getAPI` 需要传入');
+    }
+
+    return new API(source ?? {url: options.source!.url!});
   }
 
   async generateAPI(storage: StorageObject<any>): Promise<API> {
-    let api = new API(storage);
+    let api = new API(storage.source);
 
     switch (storage.type) {
       case 'installation': {

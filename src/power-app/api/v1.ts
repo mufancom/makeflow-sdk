@@ -14,7 +14,7 @@ import {Dict} from 'tslang';
 const JSON_CONTENT_TYPE = 'application/json;charset=UTF-8';
 const STREAM_CONTENT_TYPE = 'application/octet-stream';
 
-export type APISource = Partial<APITypes.PowerApp.Source>;
+export type APISource = APITypes.PowerApp.BasicSource;
 
 export interface RequestOptions {
   body?: string | Dict<any>;
@@ -29,7 +29,7 @@ export class API<TSourceObject extends APISource = APISource> {
 
   private resourceToken: OperationTokenToken | undefined;
 
-  constructor(private source?: TSourceObject) {}
+  constructor(private source: TSourceObject) {}
 
   setAccessToken(token: string | undefined): void {
     this.accessToken = token;
@@ -241,14 +241,13 @@ export class API<TSourceObject extends APISource = APISource> {
     path: string,
     {body, type = JSON_CONTENT_TYPE, requireAccessToken}: RequestOptions = {},
   ): Promise<TData> {
-    let source = this.source;
     let accessToken = this.accessToken;
 
     if (requireAccessToken && !accessToken) {
       throw new Error('ACCESS_TOKEN_IS_REQUIRED');
     }
 
-    let baseURL = source?.url;
+    let baseURL = this.source.url;
 
     if (!baseURL) {
       throw new Error('BASE_URL_IS_REQUIRED');

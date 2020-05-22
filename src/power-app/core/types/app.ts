@@ -8,8 +8,12 @@ import {StorageObject} from '../storage';
 
 import {PowerAppVersion} from './version';
 
+export type PowerAppSource = Partial<
+  Pick<APITypes.PowerApp.Source, 'url' | 'token'>
+>;
+
 export interface PowerAppOptions {
-  source?: Partial<APITypes.PowerApp.Source>;
+  source?: PowerAppSource;
   db?:
     | {type: 'mongo'; options: MongoOptions}
     | {type: 'lowdb'; options: LowdbOptions};
