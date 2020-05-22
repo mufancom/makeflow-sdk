@@ -7,6 +7,7 @@ import {
   PowerCustomCheckableItem,
   PowerGlance,
   PowerItem,
+  PowerNode,
 } from '@makeflow/types';
 import {Button, Icon, Tabs} from 'antd';
 import _ from 'lodash';
@@ -21,6 +22,8 @@ type ValueType =
   | PowerCustomCheckableItem.Definition
   | PowerAppInput.Definition
   | PowerItem.ActionDefinition
+  | PowerNode.Definition
+  | PowerNode.ActionDefinition
   | PowerItem.PowerItemFieldDefinition
   | PowerApp.DefinitionTagResource
   | PowerApp.DefinitionProcedureResource

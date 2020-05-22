@@ -1,7 +1,8 @@
 import {PowerApp} from '@makeflow/types';
 import {Card, Icon, Modal, notification} from 'antd';
-import Meta from 'antd/lib/card/Meta';
 import React, {FC, useState} from 'react';
+
+const Meta =Card.Meta;
 
 export const Start: FC<{
   onChange(definition: PowerApp.RawDefinition): void;

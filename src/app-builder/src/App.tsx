@@ -6,6 +6,7 @@ import {
   PowerCustomCheckableItem as PowerCustomCheckableItemTypes,
   PowerGlance as PowerGlanceTypes,
   PowerItem as PowerItemTypes,
+  PowerNode as PowerNodeTypes,
 } from '@makeflow/types';
 import {
   Button,
@@ -24,12 +25,14 @@ import React, {FC, useState} from 'react';
 import {v4 as uuid} from 'uuid';
 
 import './App.css';
+
 import {
   AppField,
   Config,
   PowerCustomCheckableItem,
   PowerGlance,
   PowerItem,
+  PowerNode,
   Procedure,
   Setting,
   SettingTabs,
@@ -207,6 +210,18 @@ export const App: FC = () => {
                     component={PowerItem}
                     values={state.contributions?.powerItems}
                     onChange={powerItems => setContributions({powerItems})}
+                  />
+                </Panel>
+                <Panel
+                  header={`超级节点 (${state.contributions?.powerNodes
+                    ?.length ?? 0})`}
+                  key="power-node"
+                >
+                  <SettingTabs<PowerNodeTypes.Definition>
+                    primaryKey="name"
+                    component={PowerNode}
+                    values={state.contributions?.powerNodes}
+                    onChange={powerNodes => setContributions({powerNodes})}
                   />
                 </Panel>
                 <Panel
