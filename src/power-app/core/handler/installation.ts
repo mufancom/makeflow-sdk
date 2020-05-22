@@ -1,3 +1,5 @@
+import {API} from '@makeflow/types';
+
 import {InstallationModel} from '../model';
 import {InstallationEvent} from '../serve';
 import {IPowerApp, PowerAppVersion} from '../types';
@@ -26,12 +28,13 @@ export async function installationHandler(
   switch (event.type) {
     case 'activate':
     case 'update': {
-      let {configs, resources} = event.payload;
+      let {configs, resources, users} = event.payload;
 
       if (installationStorage.created) {
         installationStorage
           .setField('configs', configs)
-          .setField('resources', resources);
+          .setField('resources', resources)
+          .setField('users', users);
       } else {
         installationStorage.create({
           type: 'installation',
@@ -43,6 +46,7 @@ export async function installationHandler(
           team,
           configs,
           resources,
+          users,
           storage: {},
         });
       }
@@ -73,6 +77,9 @@ export async function installationHandler(
       api,
       configs: installationStorage.getField('configs') ?? {},
       storage: getActionStorage(installationStorage, app.dbAdapter),
+      resources: installationStorage.getField('resources'),
+      users: installationStorage.getField('users'),
+      rawParams: payload as API.PowerApp.InstallationActivateHookParams,
     });
   }
 

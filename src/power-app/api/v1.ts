@@ -14,7 +14,7 @@ import {Dict} from 'tslang';
 const JSON_CONTENT_TYPE = 'application/json;charset=UTF-8';
 const STREAM_CONTENT_TYPE = 'application/octet-stream';
 
-export type APISource = Partial<APITypes.PowerApp.Source>;
+export type APISource = APITypes.PowerApp.Source;
 
 export interface RequestOptions {
   body?: string | Dict<any>;
@@ -28,6 +28,10 @@ export class API<TSourceObject extends APISource = APISource> {
   private accessToken: string | undefined;
 
   private resourceToken: OperationTokenToken | undefined;
+
+  get granted(): boolean {
+    return !!this.accessToken;
+  }
 
   constructor(private source?: TSourceObject) {}
 

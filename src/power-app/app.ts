@@ -59,7 +59,14 @@ export class PowerApp implements IPowerApp {
   }
 
   async generateAPI(storage: StorageObject<any>): Promise<API> {
-    let api = new API(storage);
+    let api = new API({
+      organization: storage.getField('organization'),
+      team: storage.getField('team'),
+      installation: storage.getField('installation'),
+      version: storage.getField('version'),
+      url: storage.getField('url'),
+      token: storage.getField('token'),
+    });
 
     switch (storage.type) {
       case 'installation': {

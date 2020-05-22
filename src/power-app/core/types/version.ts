@@ -61,6 +61,9 @@ export namespace PowerAppVersion {
       storage: ActionStorage<InstallationModel>;
       api: API;
       configs: Dict<unknown>;
+      resources: APITypes.PowerApp.ResourcesMapping | undefined;
+      users: APITypes.PowerApp.UserInfo[] | undefined;
+      rawParams: APITypes.PowerApp.InstallationActivateHookParams;
     }
 
     export type Change = (params: ChangeParams) => Promise<void> | void;
