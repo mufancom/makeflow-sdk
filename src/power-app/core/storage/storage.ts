@@ -1,3 +1,4 @@
+import {API} from '@makeflow/types';
 import _ from 'lodash';
 import {Dict} from 'tslang';
 
@@ -40,6 +41,12 @@ export class StorageObject<
 
   get created(): boolean {
     return !!this.originalModel;
+  }
+
+  get source(): API.PowerApp.BasicSource {
+    return {
+      url: this.getField('url')!,
+    };
   }
 
   constructor(protected originalModel?: TModel) {
