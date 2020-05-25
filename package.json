@@ -51,7 +51,7 @@
   "dependencies": {
     "@makeflow/types": "^0.1.6",
     "@makeflow/types-nominal": "^0.1.0",
-    "@types/koa": "^2.11.3",
+    "@types/koa": "^2.11.0",
     "@types/mongodb": "^3.5.18",
     "@types/node-fetch": "^2.5.7",
     "clime": "^0.5.10",
