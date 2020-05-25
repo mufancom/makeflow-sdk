@@ -5,7 +5,7 @@ import {ActionStorage, StorageObject} from '../storage';
 export function getActionStorage<TModel extends Model>(
   storageObject: StorageObject<TModel>,
   db: IDBAdapter,
-): ActionStorage<TModel> {
+): ActionStorage {
   let get = storageObject.get.bind(storageObject);
 
   async function set(...args: any[]): Promise<void> {
@@ -13,9 +13,7 @@ export function getActionStorage<TModel extends Model>(
     await db.setStorage(storageObject);
   }
 
-  async function merge(
-    storage: Parameters<StorageObject<TModel>['merge']>[0],
-  ): Promise<void> {
+  async function merge(storage: any): Promise<void> {
     storageObject.merge(storage);
     await db.setStorage(storageObject);
   }

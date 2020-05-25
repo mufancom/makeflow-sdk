@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import {Model, PowerItemModel} from '../model';
+import {PowerItemModel} from '../model';
 import {PowerItemEvent, PowerItemEventParams} from '../serve';
 import {IPowerApp, PowerAppVersion} from '../types';
 import {getActionStorage, getChangeAndMigrations} from '../utils';
@@ -99,9 +99,9 @@ function getPowerItemChange({
 function getPowerItemMigrations({
   name,
 }: PowerItemEventParams): (
-  type: keyof PowerAppVersion.Migrations<Model>,
+  type: keyof PowerAppVersion.Migrations,
   definitions: PowerAppVersion.Definition[],
-) => PowerAppVersion.MigrationFunction<Model>[] {
+) => PowerAppVersion.MigrationFunction[] {
   return (type, definitions) =>
     _.compact(
       definitions.map(
