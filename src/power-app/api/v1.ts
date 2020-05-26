@@ -29,6 +29,10 @@ export class API<TSourceObject extends APISource = APISource> {
 
   private resourceToken: OperationTokenToken | undefined;
 
+  get granted(): boolean {
+    return !!this.accessToken;
+  }
+
   constructor(private source: TSourceObject) {}
 
   setAccessToken(token: string | undefined): void {

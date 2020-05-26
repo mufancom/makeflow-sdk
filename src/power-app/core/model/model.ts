@@ -45,6 +45,7 @@ type __Definition<
 export interface InstallationModel extends IModel<'installation'> {
   configs: Dict<unknown>;
   resources: API.PowerApp.ResourcesMapping;
+  users: API.PowerApp.UserInfo[];
   accessToken?: string | undefined;
 }
 
