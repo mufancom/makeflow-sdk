@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/sdk",
-  "version": "0.1.0-beta.6",
+  "version": "0.1.0-beta.7",
   "description": "Makeflow SDK",
   "repository": "https://github.com/makeflow/makeflow-sdk",
   "author": "Chengdu Mufan Technology Co., Ltd.",
