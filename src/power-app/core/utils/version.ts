@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import {compare, intersects, lt, minVersion, satisfies} from 'semver';
 
-import {Model} from '../model';
 import {PowerAppVersion, PowerAppVersionInfo} from '../types';
 
 import {warning} from './log';
@@ -28,13 +27,13 @@ export function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
   infos: PowerAppVersionInfo[],
   getChange: (definition: PowerAppVersion.Definition) => TChange | undefined,
   getMigrations?: (
-    type: keyof PowerAppVersion.Migrations<Model>,
+    type: keyof PowerAppVersion.Migrations,
     definitions: PowerAppVersion.Definition[],
-  ) => PowerAppVersion.MigrationFunction<Model>[],
+  ) => PowerAppVersion.MigrationFunction[],
 ):
   | {
       change: TChange | undefined;
-      migrations: PowerAppVersion.MigrationFunction<Model>[];
+      migrations: PowerAppVersion.MigrationFunction[];
     }
   | undefined {
   if (!comingVersion) {

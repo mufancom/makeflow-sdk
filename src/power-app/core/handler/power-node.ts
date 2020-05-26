@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import {Model, PowerNodeModel} from '../model';
+import {PowerNodeModel} from '../model';
 import {PowerNodeEvent, PowerNodeEventParams} from '../serve';
 import {IPowerApp, PowerAppVersion} from '../types';
 import {getActionStorage, getChangeAndMigrations} from '../utils';
@@ -99,9 +99,9 @@ function getPowerNodeChange({
 function getPowerNodeMigrations({
   name,
 }: PowerNodeEventParams): (
-  type: keyof PowerAppVersion.Migrations<Model>,
+  type: keyof PowerAppVersion.Migrations,
   definitions: PowerAppVersion.Definition[],
-) => PowerAppVersion.MigrationFunction<Model>[] {
+) => PowerAppVersion.MigrationFunction[] {
   return (type, definitions) =>
     _.compact(
       definitions.map(

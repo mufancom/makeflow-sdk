@@ -4,13 +4,12 @@ import {Dict} from 'tslang';
 
 import {Model, ModelToDefinition} from '../model';
 
-export interface ActionStorage<
-  TModel extends Model,
-  TKey extends keyof TModel = keyof TModel
-> {
-  get: StorageObject<TModel>['get'];
-  set(...args: [TModel] | [TKey, TModel[TKey]]): Promise<void>;
-  merge(...args: Parameters<StorageObject<TModel>['merge']>): Promise<void>;
+export interface ActionStorage<TStorage extends Dict<any> = Dict<any>> {
+  get: StorageObject<any>['get'];
+  set<TTStorage = TStorage, TKey extends keyof TTStorage = keyof TTStorage>(
+    ...args: [TTStorage] | [TKey, TTStorage[TKey]]
+  ): Promise<void>;
+  merge<TTStorage = TStorage>(storage: Partial<TTStorage>): Promise<void>;
 }
 
 type StorageSaveResult<TModel extends Model> =

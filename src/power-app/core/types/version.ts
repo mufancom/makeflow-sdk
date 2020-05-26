@@ -2,33 +2,63 @@ import {API as APITypes} from '@makeflow/types';
 import {Dict} from 'tslang';
 
 import {API} from '../../api';
-import {
-  InstallationModel,
-  Model,
-  PowerCustomCheckableItemModel,
-  PowerGlanceModel,
-  PowerItemModel,
-  PowerNodeModel,
-} from '../model';
 import {ActionStorage} from '../storage';
 
+export interface IStorageTypes {
+  powerItems?: {
+    [key in string]: Dict<any>;
+  };
+  powerNodes?: {
+    [key in string]: Dict<any>;
+  };
+  powerGlances?: {
+    [key in string]: Dict<any>;
+  };
+  powerCustomCheckableItems?: {
+    [key in string]: Dict<any>;
+  };
+}
+
 export namespace PowerAppVersion {
-  export interface Definition {
+  export interface Definition<
+    TStorageTypes extends IStorageTypes = IStorageTypes,
+    TDefaultStorage = Dict<any>
+  > {
     ancestor?: string;
     installation?: Installation.Definition;
     contributions?: {
       powerItems?: {
-        [key in string]: PowerItem.Definition;
-      };
+        [TKey in keyof TStorageTypes['powerItems']]: PowerItem.Definition<
+          TStorageTypes['powerItems'][TKey]
+        >;
+      } &
+        {
+          [key in string]: PowerItem.Definition<TDefaultStorage>;
+        };
       powerNodes?: {
-        [key in string]: PowerNode.Definition;
-      };
+        [TKey in keyof TStorageTypes['powerNodes']]: PowerNode.Definition<
+          TStorageTypes['powerNodes'][TKey]
+        >;
+      } &
+        {
+          [key in string]: PowerNode.Definition<TDefaultStorage>;
+        };
       powerGlances?: {
-        [key in string]: PowerGlance.Definition;
-      };
+        [TKey in keyof TStorageTypes['powerGlances']]: PowerGlance.Definition<
+          TStorageTypes['powerGlances'][TKey]
+        >;
+      } &
+        {
+          [key in string]: PowerGlance.Definition<TDefaultStorage>;
+        };
       powerCustomCheckableItems?: {
-        [key in string]: PowerCustomCheckableItem.Definition;
-      };
+        [TKey in keyof TStorageTypes['powerCustomCheckableItems']]: PowerCustomCheckableItem.Definition<
+          TStorageTypes['powerCustomCheckableItems'][TKey]
+        >;
+      } &
+        {
+          [key in string]: PowerCustomCheckableItem.Definition<TDefaultStorage>;
+        };
     };
   }
 
@@ -39,26 +69,26 @@ export namespace PowerAppVersion {
     | PowerGlance.Change
     | PowerCustomCheckableItem.Change;
 
-  export type MigrationFunction<TModel extends Model> = (
-    storage: ActionStorage<TModel>,
+  export type MigrationFunction<TStorage = Dict<any>> = (
+    storage: ActionStorage<TStorage>,
   ) => Promise<void> | void;
 
-  export interface Migrations<TModel extends Model> {
+  export interface Migrations<TStorage = Dict<any>> {
     /**
      * up 是把前一个版本的数据升级成当前版本
      */
-    up?: MigrationFunction<TModel>;
+    up?: MigrationFunction<TStorage>;
     /**
      * down 是把当前版本的数据降级成前一个版本
      */
-    down?: MigrationFunction<TModel>;
+    down?: MigrationFunction<TStorage>;
   }
 
   // installation
 
   export namespace Installation {
     export interface ChangeParams {
-      storage: ActionStorage<InstallationModel>;
+      storage: ActionStorage;
       api: API;
       configs: Dict<unknown>;
       resources: APITypes.PowerApp.ResourcesMapping | undefined;
@@ -78,8 +108,8 @@ export namespace PowerAppVersion {
   // power-item
 
   export namespace PowerItem {
-    export interface ChangeParams {
-      storage: ActionStorage<PowerItemModel>;
+    export interface ChangeParams<TStorage> {
+      storage: ActionStorage<TStorage>;
       api: API;
       inputs: Dict<unknown>;
       configs: Dict<unknown>;
@@ -87,26 +117,26 @@ export namespace PowerAppVersion {
 
     export interface ChangeResponseData extends APITypes.PowerItem.HookReturn {}
 
-    export type Change = (
-      params: ChangeParams,
+    export type Change<TStorage = Dict<any>> = (
+      params: ChangeParams<TStorage>,
     ) => Promise<ChangeResponseData | void> | ChangeResponseData | void;
 
-    export interface Definition {
-      activate?: Change;
-      update?: Change;
-      deactivate?: Change;
+    export interface Definition<TStorage = Dict<any>> {
+      activate?: Change<TStorage>;
+      update?: Change<TStorage>;
+      deactivate?: Change<TStorage>;
       action?: {
-        [key in string]: Change;
+        [key in string]: Change<TStorage>;
       };
-      migrations?: Migrations<PowerItemModel>;
+      migrations?: Migrations<TStorage>;
     }
   }
 
   // power-node
 
   export namespace PowerNode {
-    export interface ChangeParams {
-      storage: ActionStorage<PowerNodeModel>;
+    export interface ChangeParams<TStorage> {
+      storage: ActionStorage<TStorage>;
       api: API;
       inputs: Dict<unknown>;
       configs: Dict<unknown>;
@@ -114,26 +144,26 @@ export namespace PowerAppVersion {
 
     export interface ChangeResponseData extends APITypes.PowerNode.HookReturn {}
 
-    export type Change = (
-      params: ChangeParams,
+    export type Change<TStorage = Dict<any>> = (
+      params: ChangeParams<TStorage>,
     ) => Promise<ChangeResponseData | void> | ChangeResponseData | void;
 
-    export interface Definition {
-      activate?: Change;
-      update?: Change;
-      deactivate?: Change;
+    export interface Definition<TStorage = Dict<any>> {
+      activate?: Change<TStorage>;
+      update?: Change<TStorage>;
+      deactivate?: Change<TStorage>;
       action?: {
-        [key in string]: Change;
+        [key in string]: Change<TStorage>;
       };
-      migrations?: Migrations<PowerNodeModel>;
+      migrations?: Migrations<TStorage>;
     }
   }
 
   // power-glance
 
   export namespace PowerGlance {
-    export interface ChangeParams {
-      storage: ActionStorage<PowerGlanceModel>;
+    export interface ChangeParams<TStorage> {
+      storage: ActionStorage<TStorage>;
       api: API;
       resources: APITypes.PowerGlance.ResourceEntry[];
       configs: Dict<unknown>;
@@ -142,23 +172,23 @@ export namespace PowerAppVersion {
     export interface ChangeResponseData
       extends APITypes.PowerGlance.HookReturn {}
 
-    export type Change = (
-      params: ChangeParams,
+    export type Change<TStorage = Dict<any>> = (
+      params: ChangeParams<TStorage>,
     ) => Promise<ChangeResponseData | void> | ChangeResponseData | void;
 
-    export interface Definition {
-      initialize?: Change;
-      change?: Change;
-      dispose?: Change;
-      migrations?: Migrations<PowerGlanceModel>;
+    export interface Definition<TStorage = Dict<any>> {
+      initialize?: Change<TStorage>;
+      change?: Change<TStorage>;
+      dispose?: Change<TStorage>;
+      migrations?: Migrations<TStorage>;
     }
   }
 
   // power-custom-checkable-item
 
   export namespace PowerCustomCheckableItem {
-    export interface ChangeParams {
-      storage: ActionStorage<PowerCustomCheckableItemModel>;
+    export interface ChangeParams<TStorage> {
+      storage: ActionStorage<TStorage>;
       context: APITypes.PowerCustomCheckableItem.HookContext;
       api: API;
       inputs: Dict<unknown>;
@@ -168,15 +198,15 @@ export namespace PowerAppVersion {
     export interface ChangeResponseData
       extends APITypes.PowerCustomCheckableItem.HookReturn {}
 
-    export type Change = (
-      params: ChangeParams,
+    export type Change<TStorage = Dict<any>> = (
+      params: ChangeParams<TStorage>,
     ) => Promise<ChangeResponseData | void> | ChangeResponseData | void;
 
-    export type Definition =
+    export type Definition<TStorage = Dict<any>> =
       | {
-          processor?: Change;
-          migrations?: Migrations<PowerCustomCheckableItemModel>;
+          processor?: Change<TStorage>;
+          migrations?: Migrations<TStorage>;
         }
-      | Change;
+      | Change<TStorage>;
   }
 }

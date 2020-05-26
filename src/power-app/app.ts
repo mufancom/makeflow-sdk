@@ -10,6 +10,7 @@ import {
   IPowerApp,
   IPowerAppResourceModel,
   IServeAdapter,
+  IStorageTypes,
   InstallationEvent,
   InstallationModel,
   KoaAdapter,
@@ -98,7 +99,10 @@ export class PowerApp implements IPowerApp {
     return api;
   }
 
-  version(range: string, definition: PowerAppVersion.Definition): void {
+  version<TStorageTypes extends IStorageTypes = IStorageTypes>(
+    range: string,
+    definition: PowerAppVersion.Definition<TStorageTypes>,
+  ): void {
     if (!validRange(range)) {
       throw Error('版本格式错误');
     }
