@@ -64,7 +64,7 @@ abstract class ServeAdapter extends EventEmitter {
   }
 }
 
-export function isPowerItemOrPowerNOdeEventParams(
+export function isPowerItemOrPowerNodeEventParams(
   params: any,
 ): params is PowerItemEventParams {
   let {type, action} = Object(params);

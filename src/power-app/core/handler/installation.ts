@@ -1,5 +1,3 @@
-import {API} from '@makeflow/types';
-
 import {InstallationModel} from '../model';
 import {InstallationEvent} from '../serve';
 import {IPowerApp, PowerAppVersion} from '../types';
@@ -77,9 +75,6 @@ export async function installationHandler(
       api,
       configs: installationStorage.getField('configs') ?? {},
       storage: getActionStorage(installationStorage, app.dbAdapter),
-      resources: installationStorage.getField('resources'),
-      users: installationStorage.getField('users'),
-      rawParams: payload as API.PowerApp.InstallationActivateHookParams,
     });
   }
 

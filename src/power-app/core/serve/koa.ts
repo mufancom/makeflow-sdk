@@ -17,7 +17,7 @@ import {
   AbstractServeAdapter,
   ServeOptions,
   isPowerGlanceEventParams,
-  isPowerItemOrPowerNOdeEventParams,
+  isPowerItemOrPowerNodeEventParams,
 } from './serve';
 
 export class KoaAdapter extends AbstractServeAdapter {
@@ -82,7 +82,7 @@ export class KoaAdapter extends AbstractServeAdapter {
           request: {body},
         } = context;
 
-        if (!isPowerItemOrPowerNOdeEventParams(params)) {
+        if (!isPowerItemOrPowerNodeEventParams(params)) {
           return;
         }
 
@@ -101,7 +101,7 @@ export class KoaAdapter extends AbstractServeAdapter {
           request: {body},
         } = context;
 
-        if (!isPowerItemOrPowerNOdeEventParams(params)) {
+        if (!isPowerItemOrPowerNodeEventParams(params)) {
           return;
         }
 

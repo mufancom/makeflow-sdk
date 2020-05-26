@@ -4,10 +4,21 @@ import {Dict} from 'tslang';
 
 import {Model, ModelToDefinition} from '../model';
 
-export interface ActionStorage<TStorage extends Dict<any> = Dict<any>> {
-  get: StorageObject<any>['get'];
-  set<TTStorage = TStorage, TKey extends keyof TTStorage = keyof TTStorage>(
-    ...args: [TTStorage] | [TKey, TTStorage[TKey]]
+export interface ActionStorage<
+  TModel extends Model,
+  TStorage extends Dict<any> = Dict<any>
+> {
+  getField<TKey extends keyof TModel>(key: TKey): TModel[TKey];
+  get: StorageObject<TModel, TStorage>['get'];
+  set<TTStorage extends Dict<any> = TStorage>(
+    storage: TTStorage,
+  ): Promise<void>;
+  set<
+    TTStorage extends Dict<any> = TStorage,
+    TKey extends keyof TTStorage = keyof TTStorage
+  >(
+    key: TKey,
+    value: TTStorage[TKey],
   ): Promise<void>;
   merge<TTStorage = TStorage>(storage: Partial<TTStorage>): Promise<void>;
 }
@@ -34,7 +45,7 @@ export class StorageObject<
     return this.getField('type');
   }
 
-  get version(): string | undefined {
+  get version(): TModel['version'] | undefined {
     return this.getField('version');
   }
 

@@ -2,6 +2,14 @@ import {API as APITypes} from '@makeflow/types';
 import {Dict} from 'tslang';
 
 import {API} from '../../api';
+import {
+  InstallationModel,
+  Model,
+  PowerCustomCheckableItemModel,
+  PowerGlanceModel,
+  PowerItemModel,
+  PowerNodeModel,
+} from '../model';
 import {ActionStorage} from '../storage';
 
 export interface IStorageTypes {
@@ -69,31 +77,32 @@ export namespace PowerAppVersion {
     | PowerGlance.Change
     | PowerCustomCheckableItem.Change;
 
-  export type MigrationFunction<TStorage = Dict<any>> = (
-    storage: ActionStorage<TStorage>,
-  ) => Promise<void> | void;
+  export type MigrationFunction<
+    TModel extends Model = Model,
+    TStorage = Dict<any>
+  > = (storage: ActionStorage<TModel, TStorage>) => Promise<void> | void;
 
-  export interface Migrations<TStorage = Dict<any>> {
+  export interface Migrations<
+    TModel extends Model = Model,
+    TStorage = Dict<any>
+  > {
     /**
      * up 是把前一个版本的数据升级成当前版本
      */
-    up?: MigrationFunction<TStorage>;
+    up?: MigrationFunction<TModel, TStorage>;
     /**
      * down 是把当前版本的数据降级成前一个版本
      */
-    down?: MigrationFunction<TStorage>;
+    down?: MigrationFunction<TModel, TStorage>;
   }
 
   // installation
 
   export namespace Installation {
     export interface ChangeParams {
-      storage: ActionStorage;
+      storage: ActionStorage<InstallationModel>;
       api: API;
       configs: Dict<unknown>;
-      resources: APITypes.PowerApp.ResourcesMapping | undefined;
-      users: APITypes.PowerApp.UserInfo[] | undefined;
-      rawParams: APITypes.PowerApp.InstallationActivateHookParams;
     }
 
     export type Change = (params: ChangeParams) => Promise<void> | void;
@@ -109,7 +118,7 @@ export namespace PowerAppVersion {
 
   export namespace PowerItem {
     export interface ChangeParams<TStorage> {
-      storage: ActionStorage<TStorage>;
+      storage: ActionStorage<PowerItemModel, TStorage>;
       api: API;
       inputs: Dict<unknown>;
       configs: Dict<unknown>;
@@ -128,7 +137,7 @@ export namespace PowerAppVersion {
       action?: {
         [key in string]: Change<TStorage>;
       };
-      migrations?: Migrations<TStorage>;
+      migrations?: Migrations<PowerItemModel, TStorage>;
     }
   }
 
@@ -136,7 +145,7 @@ export namespace PowerAppVersion {
 
   export namespace PowerNode {
     export interface ChangeParams<TStorage> {
-      storage: ActionStorage<TStorage>;
+      storage: ActionStorage<PowerNodeModel, TStorage>;
       api: API;
       inputs: Dict<unknown>;
       configs: Dict<unknown>;
@@ -155,7 +164,7 @@ export namespace PowerAppVersion {
       action?: {
         [key in string]: Change<TStorage>;
       };
-      migrations?: Migrations<TStorage>;
+      migrations?: Migrations<PowerNodeModel, TStorage>;
     }
   }
 
@@ -163,7 +172,7 @@ export namespace PowerAppVersion {
 
   export namespace PowerGlance {
     export interface ChangeParams<TStorage> {
-      storage: ActionStorage<TStorage>;
+      storage: ActionStorage<PowerGlanceModel, TStorage>;
       api: API;
       resources: APITypes.PowerGlance.ResourceEntry[];
       configs: Dict<unknown>;
@@ -180,7 +189,7 @@ export namespace PowerAppVersion {
       initialize?: Change<TStorage>;
       change?: Change<TStorage>;
       dispose?: Change<TStorage>;
-      migrations?: Migrations<TStorage>;
+      migrations?: Migrations<PowerGlanceModel, TStorage>;
     }
   }
 
@@ -188,7 +197,7 @@ export namespace PowerAppVersion {
 
   export namespace PowerCustomCheckableItem {
     export interface ChangeParams<TStorage> {
-      storage: ActionStorage<TStorage>;
+      storage: ActionStorage<PowerCustomCheckableItemModel, TStorage>;
       context: APITypes.PowerCustomCheckableItem.HookContext;
       api: API;
       inputs: Dict<unknown>;
@@ -205,7 +214,7 @@ export namespace PowerAppVersion {
     export type Definition<TStorage = Dict<any>> =
       | {
           processor?: Change<TStorage>;
-          migrations?: Migrations<TStorage>;
+          migrations?: Migrations<PowerCustomCheckableItemModel, TStorage>;
         }
       | Change<TStorage>;
   }
