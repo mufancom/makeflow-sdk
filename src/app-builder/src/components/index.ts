@@ -15,3 +15,4 @@ export * from './report';
 export * from './common';
 export * from './element';
 export * from './power-node';
+export * from './page';

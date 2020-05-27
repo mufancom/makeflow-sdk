@@ -2,6 +2,7 @@ import {
   AccessControl,
   PowerApp,
   PowerAppConfig,
+  PowerAppPage,
   PowerAppProcedureField,
   PowerCustomCheckableItem as PowerCustomCheckableItemTypes,
   PowerGlance as PowerGlanceTypes,
@@ -29,6 +30,7 @@ import './App.css';
 import {
   AppField,
   Config,
+  Page,
   PowerCustomCheckableItem,
   PowerGlance,
   PowerItem,
@@ -247,6 +249,20 @@ export const App: FC = () => {
                     values={state.contributions?.powerCustomCheckableItems}
                     onChange={powerCustomCheckableItems =>
                       setContributions({powerCustomCheckableItems})
+                    }
+                  />
+                </Panel>
+                <Panel
+                  header={`超级页面 (${state.contributions
+                    ?.pages?.length ?? 0})`}
+                  key="page"
+                >
+                  <SettingTabs<PowerAppPage.Definition>
+                    primaryKey="name"
+                    component={Page}
+                    values={state.contributions?.pages}
+                    onChange={pages =>
+                      setContributions({pages})
                     }
                   />
                 </Panel>

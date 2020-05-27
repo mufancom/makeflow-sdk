@@ -3,6 +3,7 @@ import {
   PowerApp,
   PowerAppConfig,
   PowerAppInput,
+  PowerAppPage,
   PowerAppProcedureField,
   PowerCustomCheckableItem,
   PowerGlance,
@@ -28,7 +29,8 @@ type ValueType =
   | PowerApp.DefinitionTagResource
   | PowerApp.DefinitionProcedureResource
   | PowerAppProcedureField.FieldBaseDefinition
-  | GlanceReport.Definition;
+  | GlanceReport.Definition
+  | PowerAppPage.Definition;
 
 export interface TabsProps<TValueType extends ValueType = ValueType> {
   primaryKey: keyof TValueType | undefined;
