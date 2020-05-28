@@ -34,6 +34,8 @@ export class LowdbAdapter extends AbstractDBAdapter {
         'power-node': [],
         'power-glance': [],
         'power-custom-checkable-item': [],
+        page: [],
+        user: [],
       })
       .write();
   }

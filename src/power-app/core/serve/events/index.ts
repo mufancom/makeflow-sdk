@@ -1,4 +1,5 @@
 import {InstallationEvent} from './installation';
+import {PageEvent} from './page';
 import {PermissionEvent} from './permission';
 import {PowerCustomCheckableItemEvent} from './power-custom-checkable-item';
 import {PowerGlanceEvent} from './power-glance';
@@ -11,6 +12,7 @@ export * from './power-item';
 export * from './power-node';
 export * from './power-glance';
 export * from './power-custom-checkable-item';
+export * from './page';
 
 export type Events =
   | InstallationEvent
@@ -18,7 +20,8 @@ export type Events =
   | PowerItemEvent
   | PowerNodeEvent
   | PowerGlanceEvent
-  | PowerCustomCheckableItemEvent;
+  | PowerCustomCheckableItemEvent
+  | PageEvent;
 
 export type EventType = Events['type'];
 

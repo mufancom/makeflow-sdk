@@ -17,6 +17,7 @@ import {
   LowdbAdapter,
   Model,
   MongoAdapter,
+  PageEvent,
   PermissionEvent,
   PowerAppOptions,
   PowerAppVersion,
@@ -30,6 +31,7 @@ import {
   checkVersionsQualified,
   getActionStorage,
   installationHandler,
+  pageHandler,
   permissionHandler,
   powerCustomCheckableItemHandler,
   powerGlanceHandler,
@@ -190,7 +192,8 @@ export class PowerApp implements IPowerApp {
       .on(
         'power-custom-checkable-item',
         this.handlePowerCustomCheckableItemChange,
-      );
+      )
+      .on('page', this.handlePageChange);
 
     return serveAdapter;
   }
@@ -239,5 +242,12 @@ export class PowerApp implements IPowerApp {
     response: PowerCustomCheckableItemEvent['response'],
   ): Promise<void> => {
     await powerCustomCheckableItemHandler(this, event, response);
+  };
+
+  private handlePageChange = async (
+    event: PageEvent['eventObject'],
+    response: PageEvent['response'],
+  ): Promise<void> => {
+    await pageHandler(this, event, response);
   };
 }

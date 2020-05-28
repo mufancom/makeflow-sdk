@@ -1,12 +1,7 @@
 import _ from 'lodash';
 
 import {PowerGlanceModel} from '../model';
-import {
-  PowerCustomCheckableItemEventParams,
-  PowerGlanceEvent,
-  PowerGlanceEventParams,
-  PowerItemEventParams,
-} from '../serve';
+import {PowerGlanceEvent, PowerGlanceEventParams} from '../serve';
 import {IPowerApp, PowerAppVersion} from '../types';
 import {getActionStorage, getChangeAndMigrations} from '../utils';
 
@@ -126,10 +121,7 @@ function getPowerGlanceChange({
 
 function getPowerGlanceMigrations({
   name,
-}:
-  | PowerItemEventParams
-  | PowerGlanceEventParams
-  | PowerCustomCheckableItemEventParams): (
+}: PowerGlanceEventParams): (
   type: keyof PowerAppVersion.Migrations,
   definitions: PowerAppVersion.Definition[],
 ) => PowerAppVersion.MigrationFunction[] {

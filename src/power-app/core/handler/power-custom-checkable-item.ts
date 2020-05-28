@@ -4,8 +4,6 @@ import {PowerCustomCheckableItemModel} from '../model';
 import {
   PowerCustomCheckableItemEvent,
   PowerCustomCheckableItemEventParams,
-  PowerGlanceEventParams,
-  PowerItemEventParams,
 } from '../serve';
 import {IPowerApp, PowerAppVersion} from '../types';
 import {getActionStorage, getChangeAndMigrations} from '../utils';
@@ -107,10 +105,7 @@ function getPowerCustomCheckableItemChange({
 
 function getPowerCustomCheckableItemMigrations({
   name,
-}:
-  | PowerItemEventParams
-  | PowerGlanceEventParams
-  | PowerCustomCheckableItemEventParams): (
+}: PowerCustomCheckableItemEventParams): (
   type: keyof PowerAppVersion.Migrations,
   definitions: PowerAppVersion.Definition[],
 ) => PowerAppVersion.MigrationFunction[] {

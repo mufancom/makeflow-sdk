@@ -1,5 +1,5 @@
 import {API} from '@makeflow/types';
-import {OperationTokenToken} from '@makeflow/types-nominal';
+import {OperationTokenToken, UserId} from '@makeflow/types-nominal';
 import {Dict} from 'tslang';
 
 export interface IModel<
@@ -15,14 +15,18 @@ export type Model =
   | PowerItemModel
   | PowerNodeModel
   | PowerGlanceModel
-  | PowerCustomCheckableItemModel;
+  | PowerCustomCheckableItemModel
+  | PageModel
+  | UserModel;
 
 export type Definition =
   | InstallationDefinition
   | PowerItemDefinition
   | PowerNodeDefinition
   | PowerGlanceDefinition
-  | PowerCustomCheckableItemDefinition;
+  | PowerCustomCheckableItemDefinition
+  | PageDefinition
+  | UserDefinition;
 
 type __Definition<
   TModel,
@@ -32,7 +36,13 @@ type __Definition<
 > = TModel extends IModel<infer Type>
   ? {
       type: Type;
+      /**
+       * 查询时的主要条件
+       */
       primaryField: TPrimaryField;
+      /**
+       * 允许更新的字段
+       */
       allowedFields: Exclude<
         Exclude<keyof TModel, keyof IModel<string>>,
         TPrimaryField
@@ -94,6 +104,25 @@ export type PowerCustomCheckableItemDefinition = __Definition<
   'resourceToken'
 >;
 
+// page
+
+export interface PageModel extends IPowerAppResourceModel<'page'> {}
+
+export type PageDefinition = __Definition<PageModel, 'resourceToken'>;
+
+// user
+
+/**
+ * User 对于整个 APP 都是唯一的，不同的 installation 共享
+ *
+ * 以下字段仅初次记录，不会更新: [ installation | team | version ]
+ */
+export interface UserModel extends IModel<'user'> {
+  id: UserId;
+}
+
+export type UserDefinition = __Definition<UserModel, 'id'>;
+
 type ModelTypeToDefinition<TType extends Model['type']> = Extract<
   Definition,
   {type: TType}
@@ -125,6 +154,16 @@ export const typeToModelDefinitionDict: {
   'power-custom-checkable-item': {
     type: 'power-custom-checkable-item',
     primaryField: 'resourceToken',
+    allowedFields: [],
+  },
+  page: {
+    type: 'page',
+    primaryField: 'resourceToken',
+    allowedFields: [],
+  },
+  user: {
+    type: 'user',
+    primaryField: 'id',
     allowedFields: [],
   },
 };

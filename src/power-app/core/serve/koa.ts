@@ -7,6 +7,7 @@ import _ from 'lodash';
 import {
   Events,
   InstallationEvent,
+  PageEvent,
   PermissionEvent,
   PowerCustomCheckableItemEvent,
   PowerGlanceEvent,
@@ -146,6 +147,21 @@ export class KoaAdapter extends AbstractServeAdapter {
             params,
           },
           getResponse<PowerCustomCheckableItemEvent>(context),
+        );
+      })
+      .post('/page/:name/:type', context => {
+        let {
+          params,
+          request: {body},
+        } = context;
+
+        this.emit<PageEvent>(
+          'page',
+          {
+            payload: body,
+            params,
+          },
+          getResponse<PageEvent>(context),
         );
       });
 

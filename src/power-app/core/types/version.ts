@@ -5,10 +5,12 @@ import {API} from '../../api';
 import {
   InstallationModel,
   Model,
+  PageModel,
   PowerCustomCheckableItemModel,
   PowerGlanceModel,
   PowerItemModel,
   PowerNodeModel,
+  UserModel,
 } from '../model';
 import {ActionStorage} from '../storage';
 
@@ -23,6 +25,9 @@ export interface IStorageTypes {
     [key in string]: Dict<any>;
   };
   powerCustomCheckableItems?: {
+    [key in string]: Dict<any>;
+  };
+  pages?: {
     [key in string]: Dict<any>;
   };
 }
@@ -67,6 +72,14 @@ export namespace PowerAppVersion {
         {
           [key in string]: PowerCustomCheckableItem.Definition<TDefaultStorage>;
         };
+      pages?: {
+        [TKey in keyof TStorageTypes['pages']]: Page.Definition<
+          TStorageTypes['pages'][TKey]
+        >;
+      } &
+        {
+          [key in string]: Page.Definition<TDefaultStorage>;
+        };
     };
   }
 
@@ -75,7 +88,8 @@ export namespace PowerAppVersion {
     | PowerItem.Change
     | PowerNode.Change
     | PowerGlance.Change
-    | PowerCustomCheckableItem.Change;
+    | PowerCustomCheckableItem.Change
+    | Page.Change;
 
   export type MigrationFunction<
     TModel extends Model = Model,
@@ -215,6 +229,31 @@ export namespace PowerAppVersion {
       | {
           processor?: Change<TStorage>;
           migrations?: Migrations<PowerCustomCheckableItemModel, TStorage>;
+        }
+      | Change<TStorage>;
+  }
+
+  // page
+
+  export namespace Page {
+    export interface ChangeParams<TStorage> {
+      storage: ActionStorage<PageModel, TStorage>;
+      userStorage: ActionStorage<UserModel>;
+      api: API;
+      configs: Dict<unknown>;
+    }
+
+    export interface ChangeResponseData
+      extends APITypes.PowerAppPage.HookReturn {}
+
+    export type Change<TStorage = Dict<any>> = (
+      params: ChangeParams<TStorage>,
+    ) => Promise<ChangeResponseData | void> | ChangeResponseData | void;
+
+    export type Definition<TStorage = Dict<any>> =
+      | {
+          load?: Change<TStorage>;
+          migrations?: Migrations<PageModel, TStorage>;
         }
       | Change<TStorage>;
   }
