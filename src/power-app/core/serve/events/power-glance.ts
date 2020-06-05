@@ -15,7 +15,10 @@ type _PowerGlanceEventObject =
 
 export interface PowerGlanceEventParams {
   name: string;
-  type: Exclude<keyof PowerAppVersion.PowerGlance.Definition, 'migrations'>;
+  type: Exclude<
+    keyof PowerAppVersion.PowerGlance.Definition<any>,
+    'migrations'
+  >;
 }
 
 export type PowerGlanceEventObject<

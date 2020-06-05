@@ -16,7 +16,7 @@ type _PowerNodeEventObject =
 
 export interface PowerNodeEventParams {
   name: string;
-  type: Exclude<keyof PowerAppVersion.PowerNode.Definition, 'migrations'>;
+  type: Exclude<keyof PowerAppVersion.PowerNode.Definition<any>, 'migrations'>;
   action: string | undefined;
 }
 

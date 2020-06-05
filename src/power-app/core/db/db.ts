@@ -6,15 +6,12 @@ export interface IDBAdapter extends DBAdapter {}
 export type DefaultQueryType<TModel extends Model> = Partial<TModel> &
   Required<{type: TModel['type']}>;
 
-export interface StorageQueryType<TModel extends Model> {
-  type: TModel['type'];
-  storage: TModel['storage'];
-}
-
 export interface StorageDefinitionInfo<TModel extends Model> {
   primaryField: keyof TModel;
   allowedFields: (keyof TModel)[];
 }
+
+const DEFAULT_ALLOWED_FIELDS: (keyof Model)[] = ['version'];
 
 abstract class DBAdapter {
   private readonly ready = this.initialize();
@@ -61,8 +58,8 @@ abstract class DBAdapter {
     return new StorageObject(model);
   }
 
-  async getStorageObjectsByStorage<TModel extends Model>(
-    partialModel: StorageQueryType<TModel>,
+  async getStorageObjects<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel>,
   ): Promise<StorageObject<TModel>[]> {
     await this.ready;
 
@@ -78,7 +75,7 @@ abstract class DBAdapter {
   ): Promise<TModel | undefined>;
 
   protected abstract async getModelList<TModel extends Model>(
-    partialModel: DefaultQueryType<TModel> | StorageQueryType<TModel>,
+    partialModel: DefaultQueryType<TModel>,
   ): Promise<TModel[]>;
 
   protected abstract async deleteModel<TModel extends Model>(
@@ -104,7 +101,7 @@ abstract class DBAdapter {
 
     return {
       primaryField,
-      allowedFields: [...allowedFields, 'version'],
+      allowedFields: [...allowedFields, ...DEFAULT_ALLOWED_FIELDS],
     };
   }
 }

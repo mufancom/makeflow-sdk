@@ -8,11 +8,11 @@ export interface PageEvent {
   response(data: API.PowerAppPage.HookReturn): void;
 }
 
-type _PageEventObject = PageLoadEventObject;
+type _PageEventObject = PageRequestEventObject;
 
 export interface PageEventParams {
   name: string;
-  type: Exclude<keyof PowerAppVersion.Page.Definition, 'migrations'>;
+  type: Exclude<keyof PowerAppVersion.Page.Definition<any>, 'migrations'>;
 }
 
 export type PageEventObject<
@@ -21,6 +21,6 @@ export type PageEventObject<
   params: PageEventParams;
 } & TPageEventObject;
 
-export interface PageLoadEventObject {
-  payload: API.PowerAppPage.LoadHookParams;
+export interface PageRequestEventObject {
+  payload: API.PowerAppPage.RequestHookParams;
 }

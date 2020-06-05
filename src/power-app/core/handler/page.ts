@@ -1,30 +1,32 @@
+import {API} from '@makeflow/types';
 import _ from 'lodash';
 
+import {PowerApp} from '../../app';
 import {PageModel, UserModel} from '../model';
 import {PageEvent, PageEventParams} from '../serve';
-import {IPowerApp, PowerAppVersion} from '../types';
+import {GeneralDeclare, PowerAppVersion} from '../types';
 import {getActionStorage, getChangeAndMigrations} from '../utils';
 
 export async function pageHandler(
-  app: IPowerApp,
+  app: PowerApp,
   event: PageEvent['eventObject'],
   response: PageEvent['response'],
 ): Promise<void> {
-  let {params, payload} = event;
-
   let {
-    token: resourceToken,
-    source: {token, url, installation, organization, team, version},
-    configs = {},
-    user,
-  } = payload;
+    params,
+    payload: {
+      source: {token, url, installation, organization, team, version},
+      token: operationToken,
+      user,
+    },
+  } = event;
 
   let storage = await app.dbAdapter.getStorage<PageModel>({
     type: 'page',
-    resourceToken,
+    operationToken,
   });
 
-  let result = getChangeAndMigrations<PowerAppVersion.Page.Change>(
+  let result = getChangeAndMigrations(
     version,
     storage.version,
     app.definitions,
@@ -38,11 +40,15 @@ export async function pageHandler(
 
   let {change, migrations} = result;
 
-  let actionStorage = getActionStorage(storage, app.dbAdapter);
-
   if (storage.created) {
-    for (let migration of migrations) {
-      await migration(actionStorage);
+    if (migrations.length) {
+      let storageField = storage.getField('storage') ?? {};
+
+      for (let migration of migrations) {
+        migration(storageField);
+      }
+
+      storage.set(storageField);
     }
   } else {
     storage.create({
@@ -53,16 +59,14 @@ export async function pageHandler(
       organization,
       team,
       version,
-      resourceToken,
+      operationToken,
       storage: {},
     });
   }
 
-  let responseData: PowerAppVersion.Page.ChangeResponseData | void;
+  let responseData: API.PowerAppPage.HookReturn | void;
 
   if (change) {
-    let api = await app.generateAPI(storage);
-
     let userStorage = await app.dbAdapter.getStorage<UserModel>({
       type: 'user',
       id: user,
@@ -85,11 +89,12 @@ export async function pageHandler(
 
     let userActionStorage = getActionStorage(userStorage, app.dbAdapter);
 
+    let [context] = await app.getStorageObjectContexts('pages', storage, {
+      matchedUser: userActionStorage,
+    });
+
     responseData = await change({
-      storage: actionStorage,
-      userStorage: userActionStorage,
-      api,
-      configs,
+      context,
     });
 
     await app.dbAdapter.setStorage(userStorage);
@@ -107,7 +112,7 @@ function getPageChange({
   type,
 }: PageEventParams): (
   definition: PowerAppVersion.Definition,
-) => PowerAppVersion.Page.Change | undefined {
+) => PowerAppVersion.Page.Change<GeneralDeclare> | undefined {
   return ({contributions: {pages = {}} = {}}) => {
     let page = pages[name];
 

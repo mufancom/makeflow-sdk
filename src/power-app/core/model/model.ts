@@ -10,6 +10,11 @@ export interface IModel<
   storage: TStorage | undefined;
 }
 
+export type ModelWithOperationToken = Extract<
+  Model,
+  {operationToken: OperationTokenToken}
+>;
+
 export type Model =
   | InstallationModel
   | PowerItemModel
@@ -55,7 +60,8 @@ type __Definition<
 export interface InstallationModel extends IModel<'installation'> {
   configs: Dict<unknown>;
   resources: API.PowerApp.ResourcesMapping;
-  users: API.PowerApp.UserInfo[];
+  users: any[];
+  // users: API.PowerApp.UserInfo[];
   accessToken?: string | undefined;
 }
 
@@ -66,32 +72,39 @@ export type InstallationDefinition = __Definition<
 
 export interface IPowerAppResourceModel<TType extends string>
   extends IModel<TType> {
-  resourceToken: OperationTokenToken;
+  operationToken: OperationTokenToken;
 }
 
 // power-item
 
 export interface PowerItemModel extends IPowerAppResourceModel<'power-item'> {}
 
-export type PowerItemDefinition = __Definition<PowerItemModel, 'resourceToken'>;
+export type PowerItemDefinition = __Definition<
+  PowerItemModel,
+  'operationToken'
+>;
 
 // power-node
 
 export interface PowerNodeModel extends IPowerAppResourceModel<'power-node'> {}
 
-export type PowerNodeDefinition = __Definition<PowerNodeModel, 'resourceToken'>;
+export type PowerNodeDefinition = __Definition<
+  PowerNodeModel,
+  'operationToken'
+>;
 
 // power-glance
 
 export interface PowerGlanceModel
   extends IPowerAppResourceModel<'power-glance'> {
+  configs: Dict<any>;
   clock: number;
   disposed: boolean | undefined;
 }
 
 export type PowerGlanceDefinition = __Definition<
   PowerGlanceModel,
-  'resourceToken'
+  'operationToken'
 >;
 
 // power-custom-checkable-item
@@ -101,14 +114,14 @@ export interface PowerCustomCheckableItemModel
 
 export type PowerCustomCheckableItemDefinition = __Definition<
   PowerCustomCheckableItemModel,
-  'resourceToken'
+  'operationToken'
 >;
 
 // page
 
 export interface PageModel extends IPowerAppResourceModel<'page'> {}
 
-export type PageDefinition = __Definition<PageModel, 'resourceToken'>;
+export type PageDefinition = __Definition<PageModel, 'operationToken'>;
 
 // user
 
@@ -138,27 +151,27 @@ export const typeToModelDefinitionDict: {
   },
   'power-item': {
     type: 'power-item',
-    primaryField: 'resourceToken',
+    primaryField: 'operationToken',
     allowedFields: [],
   },
   'power-node': {
     type: 'power-node',
-    primaryField: 'resourceToken',
+    primaryField: 'operationToken',
     allowedFields: [],
   },
   'power-glance': {
     type: 'power-glance',
-    primaryField: 'resourceToken',
+    primaryField: 'operationToken',
     allowedFields: ['clock', 'disposed'],
   },
   'power-custom-checkable-item': {
     type: 'power-custom-checkable-item',
-    primaryField: 'resourceToken',
+    primaryField: 'operationToken',
     allowedFields: [],
   },
   page: {
     type: 'page',
-    primaryField: 'resourceToken',
+    primaryField: 'operationToken',
     allowedFields: [],
   },
   user: {

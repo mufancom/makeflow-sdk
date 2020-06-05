@@ -2,15 +2,11 @@ import {IDBAdapter} from '../db';
 import {Model} from '../model';
 import {ActionStorage, StorageObject} from '../storage';
 
-export function getActionStorage<TModel extends Model>(
+export function getActionStorage<TModel extends Model, TStorage>(
   storageObject: StorageObject<TModel>,
   db: IDBAdapter,
-): ActionStorage<TModel> {
+): ActionStorage<TModel, TStorage> {
   let get = storageObject.get.bind(storageObject);
-
-  function getField(key: any): any {
-    return storageObject.getField(key);
-  }
 
   async function set(...args: any[]): Promise<void> {
     storageObject.set.apply(storageObject, args);
@@ -24,7 +20,6 @@ export function getActionStorage<TModel extends Model>(
 
   return {
     get,
-    getField,
     set,
     merge,
   };

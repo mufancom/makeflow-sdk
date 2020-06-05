@@ -1,22 +1,23 @@
+import {API} from '@makeflow/types';
 import _ from 'lodash';
 
+import {PowerApp} from '../../app';
 import {PowerNodeModel} from '../model';
 import {PowerNodeEvent, PowerNodeEventParams} from '../serve';
-import {IPowerApp, PowerAppVersion} from '../types';
-import {getActionStorage, getChangeAndMigrations} from '../utils';
+import {GeneralDeclareWithInputs, PowerAppVersion} from '../types';
+import {getChangeAndMigrations} from '../utils';
 
 export async function powerNodeHandler(
-  app: IPowerApp,
+  app: PowerApp,
   event: PowerNodeEvent['eventObject'],
   response: PowerNodeEvent['response'],
 ): Promise<void> {
   let {params, payload} = event;
 
   let {
-    token: resourceToken,
+    token: operationToken,
     source: {token, url, installation, organization, team, version},
     inputs = {},
-    configs = {},
   } = payload;
 
   let storage = await app.dbAdapter.getStorage<PowerNodeModel>({
@@ -24,7 +25,7 @@ export async function powerNodeHandler(
     token,
   });
 
-  let result = getChangeAndMigrations<PowerAppVersion.PowerNode.Change>(
+  let result = getChangeAndMigrations(
     version,
     storage.version,
     app.definitions,
@@ -38,11 +39,15 @@ export async function powerNodeHandler(
 
   let {change, migrations} = result;
 
-  let actionStorage = getActionStorage(storage, app.dbAdapter);
-
   if (storage.created) {
-    for (let migration of migrations) {
-      await migration(actionStorage);
+    if (migrations.length) {
+      let storageField = storage.getField('storage') ?? {};
+
+      for (let migration of migrations) {
+        migration(storageField);
+      }
+
+      storage.set(storageField);
     }
   } else {
     storage.create({
@@ -52,22 +57,20 @@ export async function powerNodeHandler(
       installation,
       organization,
       team,
-      resourceToken,
+      operationToken,
       version,
       storage: {},
     });
   }
 
-  let responseData: PowerAppVersion.PowerNode.ChangeResponseData | void;
+  let responseData: API.PowerNode.HookReturn | void;
 
   if (change) {
-    let api = await app.generateAPI(storage);
+    let [context] = await app.getStorageObjectContexts('powerNodes', storage);
 
     responseData = await change({
-      storage: actionStorage,
-      api,
+      context,
       inputs,
-      configs,
     });
   }
 
@@ -84,7 +87,7 @@ function getPowerNodeChange({
   action,
 }: PowerNodeEventParams): (
   definition: PowerAppVersion.Definition,
-) => PowerAppVersion.PowerNode.Change | undefined {
+) => PowerAppVersion.PowerNode.Change<GeneralDeclareWithInputs> | undefined {
   return ({contributions: {powerNodes = {}} = {}}) => {
     let powerNode = powerNodes[name];
 
@@ -92,7 +95,7 @@ function getPowerNodeChange({
       return undefined;
     }
 
-    return type === 'action' ? powerNode.action?.[action!] : powerNode[type];
+    return type === 'actions' ? powerNode.actions?.[action!] : powerNode[type];
   };
 }
 

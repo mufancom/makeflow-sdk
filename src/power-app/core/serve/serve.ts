@@ -3,7 +3,13 @@ import {EventEmitter} from 'events';
 import {API} from '@makeflow/types';
 import _ from 'lodash';
 
-import {Events, PowerGlanceEventParams, PowerItemEventParams} from './events';
+import {
+  Events,
+  PageEventParams,
+  PowerCustomCheckableItemEventParams,
+  PowerGlanceEventParams,
+  PowerItemEventParams,
+} from './events';
 
 export interface IServeAdapter extends ServeAdapter {}
 
@@ -91,6 +97,25 @@ export function isPowerGlanceEventParams(
     case 'change':
     case 'dispose':
       return true;
+    default:
+      return false;
+  }
+}
+
+export function isPowerCustomCheckableEventParams(
+  params: any,
+): params is PowerCustomCheckableItemEventParams {
+  let {name} = Object(params);
+
+  return !!name;
+}
+
+export function isPageEventParams(params: any): params is PageEventParams {
+  let {type, name} = Object(params);
+
+  switch (type) {
+    case 'request':
+      return !!name;
     default:
       return false;
   }

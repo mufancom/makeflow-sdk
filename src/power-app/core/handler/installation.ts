@@ -1,22 +1,26 @@
+import {PowerApp} from '../../app';
 import {InstallationModel} from '../model';
 import {InstallationEvent} from '../serve';
-import {IPowerApp, PowerAppVersion} from '../types';
-import {getActionStorage, getChangeAndMigrations} from '../utils';
+import {GeneralDeclare, PowerAppVersion} from '../types';
+import {getChangeAndMigrations} from '../utils';
 
 export async function installationHandler(
-  app: IPowerApp,
+  app: PowerApp,
   event: InstallationEvent['eventObject'],
   response: InstallationEvent['response'],
 ): Promise<void> {
-  let responseData = {};
-
-  let {payload, type} = event;
-
-  let {token, url, installation, version, organization, team} = payload.source;
+  let {
+    payload: {
+      source: {token, url, installation, version, organization, team},
+    },
+    type,
+  } = event;
 
   if (!installation) {
     return;
   }
+
+  let responseData = {};
 
   let installationStorage = await app.dbAdapter.getStorage<InstallationModel>({
     type: 'installation',
@@ -26,7 +30,8 @@ export async function installationHandler(
   switch (event.type) {
     case 'activate':
     case 'update': {
-      let {configs, resources, users} = event.payload;
+      // 等待 #3158
+      let {configs, resources, users} = event.payload as any;
 
       if (installationStorage.created) {
         installationStorage
@@ -61,30 +66,35 @@ export async function installationHandler(
 
   await app.dbAdapter.setStorage(installationStorage);
 
-  let result = getChangeAndMigrations<PowerAppVersion.Installation.Change>(
+  let result = getChangeAndMigrations(
     version,
     undefined,
     app.definitions,
-    getInstallationChange({type}),
+    getInstallationChange(type),
   );
 
-  if (result?.change) {
-    let api = await app.generateAPI(installationStorage);
-
-    await result.change({
-      api,
-      configs: installationStorage.getField('configs') ?? {},
-      storage: getActionStorage(installationStorage, app.dbAdapter),
-    });
+  if (!result?.change) {
+    response(responseData);
+    return;
   }
 
-  response(responseData);
+  let [context] = await app.getStorageObjectContexts(
+    'installation',
+    installationStorage,
+  );
+
+  let ret =
+    (await result.change({
+      context,
+    })) ?? {};
+
+  response({...ret, ...responseData});
 }
 
-function getInstallationChange({
-  type,
-}: Pick<InstallationEvent['eventObject'], 'type'>): (
+function getInstallationChange(
+  type: InstallationEvent['eventObject']['type'],
+): (
   definition: PowerAppVersion.Definition,
-) => PowerAppVersion.Installation.Change | undefined {
+) => PowerAppVersion.Installation.Change<GeneralDeclare> | undefined {
   return ({installation}) => installation?.[type];
 }

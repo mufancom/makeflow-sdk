@@ -1,33 +1,45 @@
+import {Plugin} from '@hapi/hapi';
+import {Express} from 'express';
 import Koa from 'koa';
 import _ from 'lodash';
 import {validRange} from 'semver';
-import {Constructor} from 'tslang';
+import {Constructor, Dict} from 'tslang';
 
-import {API, APISource} from './api';
+import {API} from './api';
 import {
   ActionStorage,
+  BasicContext,
+  Context,
+  ContextType,
+  ContextTypeToModel,
+  CustomDeclareDict,
+  ExpressAdapter,
+  HapiAdapter,
   IDBAdapter,
   IPowerApp,
-  IPowerAppResourceModel,
   IServeAdapter,
-  IStorageTypes,
   InstallationEvent,
   InstallationModel,
   KoaAdapter,
   LowdbAdapter,
+  MatchContextsFilter,
   Model,
+  ModelWithOperationToken,
   MongoAdapter,
   PageEvent,
+  PageModel,
   PermissionEvent,
   PowerAppOptions,
   PowerAppVersion,
   PowerAppVersionInfo,
   PowerCustomCheckableItemEvent,
   PowerGlanceEvent,
+  PowerGlanceModel,
   PowerItemEvent,
   PowerNodeEvent,
   ServeOptions,
   StorageObject,
+  UserModel,
   checkVersionsQualified,
   getActionStorage,
   installationHandler,
@@ -39,15 +51,6 @@ import {
   powerNodeHandler,
 } from './core';
 
-export interface MatchContextsOptions<TModel extends Model = Model> {
-  storage: TModel['storage'];
-}
-
-export interface MatchContextsResult<TModel extends Model = Model> {
-  storage: ActionStorage<TModel>;
-  api: API;
-}
-
 export class PowerApp implements IPowerApp {
   definitions: PowerAppVersionInfo[] = [];
 
@@ -57,53 +60,11 @@ export class PowerApp implements IPowerApp {
     this.initialize();
   }
 
-  getAPI(source?: APISource): API {
-    let options = this.options;
-
-    if (!source && !options.source?.url) {
-      throw Error('初始化未传递 source 的情况下，`getAPI` 需要传入');
-    }
-
-    return new API(source ?? {url: options.source!.url!});
-  }
-
-  async generateAPI(storage: StorageObject<any>): Promise<API> {
-    let api = new API(storage.source);
-
-    switch (storage.type) {
-      case 'installation': {
-        api.setAccessToken(storage.getField('accessToken'));
-        break;
-      }
-      case 'power-item':
-      case 'power-node':
-      case 'power-glance':
-      case 'power-custom-checkable-item': {
-        let storageWithResourceToken: StorageObject<IPowerAppResourceModel<
-          any
-        >> = storage;
-
-        let installationStorage = await this.dbAdapter.getStorage<
-          InstallationModel
-        >({
-          type: 'installation',
-          installation: storage.getField('installation'),
-        });
-
-        api.setResourceToken(
-          storageWithResourceToken.getField('resourceToken'),
-        );
-        api.setAccessToken(installationStorage.getField('accessToken'));
-
-        break;
-      }
-    }
-    return api;
-  }
-
-  version<TStorageTypes extends IStorageTypes = IStorageTypes>(
+  version<
+    TCustomDeclareDict extends Partial<CustomDeclareDict> = CustomDeclareDict
+  >(
     range: string,
-    definition: PowerAppVersion.Definition<TStorageTypes>,
+    definition: PowerAppVersion.Definition<TCustomDeclareDict>,
   ): void {
     if (!validRange(range)) {
       throw Error('版本格式错误');
@@ -123,40 +84,206 @@ export class PowerApp implements IPowerApp {
     return this.buildServeAdapter(KoaAdapter, {path}).middleware();
   }
 
-  express(): void {}
+  express(path: ServeOptions['path']): Express {
+    return this.buildServeAdapter(ExpressAdapter, {path}).middleware();
+  }
 
-  hapi(): void {}
+  hapi<T>(): Plugin<T> {
+    return this.buildServeAdapter(HapiAdapter, {}).middleware();
+  }
 
-  async *getContextIterable<TModel extends Model>(
-    type: TModel['type'],
-    {storage}: MatchContextsOptions<TModel>,
-  ): AsyncGenerator<MatchContextsResult<TModel>> {
+  async *getContextIterable<
+    TContextType extends ContextType,
+    TStorage = Dict<any>,
+    TConfigs = Dict<any>
+  >(
+    type: TContextType,
+    filter: MatchContextsFilter<TContextType>,
+  ): AsyncGenerator<Context<TContextType, TStorage, TConfigs>> {
     let db = this.dbAdapter;
 
-    let storages: StorageObject<TModel>[] = await db.getStorageObjectsByStorage<
-      TModel
+    let storageObjects: StorageObject<any>[] = await db.getStorageObjects<
+      Exclude<Model, UserModel>
     >({
       type,
-      storage,
+      ...(filter as any),
     });
 
-    for (let storage of storages) {
-      let api = await this.generateAPI(storage);
-      yield {storage: getActionStorage(storage, db), api};
+    for (let storageObject of storageObjects) {
+      let contexts = await this.getStorageObjectContexts(type, storageObject);
+
+      for (let context of contexts) {
+        yield context as Context<TContextType, TStorage, TConfigs>;
+      }
     }
   }
 
-  async getContexts<TModel extends Model>(
-    type: TModel['type'],
-    options: MatchContextsOptions<TModel>,
-  ): Promise<MatchContextsResult<TModel>[]> {
+  async getContexts<
+    TContextType extends ContextType,
+    TStorage = Dict<any>,
+    TConfigs = Dict<any>
+  >(
+    type: TContextType,
+    filter: MatchContextsFilter<TContextType>,
+  ): Promise<Context<TContextType, TStorage, TConfigs>[]> {
     let contexts = [];
 
-    for await (let context of this.getContextIterable(type, options)) {
+    for await (let context of this.getContextIterable<
+      TContextType,
+      TStorage,
+      TConfigs
+    >(type, filter)) {
       contexts.push(context);
     }
 
     return contexts;
+  }
+
+  async getStorageObjectContexts<TContextType extends ContextType>(
+    type: TContextType,
+    storageObject: StorageObject<ContextTypeToModel<TContextType>>,
+    options: {
+      matchedUser?: ActionStorage<UserModel>;
+    } = {},
+  ): Promise<Context<TContextType>[]> {
+    let db = this.dbAdapter;
+
+    let api = new API(storageObject.source);
+
+    let initialBasicContext: BasicContext<
+      ContextTypeToModel<ContextType>,
+      any,
+      any
+    > = {
+      api,
+      storage: getActionStorage(storageObject, db),
+      source: storageObject.source,
+      configs: {},
+    };
+
+    function assertStorageObjectType<T extends StorageObject<any>>(
+      type: Model['type'],
+      storageObject: StorageObject<any>,
+    ): storageObject is T {
+      return storageObject.type === type;
+    }
+
+    if (type === 'installation') {
+      if (
+        !assertStorageObjectType<StorageObject<InstallationModel>>(
+          'installation',
+          storageObject,
+        )
+      ) {
+        return [];
+      }
+
+      api.setAccessToken(storageObject.getField('accessToken'));
+
+      let context: Context<'installation'> = {
+        ...initialBasicContext,
+        users: storageObject.getField('users') ?? [],
+        configs: storageObject.getField('configs') ?? {},
+      };
+
+      return [context] as Context<TContextType>[];
+    }
+
+    let installationStorageObject = await this.dbAdapter.getStorage<
+      InstallationModel
+    >({
+      type: 'installation',
+      installation: storageObject.getField('installation'),
+    });
+
+    api.setAccessToken(installationStorageObject.getField('accessToken'));
+
+    function assertModelWithOperationToken(
+      storageObject: StorageObject<any>,
+    ): storageObject is StorageObject<ModelWithOperationToken> {
+      return !!storageObject.getField('operationToken');
+    }
+
+    if (assertModelWithOperationToken(storageObject)) {
+      api.setOperationToken(storageObject.getField('operationToken'));
+    }
+
+    initialBasicContext.configs = installationStorageObject.getField('configs');
+
+    switch (type) {
+      case 'powerItems': {
+        let context: Context<'powerItems'> = initialBasicContext;
+        return [context] as Context<TContextType>[];
+      }
+      case 'powerNodes': {
+        let context: Context<'powerNodes'> = initialBasicContext;
+        return [context] as Context<TContextType>[];
+      }
+      case 'powerCustomCheckableItems': {
+        let context: Context<'powerCustomCheckableItems'> = initialBasicContext;
+        return [context] as Context<TContextType>[];
+      }
+      case 'powerGlances': {
+        if (
+          !assertStorageObjectType<StorageObject<PowerGlanceModel>>(
+            'power-glance',
+            storageObject,
+          )
+        ) {
+          return [];
+        }
+
+        let context: Context<'powerGlances'> = {
+          ...initialBasicContext,
+          powerGlanceConfig: storageObject.getField('configs')!,
+        };
+
+        return [context] as Context<TContextType>[];
+      }
+      case 'pages': {
+        if (
+          !assertStorageObjectType<StorageObject<PageModel>>(
+            'page',
+            storageObject,
+          )
+        ) {
+          return [];
+        }
+
+        if (options.matchedUser) {
+          return [
+            {
+              ...initialBasicContext,
+              userStorage: options.matchedUser,
+            },
+          ] as Context<TContextType>[];
+        }
+
+        let userStorages = await this.geUserStorages({
+          installation: storageObject.getField('installation'),
+        });
+
+        return userStorages.map(userStorage => ({
+          ...initialBasicContext,
+          userStorage,
+        })) as Context<TContextType>[];
+      }
+      default:
+        return [];
+    }
+  }
+
+  async geUserStorages<TStorage>(
+    filter: Partial<UserModel> & {storage?: Partial<TStorage>},
+  ): Promise<ActionStorage<UserModel, TStorage>[]> {
+    let users = await this.dbAdapter.getStorageObjects<UserModel>({
+      type: 'user',
+      ...(filter as any),
+    });
+
+    return users.map(user =>
+      getActionStorage<UserModel, TStorage>(user, this.dbAdapter),
+    );
   }
 
   private initialize(): void {

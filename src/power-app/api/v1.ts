@@ -27,7 +27,7 @@ export class API<TSourceObject extends APISource = APISource> {
 
   private accessToken: string | undefined;
 
-  private resourceToken: OperationTokenToken | undefined;
+  private operationToken: OperationTokenToken | undefined;
 
   get granted(): boolean {
     return !!this.accessToken;
@@ -39,8 +39,8 @@ export class API<TSourceObject extends APISource = APISource> {
     this.accessToken = token;
   }
 
-  setResourceToken(token: OperationTokenToken | undefined): void {
-    this.resourceToken = token;
+  setOperationToken(token: OperationTokenToken | undefined): void {
+    this.operationToken = token;
   }
 
   // account
@@ -100,7 +100,7 @@ export class API<TSourceObject extends APISource = APISource> {
   ): Promise<void> {
     return this.request('/power-checkable-custom-item/update', {
       body: {
-        token: this.resourceToken,
+        token: this.operationToken,
         ...options,
       },
     });
@@ -118,7 +118,7 @@ export class API<TSourceObject extends APISource = APISource> {
   ): Promise<void> {
     return this.request('/power-glance/change', {
       body: {
-        token: this.resourceToken,
+        token: this.operationToken,
         dataSet,
       },
     });
@@ -133,7 +133,7 @@ export class API<TSourceObject extends APISource = APISource> {
   > {
     return this.request('/power-glance/initialize', {
       body: {
-        token: this.resourceToken,
+        token: this.operationToken,
       },
     });
   }
@@ -152,7 +152,7 @@ export class API<TSourceObject extends APISource = APISource> {
   ): Promise<void> {
     return this.request('/power-item/update', {
       body: {
-        token: this.resourceToken,
+        token: this.operationToken,
         ...options,
       },
     });

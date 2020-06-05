@@ -8,7 +8,6 @@ export interface ActionStorage<
   TModel extends Model,
   TStorage extends Dict<any> = Dict<any>
 > {
-  getField<TKey extends keyof TModel>(key: TKey): TModel[TKey];
   get: StorageObject<TModel, TStorage>['get'];
   set<TTStorage extends Dict<any> = TStorage>(
     storage: TTStorage,
@@ -53,9 +52,16 @@ export class StorageObject<
     return !!this.originalModel;
   }
 
-  get source(): API.PowerApp.BasicSource {
+  get source(): API.PowerApp.Source {
+    let {token, version, organization, team, installation, url} = this.model!;
+
     return {
-      url: this.getField('url')!,
+      token,
+      version,
+      organization,
+      team,
+      installation,
+      url,
     };
   }
 

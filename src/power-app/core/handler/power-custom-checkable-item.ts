@@ -1,36 +1,38 @@
+import {API} from '@makeflow/types';
 import _ from 'lodash';
 
+import {PowerApp} from '../../app';
 import {PowerCustomCheckableItemModel} from '../model';
 import {
   PowerCustomCheckableItemEvent,
   PowerCustomCheckableItemEventParams,
 } from '../serve';
-import {IPowerApp, PowerAppVersion} from '../types';
-import {getActionStorage, getChangeAndMigrations} from '../utils';
+import {GeneralDeclareWithInputs, PowerAppVersion} from '../types';
+import {getChangeAndMigrations} from '../utils';
 
 export async function powerCustomCheckableItemHandler(
-  app: IPowerApp,
+  app: PowerApp,
   event: PowerCustomCheckableItemEvent['eventObject'],
   response: PowerCustomCheckableItemEvent['response'],
 ): Promise<void> {
-  let {params, payload} = event;
-
   let {
-    token: resourceToken,
-    source: {token, url, installation, organization, team, version},
-    inputs = {},
-    configs = {},
-    context,
-  } = payload;
+    params,
+    payload: {
+      source,
+      token: operationToken,
+      inputs = {},
+      context: {url: requestUrl},
+    },
+  } = event;
+
+  let {token, url, installation, organization, team, version} = source;
 
   let storage = await app.dbAdapter.getStorage<PowerCustomCheckableItemModel>({
     type: 'power-custom-checkable-item',
-    resourceToken,
+    operationToken,
   });
 
-  let result = getChangeAndMigrations<
-    PowerAppVersion.PowerCustomCheckableItem.Change
-  >(
+  let result = getChangeAndMigrations(
     version,
     storage.version,
     app.definitions,
@@ -44,11 +46,15 @@ export async function powerCustomCheckableItemHandler(
 
   let {change, migrations} = result;
 
-  let actionStorage = getActionStorage(storage, app.dbAdapter);
-
   if (storage.created) {
-    for (let migration of migrations) {
-      await migration(actionStorage);
+    if (migrations.length) {
+      let storageField = storage.getField('storage') ?? {};
+
+      for (let migration of migrations) {
+        migration(storageField);
+      }
+
+      storage.set(storageField);
     }
   } else {
     storage.create({
@@ -59,22 +65,23 @@ export async function powerCustomCheckableItemHandler(
       organization,
       team,
       version,
-      resourceToken,
+      operationToken,
       storage: {},
     });
   }
 
-  let responseData: PowerAppVersion.PowerCustomCheckableItem.ChangeResponseData | void;
+  let responseData: API.PowerCustomCheckableItem.HookReturn | void;
 
   if (change) {
-    let api = await app.generateAPI(storage);
+    let [context] = await app.getStorageObjectContexts(
+      'powerCustomCheckableItems',
+      storage,
+    );
 
     responseData = await change({
-      storage: actionStorage,
-      api,
       context,
       inputs,
-      configs,
+      url: requestUrl,
     });
   }
 
@@ -89,7 +96,9 @@ function getPowerCustomCheckableItemChange({
   name,
 }: PowerCustomCheckableItemEventParams): (
   definition: PowerAppVersion.Definition,
-) => PowerAppVersion.PowerCustomCheckableItem.Change | undefined {
+) =>
+  | PowerAppVersion.PowerCustomCheckableItem.Change<GeneralDeclareWithInputs>
+  | undefined {
   return ({contributions: {powerCustomCheckableItems = {}} = {}}) => {
     let checkableItem = powerCustomCheckableItems[name];
 

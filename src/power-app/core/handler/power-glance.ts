@@ -1,31 +1,35 @@
+import {API} from '@makeflow/types';
 import _ from 'lodash';
 
+import {PowerApp} from '../../app';
 import {PowerGlanceModel} from '../model';
 import {PowerGlanceEvent, PowerGlanceEventParams} from '../serve';
-import {IPowerApp, PowerAppVersion} from '../types';
-import {getActionStorage, getChangeAndMigrations} from '../utils';
+import {GeneralDeclare, PowerAppVersion} from '../types';
+import {getChangeAndMigrations} from '../utils';
 
 export async function powerGlanceHandler(
-  app: IPowerApp,
+  app: PowerApp,
   event: PowerGlanceEvent['eventObject'],
   response: PowerGlanceEvent['response'],
 ): Promise<void> {
-  let {params, payload} = event;
-
   let {
-    token: resourceToken,
-    source: {token, url, installation, organization, team, version},
-    clock = 0,
-    resources = [],
-    configs = {},
-  } = payload;
+    params,
+    payload: {
+      token: operationToken,
+      source: {token, url, installation, organization, team, version},
+      clock = 0,
+      resources = [],
+      configs = {},
+      powerGlanceConfigs = {},
+    },
+  } = event;
 
   let storage = await app.dbAdapter.getStorage<PowerGlanceModel>({
     type: 'power-glance',
     token,
   });
 
-  let result = getChangeAndMigrations<PowerAppVersion.PowerGlance.Change>(
+  let result = getChangeAndMigrations(
     version,
     storage.version,
     app.definitions,
@@ -39,9 +43,7 @@ export async function powerGlanceHandler(
 
   let {change, migrations} = result;
 
-  let actionStorage = getActionStorage(storage, app.dbAdapter);
-
-  let api = await app.generateAPI(storage);
+  let [context] = await app.getStorageObjectContexts('powerGlances', storage);
 
   if (storage.created) {
     if (params.type === 'change') {
@@ -50,11 +52,14 @@ export async function powerGlanceHandler(
       if (prevClock + 1 !== clock) {
         //  reinitialize
         try {
-          let result = await api.initializePowerGlance();
+          let result = await context.api.initializePowerGlance();
 
           clock = result.clock;
           resources = result.resources;
           configs = result.configs;
+
+          // todo
+          powerGlanceConfigs = result.powerGlanceConfigs;
         } catch (error) {
           response({});
           return;
@@ -62,10 +67,17 @@ export async function powerGlanceHandler(
       }
 
       storage.setField('clock', clock);
+      storage.setField('configs', powerGlanceConfigs);
     }
 
-    for (let migration of migrations) {
-      await migration(actionStorage);
+    if (migrations.length) {
+      let storageField = storage.getField('storage') ?? {};
+
+      for (let migration of migrations) {
+        migration(storageField);
+      }
+
+      storage.set(storageField);
     }
   } else {
     storage.create({
@@ -76,25 +88,25 @@ export async function powerGlanceHandler(
       organization,
       team,
       version,
-      resourceToken,
+      operationToken,
       clock,
       disposed: undefined,
+      configs: powerGlanceConfigs,
       storage: {},
     });
   }
 
-  let responseData: PowerAppVersion.PowerGlance.ChangeResponseData | void;
+  let responseData: API.PowerGlance.HookReturn | void;
 
   if (change) {
     responseData = await change({
-      storage: actionStorage,
-      api,
+      context,
       resources,
-      configs,
     });
   }
 
   storage.setField('disposed', params.type === 'dispose');
+
   storage.upgrade(version);
 
   await app.dbAdapter.setStorage(storage);
@@ -107,7 +119,7 @@ function getPowerGlanceChange({
   type,
 }: PowerGlanceEventParams): (
   definition: PowerAppVersion.Definition,
-) => PowerAppVersion.PowerGlance.Change | undefined {
+) => PowerAppVersion.PowerGlance.Change<GeneralDeclare> | undefined {
   return ({contributions: {powerGlances = {}} = {}}) => {
     let powerGlance = powerGlances[name];
 

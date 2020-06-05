@@ -16,7 +16,7 @@ type _PowerItemEventObject =
 
 export interface PowerItemEventParams {
   name: string;
-  type: Exclude<keyof PowerAppVersion.PowerItem.Definition, 'migrations'>;
+  type: Exclude<keyof PowerAppVersion.PowerItem.Definition<any>, 'migrations'>;
   action: string | undefined;
 }
 

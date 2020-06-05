@@ -21,7 +21,7 @@ function matchVersionInfoIndex(
   throw Error('没有匹配的版本');
 }
 
-export function getChangeAndMigrations<TChange extends PowerAppVersion.Changes>(
+export function getChangeAndMigrations<TChange>(
   comingVersion: string | undefined,
   savedVersion: string | undefined,
   infos: PowerAppVersionInfo[],
