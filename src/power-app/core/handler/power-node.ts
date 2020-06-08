@@ -95,7 +95,7 @@ function getPowerNodeChange({
       return undefined;
     }
 
-    return type === 'actions' ? powerNode.actions?.[action!] : powerNode[type];
+    return type === 'action' ? powerNode.actions?.[action!] : powerNode[type];
   };
 }
 

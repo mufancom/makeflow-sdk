@@ -1,7 +1,5 @@
 import {API} from '@makeflow/types';
 
-import {PowerAppVersion} from '../../types';
-
 export interface PageEvent {
   type: 'page';
   eventObject: PageEventObject;
@@ -12,7 +10,7 @@ type _PageEventObject = PageRequestEventObject;
 
 export interface PageEventParams {
   name: string;
-  type: Exclude<keyof PowerAppVersion.Page.Definition<any>, 'migrations'>;
+  type: 'request';
 }
 
 export type PageEventObject<

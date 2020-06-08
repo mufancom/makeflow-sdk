@@ -1,7 +1,5 @@
 import {API} from '@makeflow/types';
 
-import {PowerAppVersion} from '../../types';
-
 export interface PowerNodeEvent {
   type: 'power-node';
   eventObject: PowerNodeEventObject;
@@ -16,7 +14,7 @@ type _PowerNodeEventObject =
 
 export interface PowerNodeEventParams {
   name: string;
-  type: Exclude<keyof PowerAppVersion.PowerNode.Definition<any>, 'migrations'>;
+  type: 'activate' | 'update' | 'deactivate' | 'action';
   action: string | undefined;
 }
 

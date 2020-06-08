@@ -1,7 +1,5 @@
 import {API} from '@makeflow/types';
 
-import {PowerAppVersion} from '../../types';
-
 export interface PowerItemEvent {
   type: 'power-item';
   eventObject: PowerItemEventObject;
@@ -16,7 +14,7 @@ type _PowerItemEventObject =
 
 export interface PowerItemEventParams {
   name: string;
-  type: Exclude<keyof PowerAppVersion.PowerItem.Definition<any>, 'migrations'>;
+  type: 'activate' | 'update' | 'deactivate' | 'action';
   action: string | undefined;
 }
 

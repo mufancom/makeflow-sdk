@@ -95,7 +95,7 @@ function getPowerItemChange({
       return undefined;
     }
 
-    return type === 'actions' ? powerItem.actions?.[action!] : powerItem[type];
+    return type === 'action' ? powerItem.actions?.[action!] : powerItem[type];
   };
 }
 

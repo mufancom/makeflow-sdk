@@ -1,7 +1,5 @@
 import {API} from '@makeflow/types';
 
-import {PowerAppVersion} from '../../types';
-
 export interface PowerGlanceEvent {
   type: 'power-glance';
   eventObject: PowerGlanceEventObject;
@@ -15,10 +13,7 @@ type _PowerGlanceEventObject =
 
 export interface PowerGlanceEventParams {
   name: string;
-  type: Exclude<
-    keyof PowerAppVersion.PowerGlance.Definition<any>,
-    'migrations'
-  >;
+  type: 'initialize' | 'change' | 'dispose';
 }
 
 export type PowerGlanceEventObject<
