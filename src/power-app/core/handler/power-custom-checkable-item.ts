@@ -51,7 +51,7 @@ export async function powerCustomCheckableItemHandler(
       let storageField = storage.getField('storage') ?? {};
 
       for (let migration of migrations) {
-        migration(storageField);
+        storageField = migration(storageField);
       }
 
       storage.set(storageField);
@@ -99,17 +99,8 @@ function getPowerCustomCheckableItemChange({
 ) =>
   | PowerAppVersion.PowerCustomCheckableItem.Change<GeneralDeclareWithInputs>
   | undefined {
-  return ({contributions: {powerCustomCheckableItems = {}} = {}}) => {
-    let checkableItem = powerCustomCheckableItems[name];
-
-    if (!checkableItem) {
-      return undefined;
-    }
-
-    return typeof checkableItem === 'function'
-      ? checkableItem
-      : checkableItem['processor'];
-  };
+  return ({contributions: {powerCustomCheckableItems = {}} = {}}) =>
+    powerCustomCheckableItems[name]?.['processor'];
 }
 
 function getPowerCustomCheckableItemMigrations({
@@ -120,15 +111,10 @@ function getPowerCustomCheckableItemMigrations({
 ) => PowerAppVersion.MigrationFunction[] {
   return (type, definitions) =>
     _.compact(
-      definitions.map(definition => {
-        let powerCustomCheckableItem =
-          definition.contributions?.powerCustomCheckableItems?.[name];
-
-        if (typeof powerCustomCheckableItem === 'function') {
-          return undefined;
-        }
-
-        return powerCustomCheckableItem?.migrations?.[type];
-      }),
+      definitions.map(
+        definition =>
+          definition.contributions?.powerCustomCheckableItems?.[name]
+            ?.migrations?.[type],
+      ),
     );
 }

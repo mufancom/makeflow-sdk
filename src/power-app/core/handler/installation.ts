@@ -83,12 +83,12 @@ export async function installationHandler(
     installationStorage,
   );
 
-  let ret =
+  let changeResult =
     (await result.change({
       context,
     })) ?? {};
 
-  response({...ret, ...responseData});
+  response({...changeResult, ...responseData});
 }
 
 function getInstallationChange(

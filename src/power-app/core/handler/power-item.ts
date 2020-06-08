@@ -44,7 +44,7 @@ export async function powerItemHandler(
       let storageField = storage.getField('storage') ?? {};
 
       for (let migration of migrations) {
-        migration(storageField);
+        storageField = migration(storageField);
       }
 
       storage.set(storageField);

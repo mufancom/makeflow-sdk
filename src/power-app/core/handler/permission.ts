@@ -19,6 +19,7 @@ export async function permissionHandler(
 
   if (installationStorage.created) {
     installationStorage.setField('accessToken', accessToken);
+
     await app.dbAdapter.setStorage(installationStorage);
   }
 

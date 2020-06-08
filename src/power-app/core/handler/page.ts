@@ -45,7 +45,7 @@ export async function pageHandler(
       let storageField = storage.getField('storage') ?? {};
 
       for (let migration of migrations) {
-        migration(storageField);
+        storageField = migration(storageField);
       }
 
       storage.set(storageField);
@@ -113,15 +113,7 @@ function getPageChange({
 }: PageEventParams): (
   definition: PowerAppVersion.Definition,
 ) => PowerAppVersion.Page.Change<GeneralDeclare> | undefined {
-  return ({contributions: {pages = {}} = {}}) => {
-    let page = pages[name];
-
-    if (!page) {
-      return undefined;
-    }
-
-    return typeof page === 'function' ? page : page[type];
-  };
+  return ({contributions: {pages = {}} = {}}) => pages[name]?.[type];
 }
 
 function getPageMigrations({
@@ -132,14 +124,9 @@ function getPageMigrations({
 ) => PowerAppVersion.MigrationFunction[] {
   return (type, definitions) =>
     _.compact(
-      definitions.map(definition => {
-        let page = definition.contributions?.pages?.[name];
-
-        if (typeof page === 'function') {
-          return undefined;
-        }
-
-        return page?.migrations?.[type];
-      }),
+      definitions.map(
+        definition =>
+          definition.contributions?.pages?.[name]?.migrations?.[type],
+      ),
     );
 }
