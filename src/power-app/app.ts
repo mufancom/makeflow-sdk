@@ -235,7 +235,7 @@ export class PowerApp implements IPowerApp {
 
         let context: Context<'powerGlances'> = {
           ...initialBasicContext,
-          powerGlanceConfig: storageObject.getField('configs')!,
+          powerGlanceConfigs: storageObject.getField('configs')!,
         };
 
         return [context] as Context<TContextType>[];

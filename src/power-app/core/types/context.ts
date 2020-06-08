@@ -52,7 +52,7 @@ export type ContextTypeToBasicMapping = {
   powerGlances: [
     PowerGlanceModel,
     {
-      powerGlanceConfig: Dict<any>;
+      powerGlanceConfigs: Dict<any>;
     },
   ];
   powerNodes: [PowerNodeModel, {}];

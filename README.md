@@ -78,10 +78,10 @@ app.version<{
     powerGlances: {
       'awesome-glance': {
         initialize({
-          context: {storage, configs, powerGlanceConfig},
+          context: {storage, configs, powerGlanceConfigs},
           resources,
         }) {
-          console.log(configs, powerGlanceConfig, resources);
+          console.log(configs, powerGlanceConfigs, resources);
 
           let glanceName = storage.get('glanceName'); // ✔;
 
@@ -137,7 +137,7 @@ const _ = async (): Promise<void> => {
 
   for await (let {
     configs,
-    powerGlanceConfig,
+    powerGlanceConfigs,
     ...rest
   } of app.getContextIterable('powerGlances', {})) {
     // something ...
