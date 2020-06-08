@@ -64,6 +64,10 @@ export async function pageHandler(
     });
   }
 
+  storage.upgrade(version);
+
+  await app.dbAdapter.setStorage(storage);
+
   let responseData: API.PowerAppPage.HookReturn | void;
 
   if (change) {
@@ -99,10 +103,6 @@ export async function pageHandler(
 
     await app.dbAdapter.setStorage(userStorage);
   }
-
-  storage.upgrade(version);
-
-  await app.dbAdapter.setStorage(storage);
 
   response(responseData || {});
 }

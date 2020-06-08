@@ -70,6 +70,10 @@ export async function powerCustomCheckableItemHandler(
     });
   }
 
+  storage.upgrade(version);
+
+  await app.dbAdapter.setStorage(storage);
+
   let responseData: API.PowerCustomCheckableItem.HookReturn | void;
 
   if (change) {
@@ -84,10 +88,6 @@ export async function powerCustomCheckableItemHandler(
       url: requestUrl,
     });
   }
-
-  storage.upgrade(version);
-
-  await app.dbAdapter.setStorage(storage);
 
   response(responseData || {});
 }

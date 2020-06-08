@@ -22,7 +22,7 @@ export async function powerItemHandler(
 
   let storage = await app.dbAdapter.getStorage<PowerItemModel>({
     type: 'power-item',
-    token,
+    operationToken,
   });
 
   let result = getChangeAndMigrations(
@@ -63,6 +63,10 @@ export async function powerItemHandler(
     });
   }
 
+  storage.upgrade(version);
+
+  await app.dbAdapter.setStorage(storage);
+
   let responseData: API.PowerItem.HookReturn | void;
 
   if (change) {
@@ -73,10 +77,6 @@ export async function powerItemHandler(
       inputs,
     });
   }
-
-  storage.upgrade(version);
-
-  await app.dbAdapter.setStorage(storage);
 
   response(responseData || {});
 }

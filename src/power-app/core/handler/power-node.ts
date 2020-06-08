@@ -22,7 +22,7 @@ export async function powerNodeHandler(
 
   let storage = await app.dbAdapter.getStorage<PowerNodeModel>({
     type: 'power-node',
-    token,
+    operationToken,
   });
 
   let result = getChangeAndMigrations(
@@ -63,6 +63,10 @@ export async function powerNodeHandler(
     });
   }
 
+  storage.upgrade(version);
+
+  await app.dbAdapter.setStorage(storage);
+
   let responseData: API.PowerNode.HookReturn | void;
 
   if (change) {
@@ -73,10 +77,6 @@ export async function powerNodeHandler(
       inputs,
     });
   }
-
-  storage.upgrade(version);
-
-  await app.dbAdapter.setStorage(storage);
 
   response(responseData || {});
 }
