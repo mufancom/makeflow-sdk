@@ -80,11 +80,11 @@ export class PowerApp implements IPowerApp {
     this.buildServeAdapter(KoaAdapter, options).serve();
   }
 
-  koa(path: ServeOptions['path']): Koa.Middleware {
+  koa(path?: ServeOptions['path']): Koa.Middleware {
     return this.buildServeAdapter(KoaAdapter, {path}).middleware();
   }
 
-  express(path: ServeOptions['path']): Express {
+  express(path?: ServeOptions['path']): Express {
     return this.buildServeAdapter(ExpressAdapter, {path}).middleware();
   }
 

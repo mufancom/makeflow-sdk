@@ -1,7 +1,8 @@
-import {Plugin, server} from '@hapi/hapi';
+import {Plugin, ResponseToolkit, server} from '@hapi/hapi';
 import _ from 'lodash';
 
 import {
+  Events,
   InstallationEvent,
   PageEvent,
   PermissionEvent,
@@ -18,6 +19,12 @@ import {
   isPowerGlanceEventParams,
   isPowerItemOrPowerNodeEventParams,
 } from './serve';
+
+declare module '@hapi/hapi/index' {
+  interface ResponseToolkit {
+    bodyPromise: Promise<any>;
+  }
+}
 
 export class HapiAdapter extends AbstractServeAdapter {
   constructor(
@@ -52,7 +59,13 @@ export class HapiAdapter extends AbstractServeAdapter {
       name: '@makeflow/sdk',
       register(server) {
         server.auth.scheme('source', () => ({
-          authenticate: ({payload}, h) => {
+          authenticate: (_, h) => {
+            return h.continue;
+          },
+          // TODO (boen): not work
+          payload: (req, h) => {
+            let payload = req.payload;
+
             let source = (payload as any)?.source;
 
             if (!source || !adapter.authenticate(source)) {
@@ -61,48 +74,65 @@ export class HapiAdapter extends AbstractServeAdapter {
 
             return h.authenticated({credentials: source});
           },
+          options: {
+            payload: true,
+          },
         }));
+
+        server.auth.strategy('source', 'source');
 
         server.route({
           method: 'POST',
           path: '/installation/{type}',
-          handler: ({params, payload}, h) => {
+          handler: async ({params, payload}, h) => {
             adapter.emit<InstallationEvent>(
               'installation',
               {
                 type: params.type,
                 payload,
               } as InstallationEvent['eventObject'],
-              h.response,
+              getResponse<InstallationEvent>(h),
             );
+
+            return h.response(await h.bodyPromise);
           },
           options: {
-            auth: 'source',
+            auth: {
+              mode: 'required',
+              payload: 'required',
+              strategy: 'source',
+            },
           },
         });
 
         server.route({
           method: 'POST',
           path: '/permission/{type}',
-          handler: ({params, payload}, h) => {
+          handler: async ({params, payload}, h) => {
             adapter.emit<PermissionEvent>(
               'permission',
               {
                 type: params.type,
                 payload,
               } as PermissionEvent['eventObject'],
-              h.response,
+              getResponse(h),
             );
+
+            return h.response(await h.bodyPromise);
           },
           options: {
-            auth: 'source',
+            auth: {
+              mode: 'required',
+              payload: 'required',
+              strategy: 'source',
+            },
           },
         });
 
         server.route({
           method: 'POST',
-          path: '/power-item/{name}/{type}/{action}?',
-          handler: ({params, payload}, h) => {
+          path: '/power-item/{name}/{type}/{action?}',
+          handler: async ({params, payload}, h) => {
             if (!isPowerItemOrPowerNodeEventParams(params)) {
               return;
             }
@@ -113,18 +143,24 @@ export class HapiAdapter extends AbstractServeAdapter {
                 params,
                 payload,
               } as PowerItemEvent['eventObject'],
-              h.response,
+              getResponse<PowerItemEvent>(h),
             );
+
+            return h.response(await h.bodyPromise);
           },
           options: {
-            auth: 'source',
+            auth: {
+              mode: 'required',
+              payload: 'required',
+              strategy: 'source',
+            },
           },
         });
 
         server.route({
           method: 'POST',
-          path: '/power-node/{name}/{type}/{action}?',
-          handler: ({params, payload}, h) => {
+          path: '/power-node/{name}/{type}/{action?}',
+          handler: async ({params, payload}, h) => {
             if (!isPowerItemOrPowerNodeEventParams(params)) {
               return;
             }
@@ -135,18 +171,24 @@ export class HapiAdapter extends AbstractServeAdapter {
                 params,
                 payload,
               } as PowerNodeEvent['eventObject'],
-              h.response,
+              getResponse<PowerNodeEvent>(h),
             );
+
+            return h.response(await h.bodyPromise);
           },
           options: {
-            auth: 'source',
+            auth: {
+              mode: 'required',
+              payload: 'required',
+              strategy: 'source',
+            },
           },
         });
 
         server.route({
           method: 'POST',
           path: '/power-glance/{name}/{type}',
-          handler: ({params, payload}, h) => {
+          handler: async ({params, payload}, h) => {
             if (!isPowerGlanceEventParams(params)) {
               return;
             }
@@ -157,18 +199,24 @@ export class HapiAdapter extends AbstractServeAdapter {
                 params,
                 payload,
               } as PowerGlanceEvent['eventObject'],
-              h.response,
+              getResponse<PowerGlanceEvent>(h),
             );
+
+            return h.response(await h.bodyPromise);
           },
           options: {
-            auth: 'source',
+            auth: {
+              mode: 'required',
+              payload: 'required',
+              strategy: 'source',
+            },
           },
         });
 
         server.route({
           method: 'POST',
           path: '/power-custom-checkable-item/{name}',
-          handler: ({params, payload}, h) => {
+          handler: async ({params, payload}, h) => {
             if (!isPowerCustomCheckableEventParams(params)) {
               return;
             }
@@ -179,18 +227,24 @@ export class HapiAdapter extends AbstractServeAdapter {
                 params,
                 payload,
               } as PowerCustomCheckableItemEvent['eventObject'],
-              h.response,
+              getResponse<PowerCustomCheckableItemEvent>(h),
             );
+
+            return h.response(await h.bodyPromise);
           },
           options: {
-            auth: 'source',
+            auth: {
+              mode: 'required',
+              payload: 'required',
+              strategy: 'source',
+            },
           },
         });
 
         server.route({
           method: 'POST',
           path: '/page/{name}/{type}',
-          handler: ({params, payload}, h) => {
+          handler: async ({params, payload}, h) => {
             if (!isPageEventParams(params)) {
               return;
             }
@@ -201,15 +255,29 @@ export class HapiAdapter extends AbstractServeAdapter {
                 params,
                 payload,
               } as PageEvent['eventObject'],
-              h.response,
+              getResponse<PageEvent>(h),
             );
+
+            return h.response(await h.bodyPromise);
           },
           options: {
-            auth: 'source',
+            auth: {
+              mode: 'required',
+              payload: 'required',
+              strategy: 'source',
+            },
           },
         });
       },
       multiple: true,
     };
   };
+}
+
+function getResponse<TEvent extends Events>(
+  h: ResponseToolkit,
+): TEvent['response'] {
+  let response!: TEvent['response'];
+  h.bodyPromise = new Promise(resolve => (response = resolve));
+  return response;
 }
