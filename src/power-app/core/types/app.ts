@@ -9,7 +9,7 @@ import {Model} from '../model';
 import {ServeOptions} from '../serve';
 
 import {Context, ContextType, ContextTypeToBasicMapping} from './context';
-import {CustomDeclareDict, PowerAppVersion} from './version';
+import {PowerAppVersion} from './version';
 
 export type MatchContextsFilter<
   TType extends ContextType
@@ -39,12 +39,7 @@ export interface IPowerApp {
   definitions: PowerAppVersionInfo[];
   dbAdapter: IDBAdapter;
 
-  version<
-    TCustomDeclareDict extends Partial<CustomDeclareDict> = CustomDeclareDict
-  >(
-    range: string,
-    definition: PowerAppVersion.Definition<TCustomDeclareDict>,
-  ): void;
+  version(range: string, definition: PowerAppVersion.Definition<any>): void;
 
   getContextIterable<
     TContextType extends ContextType,

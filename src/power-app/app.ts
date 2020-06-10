@@ -71,12 +71,12 @@ export class PowerApp implements IPowerApp {
     this.initialize();
   }
 
-  version<
-    TCustomDeclareDict extends Partial<CustomDeclareDict> = CustomDeclareDict
-  >(
+  version(range: string, definition: PowerAppVersion.Definition<{}>): void;
+  version<TCustomDeclareDict extends Partial<CustomDeclareDict>>(
     range: string,
     definition: PowerAppVersion.Definition<TCustomDeclareDict>,
-  ): void {
+  ): void;
+  version(range: string, definition: PowerAppVersion.Definition): void {
     if (!validRange(range)) {
       throw Error('版本格式错误');
     }
