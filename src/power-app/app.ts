@@ -51,6 +51,17 @@ import {
   powerNodeHandler,
 } from './core';
 
+const CONTEXT_TYPE_TO_MODEL_TYPE_DICT: {
+  [key in ContextType]: Model['type'];
+} = {
+  installation: 'installation',
+  powerItems: 'power-item',
+  powerNodes: 'power-node',
+  powerCustomCheckableItems: 'power-custom-checkable-item',
+  powerGlances: 'power-glance',
+  pages: 'page',
+};
+
 export class PowerApp implements IPowerApp {
   definitions: PowerAppVersionInfo[] = [];
 
@@ -105,7 +116,7 @@ export class PowerApp implements IPowerApp {
     let storageObjects: StorageObject<any>[] = await db.getStorageObjects<
       Exclude<Model, UserModel>
     >({
-      type,
+      type: CONTEXT_TYPE_TO_MODEL_TYPE_DICT[type],
       ...(filter as any),
     });
 

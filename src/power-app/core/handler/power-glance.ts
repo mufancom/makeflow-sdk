@@ -22,7 +22,7 @@ export async function powerGlanceHandler(
       resources = [],
       powerGlanceConfigs = {},
     },
-  } = event as any;
+  } = event;
 
   let storage = await app.dbAdapter.getStorage<PowerGlanceModel>({
     type: 'power-glance',
@@ -59,8 +59,7 @@ export async function powerGlanceHandler(
           clock = result.clock;
           resources = result.resources;
 
-          // todo
-          powerGlanceConfigs = (result as any).powerGlanceConfigs;
+          powerGlanceConfigs = result.powerGlanceConfigs;
         } catch (error) {
           response({});
           return;

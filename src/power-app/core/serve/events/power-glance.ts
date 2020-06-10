@@ -35,5 +35,7 @@ export interface PowerGlanceDisposeEventObject {
     clock: undefined;
     resources: undefined;
     configs: undefined;
+  } & {
+    powerGlanceConfigs: undefined;
   };
 }

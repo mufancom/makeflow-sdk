@@ -30,8 +30,7 @@ export async function installationHandler(
   switch (event.type) {
     case 'activate':
     case 'update': {
-      // 等待 #3158
-      let {configs, resources, users} = event.payload as any;
+      let {configs, resources, users} = event.payload;
 
       if (installationStorage.created) {
         installationStorage

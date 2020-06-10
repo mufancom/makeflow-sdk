@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@hapi/hapi": "^19.1.1",
-    "@makeflow/types": "^0.1.6",
+    "@makeflow/types": "^0.1.9",
     "@makeflow/types-nominal": "^0.1.0",
     "@types/hapi__hapi": "^19.0.3",
     "@types/koa": "2.11.0",

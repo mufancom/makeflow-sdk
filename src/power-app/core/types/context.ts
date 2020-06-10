@@ -1,5 +1,4 @@
 import {API as APITypes} from '@makeflow/types';
-import {UserId} from '@makeflow/types-nominal';
 import {Dict} from 'tslang';
 
 import {API} from '../../api';
@@ -45,7 +44,7 @@ export type ContextTypeToBasicMapping = {
   installation: [
     InstallationModel,
     {
-      users: UserId[];
+      users: APITypes.PowerApp.UserInfo[];
     },
   ];
   powerItems: [PowerItemModel, {}];
