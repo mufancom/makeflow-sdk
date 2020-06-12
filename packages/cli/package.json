@@ -11,7 +11,7 @@
   },
   "license": "MIT",
   "bin": {
-    "mf": "src/program/main.js"
+    "mf": "bld/program/main.js"
   },
   "files": [
     "src/**/*.ts",
