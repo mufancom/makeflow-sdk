@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/cli",
-  "version": "0.1.0-wip.0",
+  "version": "0.1.0-wip.1",
   "description": "Command line interface for Makeflow.",
   "repository": {
     "type": "git",
