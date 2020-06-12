@@ -29,7 +29,8 @@
     "mongodb": "^3.5.9",
     "node-fetch": "^2.6.0",
     "semver": "^7.3.2",
-    "tslang": "^0.1.22"
+    "tslang": "^0.1.22",
+    "tslib": "^2.0.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.6",

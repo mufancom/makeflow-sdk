@@ -21,7 +21,8 @@
   "dependencies": {
     "clime": "^0.5.14",
     "node-fetch": "^2.6.0",
-    "prompts": "^2.3.2"
+    "prompts": "^2.3.2",
+    "tslib": "^2.0.0"
   },
   "devDependencies": {
     "@types/node-fetch": "^2.5.7",
