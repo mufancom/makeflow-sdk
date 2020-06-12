@@ -1,0 +1,12 @@
+{
+  "references": [
+    {"path": "src/program"},
+
+    {"path": "src/power-app"},
+    {"path": "src/power-app-schema"},
+
+    // scripts
+    {"path": "scripts"}
+  ],
+  "files": []
+}

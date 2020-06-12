@@ -1,0 +1,26 @@
+{
+  "name": "@makeflow/js-sdk",
+  "version": "0.1.0-wip.1",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "description": "makeflow js-sdk",
+  "repository": "git@github.com:makeflow/js-sdk.git",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "dev": "tsc -w"
+  },
+  "devDependencies": {
+    "@magicspace/configs": "^0.2.4",
+    "@magicspace/eslint-plugin": "^0.1.24",
+    "eslint": "^7.1.0",
+    "prettier": "^2.0.5",
+    "rimraf": "^3.0.2",
+    "typescript": "^3.9.3"
+  },
+  "dependencies": {
+    "@makeflow/types": "^0.1.9",
+    "@makeflow/types-nominal": "^0.1.0"
+  }
+}
