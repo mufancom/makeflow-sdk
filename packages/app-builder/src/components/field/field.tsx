@@ -601,7 +601,12 @@ export const ItemCustomField: FC<{
           <Form.Item label="自定义类型">
             <Radio.Group
               value={!!custom}
-              onChange={({target: {value}}) => setCustom(value)}
+              onChange={({target: {value}}) => {
+                setCustom(value);
+                onPartChange({
+                  definition: undefined,
+                });
+              }}
             >
               <Radio.Button value={false}>基础字段类型</Radio.Button>
               <Radio.Button value={true}>自定义字段类型</Radio.Button>
@@ -730,7 +735,7 @@ const ItemCustomFieldBaseDefinition: FC<{
 
   let definition = value ?? {};
 
-  let {base, options, data, dataSource} = definition;
+  let {base, options = {}, data = {}, dataSource} = definition;
 
   const [useData, setUseData] = useState<DataType>(
     data ? 'data' : dataSource ? 'dataSource' : undefined,
@@ -778,7 +783,7 @@ const ItemCustomFieldBaseDefinition: FC<{
 
           {Options ? (
             <Options
-              options={options ?? {}}
+              options={options}
               onChange={options =>
                 onPartChange({
                   options,
@@ -815,13 +820,13 @@ const ItemCustomFieldBaseDefinition: FC<{
                 Data.map((DataItem, index) => (
                   <DataItem
                     key={index}
-                    value={data ?? {}}
-                    onChange={newData =>
+                    value={data}
+                    onChange={newData => {
                       onPartChange({
-                        data: {...newData, ...data},
+                        data: {...data, ...newData},
                         dataSource: undefined,
-                      })
-                    }
+                      });
+                    }}
                   ></DataItem>
                 ))
               ) : useData === 'dataSource' ? (

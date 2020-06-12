@@ -76,7 +76,7 @@ export async function pageHandler(
       id: user,
     });
 
-    if (!storage.created) {
+    if (!userStorage.created) {
       userStorage.create({
         type: 'user',
         id: user,
@@ -89,6 +89,8 @@ export async function pageHandler(
         team,
         version,
       });
+
+      await app.dbAdapter.setStorage(userStorage);
     }
 
     let userActionStorage = getActionStorage(userStorage, app.dbAdapter);
@@ -100,8 +102,6 @@ export async function pageHandler(
     responseData = await change({
       context,
     });
-
-    await app.dbAdapter.setStorage(userStorage);
   }
 
   response(responseData || {});

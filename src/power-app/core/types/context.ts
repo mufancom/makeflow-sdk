@@ -45,6 +45,7 @@ export type ContextTypeToBasicMapping = {
     InstallationModel,
     {
       users: APITypes.PowerApp.UserInfo[];
+      resources: APITypes.PowerApp.ResourcesMapping;
     },
   ];
   powerItems: [PowerItemModel, {}];

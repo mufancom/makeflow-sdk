@@ -195,6 +195,10 @@ export class PowerApp implements IPowerApp {
         ...initialBasicContext,
         users: storageObject.getField('users') ?? [],
         configs: storageObject.getField('configs') ?? {},
+        resources: storageObject.getField('resources') ?? {
+          tags: {},
+          procedures: {},
+        },
       };
 
       return [context] as Context<TContextType>[];

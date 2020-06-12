@@ -4,7 +4,7 @@
   "private": true,
   "homepage": "http://makeflow.github.io/app-builder",
   "dependencies": {
-    "@makeflow/types": "^0.1.0",
+    "@makeflow/types": "^0.1.9",
     "@makeflow/types-nominal": "^0.1.0",
     "antd": "^3.26.8",
     "babel-plugin-import": "^1.13.0",

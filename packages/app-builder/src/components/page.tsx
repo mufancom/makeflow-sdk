@@ -1,7 +1,6 @@
 import {PowerAppPage} from '@makeflow/types';
-import {Card, Form, Icon, Input,  Switch, Tooltip} from 'antd';
+import {Card, Form, Icon, Input, Switch, Tooltip} from 'antd';
 import React, {FC, useState} from 'react';
-
 
 export const Page: FC<{
   value: PowerAppPage.Definition;
@@ -11,14 +10,7 @@ export const Page: FC<{
 
   let definition = value;
 
-  let {
-    displayName,
-    name,
-    description,
-    url,
-    icon,
-    shortcut
-  } = definition;
+  let {displayName, name, description, icon, shortcut} = definition;
 
   let onPartChange = (part: Partial<PowerAppPage.Definition>): void => {
     onChange({
@@ -62,18 +54,6 @@ export const Page: FC<{
               onChange={({target: {value}}) =>
                 onPartChange({
                   displayName: value,
-                })
-              }
-            />
-          </Form.Item>
-
-          <Form.Item label="页面地址" required>
-            <Input
-              placeholder="url"
-              value={url}
-              onChange={({target: {value}}) =>
-                onPartChange({
-                  url: value,
                 })
               }
             />

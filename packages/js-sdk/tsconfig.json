@@ -1,0 +1,17 @@
+{
+  "extends": "@magicspace/configs/tsconfig.json",
+  "compilerOptions": {
+    "target": "es5",
+    "composite": true,
+
+    "types": ["node", "@makeflow/types-nominal/default"],
+    "lib": ["esnext", "dom","scripthost"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "outDir": "./lib",
+    "rootDir": "./src",
+  }
+}
+
