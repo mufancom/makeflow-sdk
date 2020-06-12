@@ -1,4 +1,12 @@
 {
   "files": [],
-  "references": [{"path": "src/packages/cli/src/program"}]
+  "references": [
+    {"path": "packages/cli/src/program"},
+
+    {"path": "packages/power-app/src/library"},
+
+    {"path": "packages/power-app-page/src/library"},
+
+    {"path": "packages/power-app-builder/src/program"}
+  ]
 }

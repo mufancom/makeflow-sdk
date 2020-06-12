@@ -14,5 +14,14 @@
     "src/**/*.ts",
     "bld",
     "!*.tsbuildinfo"
-  ]
+  ],
+  "dependencies": {
+    "clime": "^0.5.14",
+    "node-fetch": "^2.6.0",
+    "prompts": "^2.3.2"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.7",
+    "@types/prompts": "^2.0.8"
+  }
 }

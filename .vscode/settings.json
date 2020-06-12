@@ -18,5 +18,6 @@
     "typescript",
     "typescriptreact"
   ],
-  "eslint.workingDirectories": [{"mode": "auto"}]
+  "eslint.workingDirectories": [{"mode": "auto"}],
+  "cSpell.words": ["downlevel"]
 }

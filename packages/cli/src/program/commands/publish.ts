@@ -1,6 +1,3 @@
-import * as FS from 'fs';
-import * as Path from 'path';
-
 import {
   Castable,
   Command,
@@ -10,16 +7,11 @@ import {
   option,
   param,
 } from 'clime';
-import {Validator} from 'jsonschema';
 
 import {config} from '../config';
 import {API} from '../core';
 
 const api = new API(config.api, config.token);
-
-const definitionSchema = loadDefinitionJSONSchema();
-
-const schemaValidator = new Validator();
 
 export class PublishOptions extends Options {
   @option({
@@ -53,16 +45,6 @@ export default class extends Command {
   }
 
   private async publish(definition: object, token?: string): Promise<void> {
-    let result = schemaValidator.validate(definition, definitionSchema);
-
-    if (result.errors.length) {
-      let errorMessages = result.errors.map(({message}) => `- ${message}`);
-
-      throw new Error(
-        `Invalid PowerApp definition, reasons:\n${errorMessages.join('\n')}`,
-      );
-    }
-
     let {token: accessToken} = config;
 
     if (!accessToken) {
@@ -74,13 +56,4 @@ export default class extends Command {
       token,
     });
   }
-}
-
-function loadDefinitionJSONSchema(): object {
-  let schemaJSON = FS.readFileSync(
-    Path.join(__dirname, '../../power-app-schema/schema.json'),
-    'utf-8',
-  );
-
-  return JSON.parse(schemaJSON);
 }

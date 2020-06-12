@@ -14,6 +14,7 @@
     "bld/**"
   ],
   "scripts": {
+    "lerna:publish": "lerna publish prerelease --registry=https://registry.npmjs.org",
     "build-ts": "tsc --build tsconfig.full.json",
     "lint": "run-in-every eslint-project --echo --parallel -- eslint --config {configFileName} .",
     "lint-prettier": "prettier --check \"**/*.{ts,tsx,js,jsx,json,yml,md}\""
@@ -22,7 +23,9 @@
     "@magicspace/configs": "^0.2.5",
     "@magicspace/eslint-plugin": "^0.1.25",
     "eslint": "^7.2.0",
+    "gh-pages": "^3.0.0",
     "lerna": "^3.22.1",
+    "parcel-bundler": "^1.12.4",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
     "run-in-every": "^0.1.3",

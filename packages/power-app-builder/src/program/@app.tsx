@@ -82,7 +82,7 @@ export const App: FC = () => {
   return (
     <Layout className="app">
       <Header className="header">
-        Power App 定义工具
+        PowerApp 定义工具
         {localStorage.WIP ? (
           <Icon type="setting" onClick={() => setToShowSetting(true)}></Icon>
         ) : undefined}

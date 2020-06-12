@@ -5,5 +5,6 @@ module.exports = {
     node: true,
     es2020: true,
   },
+  // Ignore all sub directories.
   ignorePatterns: ['*/**'],
 };
