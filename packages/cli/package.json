@@ -1,0 +1,18 @@
+{
+  "name": "@makeflow/cli",
+  "version": "0.0.0",
+  "description": "Command line interface for Makeflow.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/makeflow/makeflow-sdk.git"
+  },
+  "license": "MIT",
+  "bin": {
+    "mf": "src/program/main.js"
+  },
+  "files": [
+    "src/**/*.ts",
+    "bld",
+    "!*.tsbuildinfo"
+  ]
+}

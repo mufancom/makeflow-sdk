@@ -1,0 +1,13 @@
+{
+  "extends": "@magicspace/configs/tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+
+    "target": "es5",
+
+    "lib": ["ESNext", "DOM", "ScriptHost"],
+    "types": ["node", "@makeflow/types-nominal/default"],
+
+    "outDir": "../../bld/library"
+  }
+}

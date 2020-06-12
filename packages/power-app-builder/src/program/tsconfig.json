@@ -1,0 +1,25 @@
+{
+  "extends": "@magicspace/configs/tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+
+    "target": "ES5",
+
+    "module": "ESNext",
+    "moduleResolution": "node",
+
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "ScriptHost"],
+    "types": ["react-scripts", "@makeflow/types-nominal/default"],
+
+    "jsx": "preserve",
+
+    "experimentalDecorators": true,
+    "downlevelIteration": true,
+
+    "baseUrl": ".",
+
+    "skipLibCheck": true,
+
+    "outDir": "../../.bld-cache/program"
+  }
+}

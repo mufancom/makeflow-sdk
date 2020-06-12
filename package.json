@@ -1,6 +1,7 @@
 {
   "name": "@makeflow/power-app",
   "version": "0.1.0-wip.4",
+  "private": true,
   "description": "Makeflow SDK",
   "repository": "https://github.com/makeflow/makeflow-sdk",
   "author": "Chengdu Mufan Technology Co., Ltd.",
@@ -13,66 +14,21 @@
     "bld/**"
   ],
   "scripts": {
-    "prepublishOnly": "yarn build-ts",
-    "prerelease": "npm version prerelease --preid=beta",
-    "run:app-builder": "cd src/app-builder && yarn start",
-    "build:program": "yarn tsc --project src/program",
-    "build:power-app": "yarn tsc --project src/power-app",
-    "build:power-app-schema": "typescript-json-schema --required --out bld/power-app-schema/schema.json src/power-app-schema/tsconfig.json PowerAppSchema",
-    "build-ts": "rimraf bld &&  yarn build:program && yarn build:power-app && mkdir bld/power-app-schema && yarn build:power-app-schema",
-    "lint-ts": "ts-node --transpile-only --project scripts/tsconfig.json scripts/lint-ts-projects.ts",
-    "lint-prettier": "prettier --check \"**/*.{ts,tsx,js,jsx,json,yml,md}\"",
-    "lint": "yarn lint-prettier && yarn lint-ts"
+    "build-ts": "tsc --build tsconfig.full.json",
+    "lint": "run-in-every eslint-project --echo --parallel -- eslint --config {configFileName} .",
+    "lint-prettier": "prettier --check \"**/*.{ts,tsx,js,jsx,json,yml,md}\""
   },
   "devDependencies": {
-    "@magicspace/configs": "^0.2.3",
-    "@magicspace/eslint-plugin": "^0.1.23",
-    "@types/jsonschema": "^1.1.1",
-    "@types/koa-bodyparser": "^4.3.0",
-    "@types/koa-mount": "^4.0.0",
-    "@types/koa-router": "^7.4.1",
-    "@types/lodash": "^4.14.149",
-    "@types/lowdb": "^1.0.9",
-    "@types/node": "^11.11.8",
-    "@types/prettier": "^2.0.0",
-    "@types/prompts": "^1.2.0",
-    "@types/rc": "^1.1.0",
-    "@types/semver": "^6.2.0",
-    "@types/strip-json-comments": "^3.0.0",
-    "biu": "^0.2.20",
-    "eslint": "^7.0.0",
+    "@magicspace/configs": "^0.2.5",
+    "@magicspace/eslint-plugin": "^0.1.25",
+    "eslint": "^7.2.0",
+    "lerna": "^3.22.1",
     "prettier": "^2.0.5",
-    "rimraf": "^2.6.3",
-    "strip-json-comments": "^3.1.0",
-    "ts-node": "^8.0.3",
-    "typescript": "^3.7.4",
-    "typescript-json-schema": "^0.36.0"
+    "rimraf": "^3.0.2",
+    "run-in-every": "^0.1.3",
+    "typescript": "^3.9.5"
   },
-  "dependencies": {
-    "@hapi/hapi": "^19.1.1",
-    "@makeflow/types": "^0.1.9",
-    "@makeflow/types-nominal": "^0.1.0",
-    "@types/hapi__hapi": "^19.0.3",
-    "@types/koa": "2.11.0",
-    "@types/mongodb": "^3.5.18",
-    "@types/node-fetch": "^2.5.7",
-    "clime": "^0.5.10",
-    "express": "^4.17.1",
-    "fp-ts": "^2.4.0",
-    "io-ts": "^2.0.4",
-    "io-ts-types": "^0.5.5",
-    "jsonschema": "^1.2.4",
-    "koa": "^2.11.0",
-    "koa-bodyparser": "^4.3.0",
-    "koa-mount": "^4.0.0",
-    "koa-router": "^8.0.8",
-    "lodash": "^4.17.15",
-    "lowdb": "^1.0.0",
-    "mongodb": "^3.4.1",
-    "node-fetch": "^2.6.0",
-    "prompts": "^2.0.4",
-    "semver": "^7.1.1",
-    "tslang": "^0.1.13",
-    "villa": "^0.3.1"
-  }
+  "workspaces": [
+    "packages/*"
+  ]
 }
