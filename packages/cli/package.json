@@ -2,6 +2,9 @@
   "name": "@makeflow/cli",
   "version": "0.1.0-wip.1",
   "description": "Command line interface for Makeflow.",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/makeflow/makeflow-sdk.git"
