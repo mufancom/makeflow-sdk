@@ -19,6 +19,8 @@
   ],
   "dependencies": {
     "@hapi/hapi": "^19.1.1",
+    "@makeflow/types": "^0.1.9",
+    "@makeflow/types-nominal": "^0.1.1",
     "express": "^4.17.1",
     "koa": "^2.12.0",
     "koa-bodyparser": "^4.3.0",

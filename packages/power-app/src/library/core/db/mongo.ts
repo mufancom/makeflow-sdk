@@ -83,7 +83,7 @@ export class MongoAdapter extends AbstractDBAdapter {
       {
         [primaryField]: prevModel[primaryField],
       } as FilterQuery<TModel>,
-      getUpdateQuery({
+      getUpdateQuery<any>({
         ..._.pick(nextModel, allowedFields),
         storage: nextModel.storage,
       }),

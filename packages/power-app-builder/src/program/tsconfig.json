@@ -9,7 +9,7 @@
     "moduleResolution": "node",
 
     "lib": ["ESNext", "DOM", "DOM.Iterable", "ScriptHost"],
-    "types": ["react-scripts", "@makeflow/types-nominal/default"],
+    "types": ["node", "@makeflow/types-nominal/default"],
 
     "jsx": "react",
 

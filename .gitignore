@@ -23,6 +23,7 @@ node_modules/
 bld/
 dist/
 .cache/
+.bld-cache/
 *.tgz
 
 # Debugging outputs

@@ -4,6 +4,7 @@
     "composite": true,
 
     "types": ["node", "@makeflow/types-nominal/default"],
+    "lib": ["DOM"],
 
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
