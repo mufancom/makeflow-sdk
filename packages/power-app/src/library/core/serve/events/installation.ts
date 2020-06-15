@@ -6,12 +6,7 @@ export interface InstallationEvent {
     | InstallationActivateEventObject
     | InstallationDeactivateEventObject
     | InstallationUpdateEventObject;
-  response(
-    // 等主分支合了 types 类型
-    data: API.PowerApp.InstallationUpdateHookReturn & {
-      description?: string | false;
-    },
-  ): void;
+  response(data: API.PowerApp.InstallationUpdateHookReturn): void;
 }
 
 export interface InstallationActivateEventObject {

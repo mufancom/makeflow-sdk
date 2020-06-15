@@ -12,6 +12,6 @@
     "emitDecoratorMetadata": true,
 
     "rootDir": ".",
-    "outDir": "../../bld/program"
+    "outDir": "../../../../bld/cli"
   }
 }

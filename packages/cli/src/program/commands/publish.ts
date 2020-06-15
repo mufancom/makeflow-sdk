@@ -33,25 +33,31 @@ export default class extends Command {
     file: Castable.File,
     options: PublishOptions,
   ): Promise<void> {
-    await file.assert();
+    let definition;
 
-    let definition = await file.json<any>();
+    try {
+      await file.assert();
 
-    await this.publish(definition, options.token);
+      definition = await file.json<any>();
+    } catch (error) {
+      definition = (await import(file.fullName))?.default;
+    }
+
+    let token = await this.publish(definition, options.token);
 
     console.info(
-      `PowerApp "${definition.name}" has been successfully published!`,
+      `PowerApp "${definition.name}" has been successfully published! \x1b[33m ${token} \x1b[0m`,
     );
   }
 
-  private async publish(definition: object, token?: string): Promise<void> {
+  private async publish(definition: object, token?: string): Promise<string> {
     let {token: accessToken} = config;
 
     if (!accessToken) {
       throw new ExpectedError('Please login with `mf login` first');
     }
 
-    await api.call('/power-app/publish', {
+    return api.call('/power-app/publish', {
       definition,
       token,
     });
