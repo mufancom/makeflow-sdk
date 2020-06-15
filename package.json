@@ -1,14 +1,10 @@
 {
-  "name": "@makeflow/power-app",
+  "name": "@makeflow/sdk",
   "version": "0.1.0-wip.4",
   "private": true,
   "description": "Makeflow SDK",
   "repository": "https://github.com/makeflow/makeflow-sdk",
   "author": "Chengdu Mufan Technology Co., Ltd.",
-  "main": "bld/power-app/index.js",
-  "bin": {
-    "mf": "bld/program/cli.js"
-  },
   "files": [
     "src/program/**/*.ts",
     "bld/**"
