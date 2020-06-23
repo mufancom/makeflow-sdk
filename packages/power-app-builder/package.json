@@ -5,7 +5,7 @@
   "homepage": "http://makeflow.github.io/app-builder",
   "scripts": {
     "serve": "parcel serve src/program/index.html",
-    "build": "parcel build --out-dir bld/program src/program/index.html"
+    "build": "parcel build --public-url /app-builder/ --out-dir bld/program src/program/index.html"
   },
   "dependencies": {
     "@makeflow/types": "^0.1.9",
@@ -19,7 +19,8 @@
     "uuid": "^8.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.2",
+    "@babel/core": "^7.0.0-0",
+    "@babel/preset-react": "^7.10.1",
     "@magicspace/configs": "^0.2.5",
     "@magicspace/eslint-plugin": "^0.1.25",
     "@types/lodash": "^4.14.155",
@@ -28,6 +29,7 @@
     "@types/react-color": "^3.0.2",
     "@types/react-dom": "^16.9.8",
     "@types/uuid": "^8.0.0",
+    "babel-plugin-import": "^1.13.0",
     "less": "^3.11.3",
     "parcel-plugin-less-js-enabled": "^1.0.2"
   }
