@@ -1,6 +1,7 @@
 import {PowerApp} from '../../app';
 import {InstallationModel} from '../model';
 import {InstallationEvent} from '../serve';
+import {StorageObject} from '../storage';
 import {GeneralDeclare, PowerAppVersion} from '../types';
 import {getChangeAndMigrations} from '../utils';
 
@@ -16,42 +17,28 @@ export async function installationHandler(
     type,
   } = event;
 
-  if (!installation) {
-    return;
-  }
-
   let responseData = {};
 
-  let installationStorage = await app.dbAdapter.getStorage<InstallationModel>({
-    type: 'installation',
-    installation,
-  });
+  let installationStorage: StorageObject<InstallationModel> | undefined;
 
   switch (event.type) {
     case 'activate':
     case 'update': {
       let {configs, resources, users} = event.payload;
 
-      if (installationStorage.created) {
-        installationStorage
-          .setField('configs', configs)
-          .setField('resources', resources)
-          .setField('users', users);
-      } else {
-        installationStorage.create({
-          type: 'installation',
-          token,
-          url,
-          installation,
-          version,
-          organization,
-          team,
-          configs,
-          resources,
-          users,
-          storage: {},
-        });
-      }
+      installationStorage = await app.dbAdapter.createOrUpgradeStorageObject({
+        type: 'installation',
+        token,
+        url,
+        installation,
+        version,
+        organization,
+        team,
+        configs,
+        resources,
+        users,
+        storage: {},
+      });
 
       responseData = {
         granted: !!installationStorage.getField('accessToken'),
@@ -61,9 +48,9 @@ export async function installationHandler(
     }
   }
 
-  installationStorage.upgrade(version);
-
-  await app.dbAdapter.setStorage(installationStorage);
+  if (!installationStorage) {
+    return;
+  }
 
   let result = getChangeAndMigrations(
     version,

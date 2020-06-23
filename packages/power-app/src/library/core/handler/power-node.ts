@@ -2,27 +2,34 @@ import {API} from '@makeflow/types';
 import _ from 'lodash';
 
 import {PowerApp} from '../../app';
-import {PowerNodeModel} from '../model';
 import {PowerNodeEvent, PowerNodeEventParams} from '../serve';
 import {GeneralDeclareWithInputs, PowerAppVersion} from '../types';
-import {getChangeAndMigrations} from '../utils';
+import {getChangeAndMigrations, runMigrations} from '../utils';
 
 export async function powerNodeHandler(
   app: PowerApp,
-  event: PowerNodeEvent['eventObject'],
+  {
+    params,
+    payload: {
+      token: operationToken,
+      source: {token, url, installation, organization, team, version},
+      inputs = {},
+    },
+  }: PowerNodeEvent['eventObject'],
   response: PowerNodeEvent['response'],
 ): Promise<void> {
-  let {params, payload} = event;
+  let db = app.dbAdapter;
 
-  let {
-    token: operationToken,
-    source: {token, url, installation, organization, team, version},
-    inputs = {},
-  } = payload;
-
-  let storage = await app.dbAdapter.getStorage<PowerNodeModel>({
+  let storage = await db.createOrUpgradeStorageObject({
     type: 'power-node',
+    token,
+    url,
+    installation,
+    organization,
+    team,
     operationToken,
+    version,
+    storage: {},
   });
 
   let result = getChangeAndMigrations(
@@ -39,33 +46,7 @@ export async function powerNodeHandler(
 
   let {change, migrations} = result;
 
-  if (storage.created) {
-    if (migrations.length) {
-      let storageField = storage.getField('storage') ?? {};
-
-      for (let migration of migrations) {
-        storageField = migration(storageField);
-      }
-
-      storage.set(storageField);
-    }
-  } else {
-    storage.create({
-      type: 'power-node',
-      token,
-      url,
-      installation,
-      organization,
-      team,
-      operationToken,
-      version,
-      storage: {},
-    });
-  }
-
-  storage.upgrade(version);
-
-  await app.dbAdapter.setStorage(storage);
+  await runMigrations(db, storage, migrations);
 
   let responseData: API.PowerNode.HookReturn | void;
 

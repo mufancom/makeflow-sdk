@@ -2,28 +2,36 @@ import {API} from '@makeflow/types';
 import _ from 'lodash';
 
 import {PowerApp} from '../../app';
-import {PageModel, UserModel} from '../model';
+import {UserModel} from '../model';
 import {PageEvent, PageEventParams} from '../serve';
+import {getActionStorage} from '../storage';
 import {GeneralDeclare, PowerAppVersion} from '../types';
-import {getActionStorage, getChangeAndMigrations} from '../utils';
+import {getChangeAndMigrations, runMigrations} from '../utils';
 
 export async function pageHandler(
   app: PowerApp,
-  event: PageEvent['eventObject'],
-  response: PageEvent['response'],
-): Promise<void> {
-  let {
+  {
     params,
     payload: {
       source: {token, url, installation, organization, team, version},
       token: operationToken,
       user,
     },
-  } = event;
+  }: PageEvent['eventObject'],
+  response: PageEvent['response'],
+): Promise<void> {
+  let db = app.dbAdapter;
 
-  let storage = await app.dbAdapter.getStorage<PageModel>({
+  let storage = await db.createOrUpgradeStorageObject({
     type: 'page',
+    token,
+    url,
+    installation,
+    organization,
+    team,
+    version,
     operationToken,
+    storage: {},
   });
 
   let result = getChangeAndMigrations(
@@ -40,60 +48,31 @@ export async function pageHandler(
 
   let {change, migrations} = result;
 
-  if (storage.created) {
-    if (migrations.length) {
-      let storageField = storage.getField('storage') ?? {};
-
-      for (let migration of migrations) {
-        storageField = migration(storageField);
-      }
-
-      storage.set(storageField);
-    }
-  } else {
-    storage.create({
-      type: 'page',
-      token,
-      url,
-      installation,
-      organization,
-      team,
-      version,
-      operationToken,
-      storage: {},
-    });
-  }
-
-  storage.upgrade(version);
-
-  await app.dbAdapter.setStorage(storage);
+  await runMigrations(db, storage, migrations);
 
   let responseData: API.PowerAppPage.HookReturn | void;
 
   if (change) {
-    let userStorage = await app.dbAdapter.getStorage<UserModel>({
+    let userStorage = await db.getStorageObject<UserModel>({
       type: 'user',
       id: user,
     });
 
-    if (!userStorage.created) {
-      userStorage.create({
+    if (!userStorage) {
+      userStorage = await db.createStorageObject({
         type: 'user',
         id: user,
         token,
         url,
         organization,
         storage: {},
-        // 以下字段不建议使用
         installation,
         team,
         version,
       });
-
-      await app.dbAdapter.setStorage(userStorage);
     }
 
-    let userActionStorage = getActionStorage(userStorage, app.dbAdapter);
+    let userActionStorage = getActionStorage(db, userStorage);
 
     let [context] = await app.getStorageObjectContexts('pages', storage, {
       matchedUser: userActionStorage,

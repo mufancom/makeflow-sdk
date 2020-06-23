@@ -12,15 +12,17 @@ export async function permissionHandler(
   }: PermissionEvent['eventObject'],
   response: PermissionEvent['response'],
 ): Promise<void> {
-  let installationStorage = await app.dbAdapter.getStorage<InstallationModel>({
+  let db = app.dbAdapter;
+
+  let storage = await db.getStorageObject<InstallationModel>({
     type: 'installation',
     installation,
   });
 
-  if (installationStorage.created) {
-    installationStorage.setField('accessToken', accessToken);
-
-    await app.dbAdapter.setStorage(installationStorage);
+  if (storage) {
+    await db.upgradeStorageObject(storage.version, storage.identity, {
+      accessToken,
+    });
   }
 
   response({});

@@ -6,14 +6,11 @@ import {PowerApp} from '../../app';
 import {PowerGlanceModel} from '../model';
 import {PowerGlanceEvent, PowerGlanceEventParams} from '../serve';
 import {GeneralDeclare, PowerAppVersion} from '../types';
-import {getChangeAndMigrations} from '../utils';
+import {getChangeAndMigrations, runMigrations} from '../utils';
 
 export async function powerGlanceHandler(
   app: PowerApp,
-  event: PowerGlanceEvent['eventObject'],
-  response: PowerGlanceEvent['response'],
-): Promise<void> {
-  let {
+  {
     params,
     payload: {
       token: operationToken,
@@ -22,16 +19,19 @@ export async function powerGlanceHandler(
       resources = [],
       powerGlanceConfigs = {},
     },
-  } = event;
+  }: PowerGlanceEvent['eventObject'],
+  response: PowerGlanceEvent['response'],
+): Promise<void> {
+  let db = app.dbAdapter;
 
-  let storage = await app.dbAdapter.getStorage<PowerGlanceModel>({
+  let storage = await db.getStorageObject<PowerGlanceModel>({
     type: 'power-glance',
     operationToken,
   });
 
   let result = getChangeAndMigrations(
     version,
-    storage.version,
+    storage?.version,
     app.definitions,
     getPowerGlanceChange(params),
     getPowerGlanceMigrations(params),
@@ -43,7 +43,7 @@ export async function powerGlanceHandler(
 
   let {change, migrations} = result;
 
-  if (storage.created) {
+  if (storage) {
     if (params.type === 'change') {
       let prevClock = Number(storage.getField('clock'));
 
@@ -65,22 +65,17 @@ export async function powerGlanceHandler(
           return;
         }
       }
-
-      storage.setField('clock', clock);
-      storage.setField('configs', powerGlanceConfigs);
     }
 
-    if (migrations.length) {
-      let storageField = storage.getField('storage') ?? {};
+    await db.upgradeStorageObject(version, storage.identity, {
+      disposed: params.type === 'dispose',
+      configs: powerGlanceConfigs,
+      clock,
+    });
 
-      for (let migration of migrations) {
-        storageField = migration(storageField);
-      }
-
-      storage.set(storageField);
-    }
+    await runMigrations(db, storage, migrations);
   } else {
-    storage.create({
+    storage = await db.createStorageObject({
       type: 'power-glance',
       token,
       url,
@@ -95,12 +90,6 @@ export async function powerGlanceHandler(
       storage: {},
     });
   }
-
-  storage.setField('disposed', params.type === 'dispose');
-
-  storage.upgrade(version);
-
-  await app.dbAdapter.setStorage(storage);
 
   let responseData: APITypes.PowerGlance.HookReturn | void;
 

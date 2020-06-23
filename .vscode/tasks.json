@@ -21,25 +21,6 @@
       "problemMatcher": "$tsc-watch"
     },
     {
-      "label": "power-app-build",
-      "type": "shell",
-      "command": "node",
-      "options": {
-        "env": {
-          "TSC_WATCHFILE": "UseFsEventsWithFallbackDynamicPolling"
-        }
-      },
-      "args": [
-        "node_modules/typescript/bin/tsc",
-        "--project",
-        "src/power-app",
-        "--watch"
-      ],
-      "isBackground": true,
-      "group": "build",
-      "problemMatcher": "$tsc-watch"
-    },
-    {
       "label": "clean",
       "type": "shell",
       "command": "yarn",

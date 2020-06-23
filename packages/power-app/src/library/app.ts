@@ -1,4 +1,6 @@
 import {Plugin} from '@hapi/hapi';
+import {API as APITypes} from '@makeflow/types';
+import {UserId} from '@makeflow/types-nominal';
 import {Express} from 'express';
 import Koa from 'koa';
 import _ from 'lodash';
@@ -161,13 +163,9 @@ export class PowerApp implements IPowerApp {
 
     let api = new API(storageObject.source);
 
-    let initialBasicContext: BasicContext<
-      ContextTypeToModel<ContextType>,
-      any,
-      any
-    > = {
+    let initialBasicContext: BasicContext<any, any, any> = {
       api,
-      storage: getActionStorage(storageObject, db),
+      storage: getActionStorage(db, storageObject),
       source: storageObject.source,
       configs: {},
     };
@@ -204,26 +202,22 @@ export class PowerApp implements IPowerApp {
       return [context] as Context<TContextType>[];
     }
 
-    let installationStorageObject = await this.dbAdapter.getStorage<
+    let installationStorageObject = await this.dbAdapter.getStorageObject<
       InstallationModel
     >({
       type: 'installation',
       installation: storageObject.getField('installation'),
     });
 
-    api.setAccessToken(installationStorageObject.getField('accessToken'));
-
-    function assertModelWithOperationToken(
-      storageObject: StorageObject<any>,
-    ): storageObject is StorageObject<ModelWithOperationToken> {
-      return !!storageObject.getField('operationToken');
-    }
+    api.setAccessToken(installationStorageObject?.getField('accessToken'));
 
     if (assertModelWithOperationToken(storageObject)) {
       api.setOperationToken(storageObject.getField('operationToken'));
     }
 
-    initialBasicContext.configs = installationStorageObject.getField('configs');
+    initialBasicContext.configs = installationStorageObject?.getField(
+      'configs',
+    );
 
     switch (type) {
       case 'powerItems': {
@@ -274,7 +268,7 @@ export class PowerApp implements IPowerApp {
           ] as Context<TContextType>[];
         }
 
-        let userStorages = await this.geUserStorages({
+        let userStorages = await this.getUserStorages({
           installation: storageObject.getField('installation'),
         });
 
@@ -288,7 +282,7 @@ export class PowerApp implements IPowerApp {
     }
   }
 
-  async geUserStorages<TStorage>(
+  async getUserStorages<TStorage>(
     filter: Partial<UserModel> & {storage?: Partial<TStorage>},
   ): Promise<ActionStorage<UserModel, TStorage>[]> {
     let users = await this.dbAdapter.getStorageObjects<UserModel>({
@@ -297,8 +291,22 @@ export class PowerApp implements IPowerApp {
     });
 
     return users.map(user =>
-      getActionStorage<UserModel, TStorage>(user, this.dbAdapter),
+      getActionStorage<UserModel, TStorage>(this.dbAdapter, user),
     );
+  }
+
+  async createUserStorage<TStorage>(
+    source: APITypes.PowerApp.Source,
+    id: UserId,
+  ): Promise<ActionStorage<UserModel, TStorage>> {
+    let storage = await this.dbAdapter.createStorageObject({
+      type: 'user',
+      id,
+      ...source,
+      storage: {},
+    });
+
+    return getActionStorage(this.dbAdapter, storage);
   }
 
   private initialize(): void {
@@ -392,4 +400,10 @@ export class PowerApp implements IPowerApp {
   ): Promise<void> => {
     await pageHandler(this, event, response);
   };
+}
+
+function assertModelWithOperationToken(
+  storageObject: StorageObject<any>,
+): storageObject is StorageObject<ModelWithOperationToken> {
+  return !!storageObject.getField('operationToken');
 }

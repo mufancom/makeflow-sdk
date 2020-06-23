@@ -2,34 +2,38 @@ import {API} from '@makeflow/types';
 import _ from 'lodash';
 
 import {PowerApp} from '../../app';
-import {PowerCustomCheckableItemModel} from '../model';
 import {
   PowerCustomCheckableItemEvent,
   PowerCustomCheckableItemEventParams,
 } from '../serve';
 import {GeneralDeclareWithInputs, PowerAppVersion} from '../types';
-import {getChangeAndMigrations} from '../utils';
+import {getChangeAndMigrations, runMigrations} from '../utils';
 
 export async function powerCustomCheckableItemHandler(
   app: PowerApp,
-  event: PowerCustomCheckableItemEvent['eventObject'],
-  response: PowerCustomCheckableItemEvent['response'],
-): Promise<void> {
-  let {
+  {
     params,
     payload: {
-      source,
+      source: {token, url, installation, organization, team, version},
       token: operationToken,
       inputs = {},
       context: {url: requestUrl},
     },
-  } = event;
+  }: PowerCustomCheckableItemEvent['eventObject'],
+  response: PowerCustomCheckableItemEvent['response'],
+): Promise<void> {
+  let db = app.dbAdapter;
 
-  let {token, url, installation, organization, team, version} = source;
-
-  let storage = await app.dbAdapter.getStorage<PowerCustomCheckableItemModel>({
+  let storage = await db.createOrUpgradeStorageObject({
     type: 'power-custom-checkable-item',
+    token,
+    url,
+    installation,
+    organization,
+    team,
+    version,
     operationToken,
+    storage: {},
   });
 
   let result = getChangeAndMigrations(
@@ -46,33 +50,7 @@ export async function powerCustomCheckableItemHandler(
 
   let {change, migrations} = result;
 
-  if (storage.created) {
-    if (migrations.length) {
-      let storageField = storage.getField('storage') ?? {};
-
-      for (let migration of migrations) {
-        storageField = migration(storageField);
-      }
-
-      storage.set(storageField);
-    }
-  } else {
-    storage.create({
-      type: 'power-custom-checkable-item',
-      token,
-      url,
-      installation,
-      organization,
-      team,
-      version,
-      operationToken,
-      storage: {},
-    });
-  }
-
-  storage.upgrade(version);
-
-  await app.dbAdapter.setStorage(storage);
+  await runMigrations(db, storage, migrations);
 
   let responseData: API.PowerCustomCheckableItem.HookReturn | void;
 

@@ -1,26 +1,26 @@
+import * as v from 'villa';
+
 import {IDBAdapter} from '../db';
 import {Model} from '../model';
-import {ActionStorage, StorageObject} from '../storage';
+import {StorageObject} from '../storage';
+import {PowerAppVersion} from '../types';
 
-export function getActionStorage<TModel extends Model, TStorage>(
-  storageObject: StorageObject<TModel>,
+import {getStorageLockKey} from './model';
+
+export async function runMigrations(
   db: IDBAdapter,
-): ActionStorage<TModel, TStorage> {
-  let get = storageObject.get.bind(storageObject);
+  storageObject: StorageObject<Model>,
+  migrations: PowerAppVersion.MigrationFunction[],
+): Promise<void> {
+  await v.lock(getStorageLockKey(storageObject.identity), async () => {
+    if (migrations.length) {
+      let storage = storageObject.getField('storage') ?? {};
 
-  async function set(...args: any[]): Promise<void> {
-    storageObject.set.apply(storageObject, args);
-    await db.setStorage(storageObject);
-  }
+      for (let migration of migrations) {
+        storage = migration(storage);
+      }
 
-  async function merge(storage: any): Promise<void> {
-    storageObject.merge(storage);
-    await db.setStorage(storageObject);
-  }
-
-  return {
-    get,
-    set,
-    merge,
-  };
+      await db.setStorage(storageObject.identity, storage);
+    }
+  });
 }

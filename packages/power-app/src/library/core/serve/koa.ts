@@ -37,7 +37,7 @@ export class KoaAdapter extends AbstractServeAdapter {
     let router = new Router<unknown>({prefix});
 
     router
-      .all('*', async (context, next) => {
+      .all('(.*)', async (context, next) => {
         if (!this.authenticate(context.request.body?.source)) {
           context.throw('authenticate failed', 416);
           return;

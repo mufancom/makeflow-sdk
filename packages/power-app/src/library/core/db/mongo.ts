@@ -3,12 +3,15 @@ import {
   Collection,
   Db,
   FilterQuery,
+  FindOneAndUpdateOption,
   MongoClient,
   OnlyFieldsOfType,
+  PushOperator,
   UpdateQuery,
 } from 'mongodb';
 
-import {Model} from '../model';
+import {Model, ModelIdentity} from '../model';
+import {buildSecureUpdateData, flattenObjectToQuery} from '../utils';
 
 import {AbstractDBAdapter, DefaultQueryType} from './db';
 
@@ -24,6 +27,180 @@ export class MongoAdapter extends AbstractDBAdapter {
     super(options);
   }
 
+  // query
+
+  async getModel(identity: ModelIdentity<Model>): Promise<Model | undefined> {
+    let {type, ...primaryFieldQuery} = identity;
+
+    let model = await this.getCollection({type}).findOne(primaryFieldQuery);
+
+    return model || undefined;
+  }
+
+  async getModelList<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel>,
+  ): Promise<TModel[]> {
+    return this.getCollection<TModel>(partialModel)
+      .find(flattenObjectToQuery(partialModel))
+      .toArray();
+  }
+
+  // model
+
+  async createModel<TModel extends Model>(model: TModel): Promise<TModel> {
+    await this.getCollection<TModel>(model).insertOne(model as any);
+
+    return model;
+  }
+
+  async upgradeModel<TModel extends Model>(
+    version: string,
+    identity: ModelIdentity<TModel>,
+    model: Partial<TModel>,
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
+      $set: buildSecureUpdateData(version, identity, model),
+    });
+  }
+
+  async setStorage<TModel extends Model>(
+    identity: ModelIdentity<TModel>,
+    storage: any,
+  ): Promise<void> {
+    await this.findOneAndUpdate(identity, {
+      $set: {
+        storage,
+      },
+    });
+  }
+
+  // filed
+
+  async rename<TModel extends Model>(
+    identity: ModelIdentity<TModel>,
+    path: string,
+    newPath: string,
+  ): Promise<void> {
+    await this.findOneAndUpdate(identity, {
+      $rename: {
+        [`storage.${path}`]: newPath,
+      },
+    });
+  }
+
+  async inc<TModel extends Model>(
+    identity: ModelIdentity<TModel>,
+    path: string,
+    size: number,
+  ): Promise<void> {
+    await this.findOneAndUpdate(identity, {
+      $inc: {
+        [`storage.${path}`]: size,
+      } as OnlyFieldsOfType<TModel>,
+    });
+  }
+
+  async mul<TModel extends Model>(
+    identity: ModelIdentity<TModel>,
+    path: string,
+    size: number,
+  ): Promise<void> {
+    await this.findOneAndUpdate(identity, {
+      $mul: {
+        [`storage.${path}`]: size,
+      } as OnlyFieldsOfType<TModel>,
+    });
+  }
+
+  async set<TModel extends Model>(
+    identity: ModelIdentity<TModel>,
+    path: string,
+    value: any,
+  ): Promise<void> {
+    await this.findOneAndUpdate(identity, {
+      $set: {
+        [`storage.${path}`]: value,
+      },
+    });
+  }
+
+  async unset<TModel extends Model>(
+    identity: ModelIdentity<TModel>,
+    path: string,
+  ): Promise<void> {
+    await this.findOneAndUpdate(identity, {
+      $unset: {
+        [`storage.${path}`]: '',
+      },
+    });
+  }
+
+  async slice<TModel extends Model>(
+    identity: ModelIdentity<TModel>,
+    path: string,
+    size: number,
+  ): Promise<void> {
+    await this.findOneAndUpdate(identity, {
+      $push: {
+        [`storage.${path}`]: {
+          $each: [],
+          $slice: size,
+        },
+      } as PushOperator<TModel>,
+    });
+  }
+
+  async shift<TModel extends Model>(
+    identity: ModelIdentity<TModel>,
+    path: string,
+  ): Promise<void> {
+    await this.findOneAndUpdate(identity, {
+      $pop: {
+        [`storage.${path}`]: -1,
+      } as OnlyFieldsOfType<TModel>,
+    });
+  }
+
+  async unshift<TModel extends Model>(
+    identity: ModelIdentity<TModel>,
+    path: string,
+    value: any,
+  ): Promise<void> {
+    await this.findOneAndUpdate(identity, {
+      $push: {
+        [`storage.${path}`]: {
+          $each: [value],
+          $position: 0,
+        },
+      } as PushOperator<TModel>,
+    });
+  }
+
+  async pop<TModel extends Model>(
+    identity: ModelIdentity<TModel>,
+    path: string,
+  ): Promise<void> {
+    await this.findOneAndUpdate(identity, {
+      $pop: {
+        [`storage.${path}`]: 1,
+      } as OnlyFieldsOfType<TModel>,
+    });
+  }
+
+  async push<TModel extends Model, TValue>(
+    identity: ModelIdentity<TModel>,
+    path: string,
+    ...value: TValue[]
+  ): Promise<void> {
+    await this.findOneAndUpdate(identity, {
+      $push: {
+        [`storage.${path}`]: {
+          $each: value,
+        },
+      } as PushOperator<TModel>,
+    });
+  }
+
   protected async initialize(): Promise<void> {
     let {uri, name} = this.options;
 
@@ -36,59 +213,7 @@ export class MongoAdapter extends AbstractDBAdapter {
     this.db = client.db(name);
   }
 
-  protected async getModel<TModel extends Model>(
-    partialModel: DefaultQueryType<TModel>,
-  ): Promise<TModel | undefined> {
-    let {primaryField} = this.getStorageDefinitionInfo(partialModel.type);
-
-    let model = await this.getCollection<TModel>(partialModel).findOne({
-      [primaryField]: partialModel[primaryField],
-    } as FilterQuery<TModel>);
-
-    return model ?? undefined;
-  }
-
-  protected async getModelList<TModel extends Model>(
-    partialModel: DefaultQueryType<TModel>,
-  ): Promise<TModel[]> {
-    return this.getCollection<TModel>(partialModel)
-      .find(getDictFilterQuery(partialModel))
-      .toArray();
-  }
-
-  protected async deleteModel<TModel extends Model>(
-    model: TModel,
-  ): Promise<void> {
-    let {primaryField} = this.getStorageDefinitionInfo(model.type);
-    await this.getCollection<TModel>(model).deleteOne({
-      [primaryField]: model[primaryField],
-    } as FilterQuery<TModel>);
-  }
-
-  protected async createModel<TModel extends Model>(
-    model: TModel,
-  ): Promise<void> {
-    await this.getCollection<TModel>(model).insertOne(model as any);
-  }
-
-  protected async updateModel<TModel extends Model>(
-    prevModel: TModel,
-    nextModel: TModel,
-  ): Promise<void> {
-    let {primaryField, allowedFields} = this.getStorageDefinitionInfo<TModel>(
-      prevModel.type,
-    );
-
-    await this.getCollection<TModel>(prevModel).updateOne(
-      {
-        [primaryField]: prevModel[primaryField],
-      } as FilterQuery<TModel>,
-      getUpdateQuery<any>({
-        ..._.pick(nextModel, allowedFields),
-        storage: nextModel.storage,
-      }),
-    );
-  }
+  // helper
 
   private getCollection<TModel extends Model>({
     type,
@@ -97,50 +222,23 @@ export class MongoAdapter extends AbstractDBAdapter {
   }): Collection<TModel> {
     return this.db.collection(type);
   }
-}
 
-function getDictFilterQuery<TModel extends Model>(
-  doc: DefaultQueryType<TModel> | TModel,
-): FilterQuery<Model> {
-  function isObject(obj: unknown): obj is object {
-    return _.isObjectLike(obj);
-  }
+  private async findOneAndUpdate<TModel extends Model>(
+    identity: ModelIdentity<TModel>,
+    update: UpdateQuery<any>,
+    options: FindOneAndUpdateOption = {},
+  ): Promise<TModel> {
+    let {value: newModel, lastErrorObject} = await this.getCollection<TModel>(
+      identity,
+    ).findOneAndUpdate(identity as FilterQuery<TModel>, update, {
+      returnOriginal: false,
+      ...options,
+    });
 
-  let query: FilterQuery<any> = {};
-
-  for (let [key, value] of Object.entries(doc)) {
-    if (!isObject(value)) {
-      query[key] = value;
-      continue;
+    if (!newModel) {
+      throw lastErrorObject;
     }
 
-    query = {
-      ...query,
-      ..._.fromPairs(
-        Object.entries(value).map(([property, value]) => [
-          `${key}.${property}`,
-          value,
-        ]),
-      ),
-    };
+    return newModel;
   }
-
-  return query;
-}
-
-function getUpdateQuery<TModel extends Model>(
-  model: Partial<TModel>,
-): UpdateQuery<TModel> {
-  let unset = _.fromPairs(
-    _.toPairsIn(_.pickBy(model, _.isUndefined)).map(([key]) => [key, '']),
-  );
-
-  return {
-    $set: model,
-    ...((!_.isEmpty(unset)
-      ? {
-          $unset: unset,
-        }
-      : {}) as OnlyFieldsOfType<TModel, any, ''>),
-  };
 }

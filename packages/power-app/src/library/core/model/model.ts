@@ -60,8 +60,7 @@ type __Definition<
 export interface InstallationModel extends IModel<'installation'> {
   configs: Dict<unknown>;
   resources: API.PowerApp.ResourcesMapping;
-  users: any[];
-  // users: API.PowerApp.UserInfo[];
+  users: API.PowerApp.UserInfo[];
   accessToken?: string | undefined;
 }
 
@@ -126,7 +125,7 @@ export type PageDefinition = __Definition<PageModel, 'operationToken'>;
 // user
 
 /**
- * User 对于整个 APP 都是唯一的，不同的 installation 共享
+ * User 对于同一个 installation 是唯一的
  *
  * 以下字段仅初次记录，不会更新: [ installation | team | version ]
  */
@@ -147,7 +146,7 @@ export const typeToModelDefinitionDict: {
   installation: {
     type: 'installation',
     primaryField: 'installation',
-    allowedFields: ['accessToken', 'configs', 'resources'],
+    allowedFields: ['accessToken', 'configs', 'resources', 'users'],
   },
   'power-item': {
     type: 'power-item',
@@ -162,7 +161,7 @@ export const typeToModelDefinitionDict: {
   'power-glance': {
     type: 'power-glance',
     primaryField: 'operationToken',
-    allowedFields: ['clock', 'disposed'],
+    allowedFields: ['clock', 'disposed', 'configs'],
   },
   'power-custom-checkable-item': {
     type: 'power-custom-checkable-item',
@@ -184,3 +183,11 @@ export const typeToModelDefinitionDict: {
 export type ModelToDefinition<TModel extends Model> = ModelTypeToDefinition<
   TModel['type']
 >;
+
+export type ModelIdentity<TModel extends Model> = ModelTypeToDefinition<
+  TModel['type']
+> extends {type: infer TType; primaryField: infer TPrimaryField}
+  ? TPrimaryField extends string
+    ? {type: TType} & Record<TPrimaryField, any>
+    : never
+  : never;
