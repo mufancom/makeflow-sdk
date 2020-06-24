@@ -22,7 +22,7 @@ export async function pageHandler(
 ): Promise<void> {
   let db = app.dbAdapter;
 
-  let storage = await db.createOrUpgradeStorageObject({
+  let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject({
     type: 'page',
     token,
     url,
@@ -36,7 +36,7 @@ export async function pageHandler(
 
   let result = getChangeAndMigrations(
     version,
-    storage.version,
+    savedVersion,
     app.definitions,
     getPageChange(params),
     getPageMigrations(params),

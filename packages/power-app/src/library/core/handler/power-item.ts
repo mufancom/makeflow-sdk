@@ -20,7 +20,7 @@ export async function powerItemHandler(
 ): Promise<void> {
   let db = app.dbAdapter;
 
-  let storage = await db.createOrUpgradeStorageObject({
+  let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject({
     type: 'power-item',
     token,
     url,
@@ -34,7 +34,7 @@ export async function powerItemHandler(
 
   let result = getChangeAndMigrations(
     version,
-    storage.version,
+    savedVersion,
     app.definitions,
     getPowerItemChange(params),
     getPowerItemMigrations(params),

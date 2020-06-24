@@ -61,19 +61,28 @@ abstract class DBAdapter {
 
   async createOrUpgradeStorageObject<TModel extends Model>(
     model: TModel,
-  ): Promise<StorageObject<TModel>> {
+  ): Promise<{
+    value: StorageObject<TModel>;
+    savedVersion: string | undefined;
+  }> {
     await this.ready;
 
     let storageObject = await this.getStorageObject(getModelIdentity(model));
 
     if (storageObject) {
-      return this.upgradeStorageObject(
-        model.version,
-        storageObject.identity,
-        model,
-      );
+      return {
+        savedVersion: storageObject.version,
+        value: await this.upgradeStorageObject(
+          model.version,
+          storageObject.identity,
+          model,
+        ),
+      };
     } else {
-      return this.createStorageObject(model);
+      return {
+        value: await this.createStorageObject(model),
+        savedVersion: undefined,
+      };
     }
   }
 

@@ -5,8 +5,9 @@ import Koa from 'koa';
 import {Dict} from 'tslang';
 
 import {IDBAdapter, LowdbOptions, MongoOptions} from '../db';
-import {Model} from '../model';
+import {Model, UserModel} from '../model';
 import {ServeOptions} from '../serve';
+import {ActionStorage} from '../storage';
 
 import {Context, ContextType, ContextTypeToBasicMapping} from './context';
 import {PowerAppVersion} from './version';
@@ -57,6 +58,15 @@ export interface IPowerApp {
     type: TContextType,
     filter: MatchContextsFilter<TContextType>,
   ): Promise<Context<TContextType, TStorage, TConfigs>[]>;
+
+  getUserStorages<TStorage>(
+    filter: Partial<UserModel> & {storage?: Partial<TStorage>},
+  ): Promise<ActionStorage<UserModel, TStorage>[]>;
+
+  getOrCreateUserStorage<TStorage>(
+    source: APITypes.PowerApp.Source,
+    id: string,
+  ): Promise<ActionStorage<UserModel, TStorage>>;
 
   serve(options?: ServeOptions): void;
   koa(path: ServeOptions['path']): Koa.Middleware;

@@ -3,7 +3,7 @@ import {compare, intersects, lt, minVersion, satisfies} from 'semver';
 
 import {PowerAppVersion, PowerAppVersionInfo} from '../types';
 
-import {warning} from './log';
+import {warningLog} from './log';
 
 function matchVersionInfoIndex(
   version: string,
@@ -103,7 +103,7 @@ export function checkVersionsQualified(
   let headInfo = definitions[0];
 
   if (headInfo.definition.ancestor) {
-    warning(`${headInfo.range} 不应该有 ancestor`);
+    warningLog(`${headInfo.range} 不应该有 ancestor`);
   }
 
   for (let index = 1; index < definitions.length; index++) {
@@ -112,12 +112,12 @@ export function checkVersionsQualified(
     let ancestor = info.definition.ancestor;
 
     if (!ancestor) {
-      warning(`${info.range} 未指定 ancestor`);
+      warningLog(`${info.range} 未指定 ancestor`);
       continue;
     }
 
     if (ancestor !== definitions[index - 1].range) {
-      warning(`${headInfo.range} 的 ancestor 不是前一个版本的版本号`);
+      warningLog(`${headInfo.range} 的 ancestor 不是前一个版本的版本号`);
     }
   }
 

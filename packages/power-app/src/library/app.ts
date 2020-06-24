@@ -20,30 +20,25 @@ import {
   IDBAdapter,
   IPowerApp,
   IServeAdapter,
-  InstallationEvent,
   InstallationModel,
   KoaAdapter,
   LowdbAdapter,
   MatchContextsFilter,
   Model,
+  ModelIdentity,
   ModelWithOperationToken,
   MongoAdapter,
-  PageEvent,
   PageModel,
-  PermissionEvent,
   PowerAppOptions,
   PowerAppVersion,
   PowerAppVersionInfo,
-  PowerCustomCheckableItemEvent,
-  PowerGlanceEvent,
   PowerGlanceModel,
-  PowerItemEvent,
-  PowerNodeEvent,
   ServeOptions,
   StorageObject,
   UserModel,
   checkVersionsQualified,
   getActionStorage,
+  handlerCatcher,
   installationHandler,
   pageHandler,
   permissionHandler,
@@ -295,18 +290,26 @@ export class PowerApp implements IPowerApp {
     );
   }
 
-  async createUserStorage<TStorage>(
+  async getOrCreateUserStorage<TStorage>(
     source: APITypes.PowerApp.Source,
-    id: UserId,
+    userId: string,
   ): Promise<ActionStorage<UserModel, TStorage>> {
-    let storage = await this.dbAdapter.createStorageObject({
-      type: 'user',
-      id,
-      ...source,
-      storage: {},
-    });
+    let db = this.dbAdapter;
 
-    return getActionStorage(this.dbAdapter, storage);
+    let identity: ModelIdentity<UserModel> = {type: 'user', id: userId};
+
+    let storage = await db.getStorageObject<UserModel>(identity);
+
+    if (!storage) {
+      storage = await db.createStorageObject({
+        type: 'user',
+        id: userId as UserId,
+        ...source,
+        storage: {},
+      });
+    }
+
+    return getActionStorage(db, storage);
   }
 
   private initialize(): void {
@@ -334,16 +337,16 @@ export class PowerApp implements IPowerApp {
     let serveAdapter = new Adapter(this.options.source?.token, options);
 
     serveAdapter
-      .on('installation', this.handleInstallation)
-      .on('permission', this.handlePermission)
-      .on('power-item', this.handlePowerItemChange)
-      .on('power-node', this.handlePowerNodeChange)
-      .on('power-glance', this.handlePowerGlanceChange)
+      .on('installation', handlerCatcher(this, installationHandler))
+      .on('permission', handlerCatcher(this, permissionHandler))
+      .on('power-item', handlerCatcher(this, powerItemHandler))
+      .on('power-node', handlerCatcher(this, powerNodeHandler))
+      .on('power-glance', handlerCatcher(this, powerGlanceHandler))
       .on(
         'power-custom-checkable-item',
-        this.handlePowerCustomCheckableItemChange,
+        handlerCatcher(this, powerCustomCheckableItemHandler),
       )
-      .on('page', this.handlePageChange);
+      .on('page', handlerCatcher(this, pageHandler));
 
     return serveAdapter;
   }
@@ -351,55 +354,6 @@ export class PowerApp implements IPowerApp {
   private checkVersionsQualified(): void {
     this.definitions = checkVersionsQualified(this.definitions);
   }
-
-  private handleInstallation = async (
-    event: InstallationEvent['eventObject'],
-    response: InstallationEvent['response'],
-  ): Promise<void> => {
-    await installationHandler(this, event, response);
-  };
-
-  private handlePermission = async (
-    event: PermissionEvent['eventObject'],
-    response: PermissionEvent['response'],
-  ): Promise<void> => {
-    await permissionHandler(this, event, response);
-  };
-
-  private handlePowerItemChange = async (
-    event: PowerItemEvent['eventObject'],
-    response: PowerItemEvent['response'],
-  ): Promise<void> => {
-    await powerItemHandler(this, event, response);
-  };
-
-  private handlePowerNodeChange = async (
-    event: PowerNodeEvent['eventObject'],
-    response: PowerNodeEvent['response'],
-  ): Promise<void> => {
-    await powerNodeHandler(this, event, response);
-  };
-
-  private handlePowerGlanceChange = async (
-    event: PowerGlanceEvent['eventObject'],
-    response: PowerGlanceEvent['response'],
-  ): Promise<void> => {
-    await powerGlanceHandler(this, event, response);
-  };
-
-  private handlePowerCustomCheckableItemChange = async (
-    event: PowerCustomCheckableItemEvent['eventObject'],
-    response: PowerCustomCheckableItemEvent['response'],
-  ): Promise<void> => {
-    await powerCustomCheckableItemHandler(this, event, response);
-  };
-
-  private handlePageChange = async (
-    event: PageEvent['eventObject'],
-    response: PageEvent['response'],
-  ): Promise<void> => {
-    await pageHandler(this, event, response);
-  };
 }
 
 function assertModelWithOperationToken(

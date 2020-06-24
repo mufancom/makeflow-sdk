@@ -83,7 +83,7 @@ export class MongoAdapter extends AbstractDBAdapter {
   ): Promise<void> {
     await this.findOneAndUpdate(identity, {
       $rename: {
-        [`storage.${path}`]: newPath,
+        [`storage.${path}`]: `storage.${newPath}`,
       },
     });
   }

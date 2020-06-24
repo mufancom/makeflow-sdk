@@ -20,7 +20,7 @@ export async function powerNodeHandler(
 ): Promise<void> {
   let db = app.dbAdapter;
 
-  let storage = await db.createOrUpgradeStorageObject({
+  let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject({
     type: 'power-node',
     token,
     url,
@@ -34,7 +34,7 @@ export async function powerNodeHandler(
 
   let result = getChangeAndMigrations(
     version,
-    storage.version,
+    savedVersion,
     app.definitions,
     getPowerNodeChange(params),
     getPowerNodeMigrations(params),

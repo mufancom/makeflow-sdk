@@ -26,7 +26,7 @@ export async function installationHandler(
     case 'update': {
       let {configs, resources, users} = event.payload;
 
-      installationStorage = await app.dbAdapter.createOrUpgradeStorageObject({
+      let result = await app.dbAdapter.createOrUpgradeStorageObject({
         type: 'installation',
         token,
         url,
@@ -39,6 +39,8 @@ export async function installationHandler(
         users,
         storage: {},
       });
+
+      installationStorage = result.value;
 
       responseData = {
         granted: !!installationStorage.getField('accessToken'),
