@@ -160,6 +160,26 @@ export class API<TSourceObject extends APISource = APISource> {
     });
   }
 
+  // power-node
+
+  /**
+   * 更新超级节点
+   * @params options.description 节点描述
+   * @params options.stage 节点状态
+   * @params options.outputs 输出
+   * @token
+   */
+  async updatePowerNode(
+    options: Omit<APITypes.PowerNode.UpdateParams, 'token'>,
+  ): Promise<void> {
+    return this.request('/power-node/update', {
+      body: {
+        token: this.operationToken,
+        ...options,
+      },
+    });
+  }
+
   // task
 
   /**
