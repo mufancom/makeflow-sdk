@@ -102,13 +102,21 @@ export class ActionStorage<TModel extends Model, TStorage extends Dict<any>> {
     return path ? _.cloneDeep(_.get(storage, flatPath(path))) : storage;
   }
 
-  require(): TStorage;
-  require<TPath extends keyof TStorage>(path: TPath): TStorage[TPath];
-  require<TPath extends Path<TStorage>>(path: TPath): Property<TStorage, TPath>;
+  require(): NonNullable<TStorage>;
+  require<TPath extends keyof TStorage>(
+    path: TPath,
+  ): NonNullable<TStorage[TPath]>;
+  require<TPath extends Path<TStorage>>(
+    path: TPath,
+  ): NonNullable<Property<TStorage, TPath>>;
   require(path?: any): any {
-    let storage = this.storageObject.storage || {};
+    let value = this.get(path);
 
-    return path ? _.cloneDeep(_.get(storage, flatPath(path))) : storage;
+    if (value === undefined) {
+      throw Error(`${path ?? 'storage'} is require but get undefined`);
+    }
+
+    return value;
   }
 
   // field
@@ -198,12 +206,10 @@ export class ActionStorage<TModel extends Model, TStorage extends Dict<any>> {
     await this.db.pop(this.storageObject.identity, flatPath(path));
   }
 
-  // @ts-ignore
   async push<TPath extends keyof TStorage>(
     path: TPath,
     ...value: TStorage[TPath]
   ): Promise<void>;
-  // @ts-ignore
   async push<TPath extends Path<TStorage>>(
     path: TPath,
     ...value: Property<TStorage, TPath>
