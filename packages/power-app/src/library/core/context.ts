@@ -1,7 +1,8 @@
 import {API as APITypes} from '@makeflow/types';
 import {Dict} from 'tslang';
 
-import {API} from '../../api';
+import {API} from '../api';
+
 import {
   InstallationModel,
   Model,
@@ -11,8 +12,8 @@ import {
   PowerItemModel,
   PowerNodeModel,
   UserModel,
-} from '../model';
-import {ActionStorage} from '../storage';
+} from './model';
+import {ActionStorage} from './storage';
 
 export interface BasicContext<TModel extends Model, TStorage, TConfigs> {
   api: API;
@@ -60,7 +61,7 @@ export type ContextTypeToBasicMapping = {
   pages: [
     PageModel,
     {
-      userStorage: ActionStorage<UserModel>;
+      userStorage: ActionStorage<UserModel, any>;
     },
   ];
 };

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import {compare, intersects, lt, minVersion, satisfies} from 'semver';
 
-import {PowerAppVersion, PowerAppVersionInfo} from '../types';
+import {PowerAppVersion, PowerAppVersionInfo} from '../version';
 
 import {warningLog} from './log';
 

@@ -1,10 +1,10 @@
 import {API} from '@makeflow/types';
 import _ from 'lodash';
 
-import {PowerApp} from '../../app';
+import type {PowerApp} from '../../app';
 import {PowerNodeEvent, PowerNodeEventParams} from '../serve';
-import {GeneralDeclareWithInputs, PowerAppVersion} from '../types';
 import {getChangeAndMigrations, runMigrations} from '../utils';
+import {GeneralDeclareWithInputs, PowerAppVersion} from '../version';
 
 export async function powerNodeHandler(
   app: PowerApp,

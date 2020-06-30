@@ -2,11 +2,11 @@ import {API as APITypes} from '@makeflow/types';
 import _ from 'lodash';
 
 import {API} from '../../api';
-import {PowerApp} from '../../app';
+import type {PowerApp} from '../../app';
 import {PowerGlanceModel} from '../model';
 import {PowerGlanceEvent, PowerGlanceEventParams} from '../serve';
-import {GeneralDeclare, PowerAppVersion} from '../types';
 import {getChangeAndMigrations, runMigrations} from '../utils';
+import {GeneralDeclare, PowerAppVersion} from '../version';
 
 export async function powerGlanceHandler(
   app: PowerApp,

@@ -1,4 +1,5 @@
 import {API} from '@makeflow/types';
+import _ from 'lodash';
 import {Dict} from 'tslang';
 import * as v from 'villa';
 
@@ -7,6 +8,52 @@ import {Model, ModelIdentity} from '../model';
 import {getStorageLockKey} from '../utils';
 
 import {StorageObject} from './storage';
+
+type Unshift<TTuple, TElement> = TTuple extends readonly any[]
+  ? ((element: TElement, ...tuple: TTuple) => void) extends (
+      ...elements: infer TElements
+    ) => void
+    ? TElements
+    : never
+  : never;
+
+type SliceFirst<TTuple> = TTuple extends readonly []
+  ? never
+  : TTuple extends readonly any[]
+  ? ((...tuple: TTuple) => void) extends (
+      element: any,
+      ...elements: infer TElements
+    ) => void
+    ? TElements
+    : never
+  : never;
+
+type Path<TObject> = TObject extends object
+  ? {
+      [TKey in keyof TObject]:
+        | [TKey]
+        | (Path<TObject[TKey]> extends infer TPath
+            ? TPath extends []
+              ? never
+              : Unshift<TPath, TKey>
+            : never);
+    }[keyof TObject]
+  : [];
+
+type __Property<TObject, TPath extends any[]> = number extends TPath['length']
+  ? never
+  : TPath extends []
+  ? TObject
+  : {
+      [TKey in keyof TObject]-?: TKey extends TPath[0]
+        ? __Property<NonNullable<TObject[TKey]>, SliceFirst<TPath>>
+        : never;
+    }[TPath[0]];
+
+type Property<TObject, TPath extends Path<TObject>> = __Property<
+  TObject,
+  TPath
+>;
 
 export function getActionStorage<TModel extends Model, TStorage>(
   db: IDBAdapter,
@@ -30,10 +77,7 @@ function lock(
   };
 }
 
-export class ActionStorage<
-  TModel extends Model,
-  TStorage extends Dict<any> = Dict<any>
-> {
+export class ActionStorage<TModel extends Model, TStorage extends Dict<any>> {
   get identity(): ModelIdentity<TModel> {
     return this.storageObject.identity;
   }
@@ -47,60 +91,67 @@ export class ActionStorage<
     private storageObject: StorageObject<TModel>,
   ) {}
 
-  get<TTStorage extends Dict<any> = TStorage>(): TTStorage;
-  get<
-    TTStorage extends Dict<any> = TStorage,
-    TKey extends keyof TTStorage = keyof TTStorage
-  >(key: TKey): TTStorage[TKey];
-  get<
-    TTStorage extends Dict<any> = TStorage,
-    TKey extends keyof TTStorage = keyof TTStorage
-  >(key?: TKey | undefined): TTStorage | TTStorage[TKey] | undefined {
-    let storage = this.storageObject.storage as TTStorage | undefined;
+  get(): TStorage | undefined;
+  get<TPath extends keyof TStorage>(path: TPath): TStorage[TPath] | undefined;
+  get<TPath extends Path<TStorage>>(
+    path: TPath,
+  ): Property<TStorage, TPath> | undefined;
+  get(path?: any): any {
+    let storage = this.storageObject.storage;
 
-    if (!storage) {
-      return undefined;
-    }
-
-    if (typeof key === 'undefined') {
-      return storage;
-    }
-
-    return storage[key];
+    return path ? _.cloneDeep(_.get(storage, flatPath(path))) : storage;
   }
 
-  @lock
-  async setStorage<TTStorage extends Dict<any> = TStorage>(
-    storage: TTStorage,
-  ): Promise<void> {
-    await this.db.setStorage(this.storageObject.identity, storage);
+  require(): TStorage;
+  require<TPath extends keyof TStorage>(path: TPath): TStorage[TPath];
+  require<TPath extends Path<TStorage>>(path: TPath): Property<TStorage, TPath>;
+  require(path?: any): any {
+    let storage = this.storageObject.storage || {};
+
+    return path ? _.cloneDeep(_.get(storage, flatPath(path))) : storage;
   }
 
   // field
 
+  async rename(path: keyof TStorage, newPath: string): Promise<void>;
+  async rename(path: Path<TStorage>, newPath: string): Promise<void>;
   @lock
-  async rename(path: string, newPath: string): Promise<void> {
-    await this.db.rename(this.storageObject.identity, path, newPath);
+  async rename(path: any, newPath: string): Promise<void> {
+    await this.db.rename(this.storageObject.identity, flatPath(path), newPath);
   }
 
+  async inc(path: keyof TStorage, size: number): Promise<void>;
+  async inc(path: Path<TStorage>, size: number): Promise<void>;
   @lock
-  async inc(path: string, size: number): Promise<void> {
-    await this.db.inc(this.storageObject.identity, path, size);
+  async inc(path: any, size: number): Promise<void> {
+    await this.db.inc(this.storageObject.identity, flatPath(path), size);
   }
 
+  async mul(path: keyof TStorage, size: number): Promise<void>;
+  async mul(path: Path<TStorage>, size: number): Promise<void>;
   @lock
-  async mul(path: string, size: number): Promise<void> {
-    await this.db.mul(this.storageObject.identity, path, size);
+  async mul(path: any, size: number): Promise<void> {
+    await this.db.mul(this.storageObject.identity, flatPath(path), size);
   }
 
+  async set<TPath extends keyof TStorage>(
+    path: TPath,
+    value: TStorage[TPath],
+  ): Promise<void>;
+  async set<TPath extends Path<TStorage>>(
+    path: TPath,
+    value: Property<TStorage, TPath>,
+  ): Promise<void>;
   @lock
-  async set(path: string, value: any): Promise<void> {
-    await this.db.set(this.storageObject.identity, path, value);
+  async set(path: any, value: any): Promise<void> {
+    await this.db.set(this.storageObject.identity, flatPath(path), value);
   }
 
+  async unset(path: keyof TStorage): Promise<void>;
+  async unset(path: Path<TStorage>): Promise<void>;
   @lock
-  async unset(path: string): Promise<void> {
-    await this.db.unset(this.storageObject.identity, path);
+  async unset(path: any): Promise<void> {
+    await this.db.unset(this.storageObject.identity, flatPath(path));
   }
 
   // array field
@@ -113,28 +164,56 @@ export class ActionStorage<
    * 2. [ +? = the_first_?_items ]
    * 3. [ -? = the_last_?_items ]
    */
+  async slice(path: keyof TStorage, size: number): Promise<void>;
+  async slice(path: Path<TStorage>, size: number): Promise<void>;
   @lock
-  async slice(path: string, size: number): Promise<void> {
-    await this.db.slice(this.storageObject.identity, path, size);
+  async slice(path: any, size: number): Promise<void> {
+    await this.db.slice(this.storageObject.identity, flatPath(path), size);
   }
 
+  async shift(path: keyof TStorage): Promise<void>;
+  async shift(path: Path<TStorage>): Promise<void>;
   @lock
-  async shift(path: string): Promise<void> {
-    await this.db.shift(this.storageObject.identity, path);
+  async shift(path: any): Promise<void> {
+    await this.db.shift(this.storageObject.identity, flatPath(path));
   }
 
+  async unshift<TPath extends keyof TStorage>(
+    path: TPath,
+    value: TStorage[TPath][number],
+  ): Promise<void>;
+  async unshift<TPath extends Path<TStorage>>(
+    path: TPath,
+    value: Property<TStorage, TPath>[number],
+  ): Promise<void>;
   @lock
-  async unshift(path: string, value: any): Promise<void> {
-    await this.db.unshift(this.storageObject.identity, path, value);
+  async unshift(path: any, value: any): Promise<void> {
+    await this.db.unshift(this.storageObject.identity, flatPath(path), value);
   }
 
+  async pop(path: keyof TStorage): Promise<void>;
+  async pop(path: Path<TStorage>): Promise<void>;
   @lock
-  async pop(path: string): Promise<void> {
-    await this.db.pop(this.storageObject.identity, path);
+  async pop(path: any): Promise<void> {
+    await this.db.pop(this.storageObject.identity, flatPath(path));
   }
 
+  // @ts-ignore
+  async push<TPath extends keyof TStorage>(
+    path: TPath,
+    ...value: TStorage[TPath]
+  ): Promise<void>;
+  // @ts-ignore
+  async push<TPath extends Path<TStorage>>(
+    path: TPath,
+    ...value: Property<TStorage, TPath>
+  ): Promise<void>;
   @lock
-  async push<TValue>(path: string, ...value: TValue[]): Promise<void> {
-    await this.db.push(this.storageObject.identity, path, ...value);
+  async push(path: any, ...value: any[]): Promise<void> {
+    await this.db.push(this.storageObject.identity, flatPath(path), ...value);
   }
+}
+
+function flatPath<TStorage>(path: Path<TStorage>): string {
+  return typeof path === 'string' ? path : path.join('.');
 }

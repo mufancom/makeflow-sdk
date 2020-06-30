@@ -3,7 +3,7 @@ import * as v from 'villa';
 import {IDBAdapter} from '../db';
 import {Model} from '../model';
 import {StorageObject} from '../storage';
-import {PowerAppVersion} from '../types';
+import {PowerAppVersion} from '../version';
 
 import {getStorageLockKey} from './model';
 

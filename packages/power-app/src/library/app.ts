@@ -13,23 +13,23 @@ import {
   BasicContext,
   Context,
   ContextType,
+  ContextTypeToBasicMapping,
   ContextTypeToModel,
   CustomDeclareDict,
   ExpressAdapter,
   HapiAdapter,
   IDBAdapter,
-  IPowerApp,
   IServeAdapter,
   InstallationModel,
   KoaAdapter,
   LowdbAdapter,
-  MatchContextsFilter,
+  LowdbOptions,
   Model,
   ModelIdentity,
   ModelWithOperationToken,
   MongoAdapter,
+  MongoOptions,
   PageModel,
-  PowerAppOptions,
   PowerAppVersion,
   PowerAppVersionInfo,
   PowerGlanceModel,
@@ -59,7 +59,26 @@ const CONTEXT_TYPE_TO_MODEL_TYPE_DICT: {
   pages: 'page',
 };
 
-export class PowerApp implements IPowerApp {
+export type MatchContextsFilter<
+  TType extends ContextType
+> = ContextTypeToBasicMapping[TType] extends [infer TModel, any]
+  ? TModel extends Model
+    ? Partial<TModel>
+    : never
+  : never;
+
+export type PowerAppSource = Partial<
+  Pick<APITypes.PowerApp.Source, 'url' | 'token'>
+>;
+
+export interface PowerAppOptions {
+  source?: PowerAppSource;
+  db?:
+    | {type: 'mongo'; options: MongoOptions}
+    | {type: 'lowdb'; options: LowdbOptions};
+}
+
+export class PowerApp {
   definitions: PowerAppVersionInfo[] = [];
 
   dbAdapter!: IDBAdapter;
@@ -151,7 +170,7 @@ export class PowerApp implements IPowerApp {
     type: TContextType,
     storageObject: StorageObject<ContextTypeToModel<TContextType>>,
     options: {
-      matchedUser?: ActionStorage<UserModel>;
+      matchedUser?: ActionStorage<UserModel, any>;
     } = {},
   ): Promise<Context<TContextType>[]> {
     let db = this.dbAdapter;
@@ -292,18 +311,18 @@ export class PowerApp implements IPowerApp {
 
   async getOrCreateUserStorage<TStorage>(
     source: APITypes.PowerApp.Source,
-    userId: string,
+    id: UserId,
   ): Promise<ActionStorage<UserModel, TStorage>> {
     let db = this.dbAdapter;
 
-    let identity: ModelIdentity<UserModel> = {type: 'user', id: userId};
+    let identity: ModelIdentity<UserModel> = {type: 'user', id};
 
     let storage = await db.getStorageObject<UserModel>(identity);
 
     if (!storage) {
       storage = await db.createStorageObject({
         type: 'user',
-        id: userId as UserId,
+        id,
         ...source,
         storage: {},
       });

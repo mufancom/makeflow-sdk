@@ -1,12 +1,12 @@
-import {API} from '@makeflow/types';
+import type {API} from '@makeflow/types';
 import _ from 'lodash';
 
 import {PowerApp} from '../../app';
 import {UserModel} from '../model';
 import {PageEvent, PageEventParams} from '../serve';
 import {getActionStorage} from '../storage';
-import {GeneralDeclare, PowerAppVersion} from '../types';
 import {getChangeAndMigrations, runMigrations} from '../utils';
+import {GeneralDeclare, PowerAppVersion} from '../version';
 
 export async function pageHandler(
   app: PowerApp,

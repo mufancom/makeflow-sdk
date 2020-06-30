@@ -3,6 +3,11 @@ import {Dict} from 'tslang';
 
 import {Context, ContextType} from './context';
 
+export interface PowerAppVersionInfo {
+  range: string;
+  definition: PowerAppVersion.Definition;
+}
+
 export interface CustomDeclareDict {
   installation: Required<GeneralDeclare>;
   powerItems: {[key in string]: GeneralDeclareWithInputs};
@@ -13,8 +18,8 @@ export interface CustomDeclareDict {
 }
 
 export interface GeneralDeclare {
-  storage: Dict<any>;
-  configs?: Dict<any>;
+  storage: any;
+  configs?: any;
 }
 
 export interface GeneralDeclareWithInputs extends GeneralDeclare {

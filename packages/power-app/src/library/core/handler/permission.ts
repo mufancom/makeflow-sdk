@@ -1,4 +1,4 @@
-import {PowerApp} from '../../app';
+import type {PowerApp} from '../../app';
 import {InstallationModel} from '../model';
 import {PermissionEvent} from '../serve';
 

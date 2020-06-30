@@ -1,9 +1,9 @@
-import {PowerApp} from '../../app';
+import type {PowerApp} from '../../app';
 import {InstallationModel} from '../model';
 import {InstallationEvent} from '../serve';
 import {StorageObject} from '../storage';
-import {GeneralDeclare, PowerAppVersion} from '../types';
 import {getChangeAndMigrations} from '../utils';
+import {GeneralDeclare, PowerAppVersion} from '../version';
 
 export async function installationHandler(
   app: PowerApp,
