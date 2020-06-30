@@ -1,5 +1,4 @@
 import {API as APITypes} from '@makeflow/types';
-import {Dict} from 'tslang';
 
 import {Context, ContextType} from './context';
 
@@ -23,25 +22,32 @@ export interface GeneralDeclare {
 }
 
 export interface GeneralDeclareWithInputs extends GeneralDeclare {
-  inputs: Dict<any>;
+  inputs: any;
 }
 
-type GeneralChange<
+export type ExtractDeclareStorage<TDeclare> = Extract<
+  TDeclare,
+  {storage: any}
+>['storage'];
+
+export type GeneralChange<
   TType extends ContextType,
-  TDeclare extends GeneralDeclare,
+  TDeclare,
   TResponse
-> = TDeclare extends GeneralDeclareWithInputs
-  ? (
-      data: {
-        context: Context<TType, TDeclare['storage'], TDeclare['configs']>;
-        inputs: TDeclare['inputs'];
-      } & Omit<TDeclare, 'inputs' | 'storage' | 'configs'>,
-    ) => Promise<TResponse | void> | TResponse | void
-  : (
-      data: {
-        context: Context<TType, TDeclare['storage'], TDeclare['configs']>;
-      } & Omit<TDeclare, 'storage' | 'configs'>,
-    ) => Promise<TResponse | void> | TResponse | void;
+> = TDeclare extends GeneralDeclare
+  ? TDeclare extends GeneralDeclareWithInputs
+    ? (
+        data: {
+          context: Context<TType, TDeclare['storage'], TDeclare['configs']>;
+          inputs: TDeclare['inputs'];
+        } & Omit<TDeclare, 'inputs' | 'storage' | 'configs'>,
+      ) => Promise<TResponse | void> | TResponse | void
+    : (
+        data: {
+          context: Context<TType, TDeclare['storage'], TDeclare['configs']>;
+        } & Omit<TDeclare, 'storage' | 'configs'>,
+      ) => Promise<TResponse | void> | TResponse | void
+  : never;
 
 export namespace PowerAppVersion {
   export interface Definition<
@@ -115,9 +121,9 @@ export namespace PowerAppVersion {
     };
   }
 
-  export type MigrationFunction<TData = Dict<any>> = (data: TData) => Dict<any>;
+  export type MigrationFunction<TData = any> = (data: TData) => any;
 
-  export interface Migrations<TData = Dict<any>> {
+  export interface Migrations<TData = any> {
     /**
      * up 是把前一个版本的数据升级成当前版本
      */
@@ -131,7 +137,7 @@ export namespace PowerAppVersion {
   // installation
 
   export namespace Installation {
-    export type Change<TDeclare extends GeneralDeclare> = GeneralChange<
+    export type Change<TDeclare> = GeneralChange<
       'installation',
       TDeclare,
       // TODO
@@ -140,7 +146,7 @@ export namespace PowerAppVersion {
       }
     >;
 
-    export interface Definition<TDeclare extends GeneralDeclare> {
+    export interface Definition<TDeclare> {
       activate?: Change<TDeclare>;
       update?: Change<TDeclare>;
       deactivate?: Change<TDeclare>;
@@ -150,47 +156,47 @@ export namespace PowerAppVersion {
   // power-item
 
   export namespace PowerItem {
-    export type Change<TDeclare extends GeneralDeclare> = GeneralChange<
+    export type Change<TDeclare> = GeneralChange<
       'powerItems',
       TDeclare,
       APITypes.PowerItem.HookReturn
     >;
 
-    export interface Definition<TDeclare extends GeneralDeclare> {
+    export interface Definition<TDeclare> {
       activate?: Change<TDeclare>;
       update?: Change<TDeclare>;
       deactivate?: Change<TDeclare>;
       actions?: {
         [key in string]: Change<TDeclare>;
       };
-      migrations?: Migrations<TDeclare['storage']>;
+      migrations?: Migrations<ExtractDeclareStorage<TDeclare>>;
     }
   }
 
   // power-node
 
   export namespace PowerNode {
-    export type Change<TDeclare extends GeneralDeclare> = GeneralChange<
+    export type Change<TDeclare> = GeneralChange<
       'powerNodes',
       TDeclare,
       APITypes.PowerNode.HookReturn
     >;
 
-    export interface Definition<TDeclare extends GeneralDeclare> {
+    export interface Definition<TDeclare> {
       activate?: Change<TDeclare>;
       update?: Change<TDeclare>;
       deactivate?: Change<TDeclare>;
       actions?: {
         [key in string]: Change<TDeclare>;
       };
-      migrations?: Migrations<TDeclare['storage']>;
+      migrations?: Migrations<ExtractDeclareStorage<TDeclare>>;
     }
   }
 
   // power-glance
 
   export namespace PowerGlance {
-    export type Change<TDeclare extends GeneralDeclare> = GeneralChange<
+    export type Change<TDeclare> = GeneralChange<
       'powerGlances',
       TDeclare & {
         resources: APITypes.PowerGlance.ResourceEntry[];
@@ -198,41 +204,41 @@ export namespace PowerAppVersion {
       APITypes.PowerGlance.HookReturn
     >;
 
-    export interface Definition<TDeclare extends GeneralDeclare> {
+    export interface Definition<TDeclare> {
       initialize?: Change<TDeclare>;
       change?: Change<TDeclare>;
       dispose?: Change<TDeclare>;
-      migrations?: Migrations<TDeclare['storage']>;
+      migrations?: Migrations<ExtractDeclareStorage<TDeclare>>;
     }
   }
 
   // power-custom-checkable-item
 
   export namespace PowerCustomCheckableItem {
-    export type Change<TDeclare extends GeneralDeclare> = GeneralChange<
+    export type Change<TDeclare> = GeneralChange<
       'powerCustomCheckableItems',
       TDeclare & APITypes.PowerCustomCheckableItem.HookContext,
       APITypes.PowerCustomCheckableItem.HookReturn
     >;
 
-    export interface Definition<TDeclare extends GeneralDeclare> {
+    export interface Definition<TDeclare> {
       processor?: Change<TDeclare>;
-      migrations?: Migrations<TDeclare['storage']>;
+      migrations?: Migrations<ExtractDeclareStorage<TDeclare>>;
     }
   }
 
   // page
 
   export namespace Page {
-    export type Change<TDeclare extends GeneralDeclare> = GeneralChange<
+    export type Change<TDeclare> = GeneralChange<
       'pages',
       TDeclare,
       APITypes.PowerAppPage.HookReturn
     >;
 
-    export interface Definition<TDeclare extends GeneralDeclare> {
+    export interface Definition<TDeclare> {
       request?: Change<TDeclare>;
-      migrations?: Migrations<TDeclare['storage']>;
+      migrations?: Migrations<ExtractDeclareStorage<TDeclare>>;
     }
   }
 }

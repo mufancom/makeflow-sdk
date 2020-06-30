@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app",
-  "version": "0.2.0-wip.5",
+  "version": "0.2.0-wip.11",
   "description": "Makeflow PowerApp Node.js Framework.",
   "publishConfig": {
     "access": "public"
