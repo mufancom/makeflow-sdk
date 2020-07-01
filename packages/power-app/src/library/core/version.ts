@@ -157,7 +157,7 @@ export namespace PowerAppVersion {
 
   export namespace PowerItem {
     export type Change<TDeclare> = GeneralChange<
-      'powerItems',
+      'power-item',
       TDeclare,
       APITypes.PowerItem.HookReturn
     >;
@@ -177,7 +177,7 @@ export namespace PowerAppVersion {
 
   export namespace PowerNode {
     export type Change<TDeclare> = GeneralChange<
-      'powerNodes',
+      'power-node',
       TDeclare,
       APITypes.PowerNode.HookReturn
     >;
@@ -197,7 +197,7 @@ export namespace PowerAppVersion {
 
   export namespace PowerGlance {
     export type Change<TDeclare> = GeneralChange<
-      'powerGlances',
+      'power-glance',
       TDeclare & {
         resources: APITypes.PowerGlance.ResourceEntry[];
       },
@@ -216,7 +216,7 @@ export namespace PowerAppVersion {
 
   export namespace PowerCustomCheckableItem {
     export type Change<TDeclare> = GeneralChange<
-      'powerCustomCheckableItems',
+      'power-custom-checkable-item',
       TDeclare & APITypes.PowerCustomCheckableItem.HookContext,
       APITypes.PowerCustomCheckableItem.HookReturn
     >;
@@ -231,7 +231,7 @@ export namespace PowerAppVersion {
 
   export namespace Page {
     export type Change<TDeclare> = GeneralChange<
-      'pages',
+      'page',
       TDeclare,
       APITypes.PowerAppPage.HookReturn
     >;

@@ -54,7 +54,7 @@ export async function powerNodeHandler(
   let responseData: API.PowerNode.HookReturn | void;
 
   if (change) {
-    let [context] = await app.getStorageObjectContexts('powerNodes', storage);
+    let [context] = await app.getStorageObjectContexts('power-node', storage);
 
     responseData = await change({
       context,

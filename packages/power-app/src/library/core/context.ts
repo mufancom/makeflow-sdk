@@ -2,6 +2,7 @@ import {API as APITypes} from '@makeflow/types';
 import {Dict} from 'tslang';
 
 import {API} from '../api';
+import {UserId} from '../types/namespace';
 
 import {
   InstallationModel,
@@ -50,21 +51,29 @@ export type ContextTypeToBasicMapping = {
       resources: APITypes.PowerApp.ResourcesMapping;
     },
   ];
-  powerItems: [PowerItemModel, {}];
-  powerGlances: [
+  'power-item': [PowerItemModel, {}];
+  'power-glance': [
     PowerGlanceModel,
     {
       powerGlanceConfigs: Dict<any>;
     },
   ];
-  powerNodes: [PowerNodeModel, {}];
-  powerCustomCheckableItems: [PowerCustomCheckableItemModel, {}];
-  pages: [
+  'power-node': [PowerNodeModel, {}];
+  'power-custom-checkable-item': [PowerCustomCheckableItemModel, {}];
+  page: [
     PageModel,
     {
       userStorage: ActionStorage<UserModel, any>;
+      user: {
+        id: UserId;
+      };
+      /**
+       * e.g. `/a/b/c`
+       */
+      path: string | undefined;
     },
   ];
+  user: [UserModel, {}];
 };
 
 export type __AssertContextTypeToBasicMapping<

@@ -2,9 +2,8 @@ import type {API} from '@makeflow/types';
 import _ from 'lodash';
 
 import {PowerApp} from '../../app';
-import {PageModel, UserModel} from '../model';
+import {PageModel} from '../model';
 import {PageEvent, PageEventParams} from '../serve';
-import {getActionStorage} from '../storage';
 import {getChangeAndMigrations, runMigrations} from '../utils';
 import {GeneralDeclare, PowerAppVersion} from '../version';
 
@@ -16,6 +15,7 @@ export async function pageHandler(
       source: {token, url, installation, organization, team, version},
       token: operationToken,
       user,
+      path,
     },
   }: PageEvent['eventObject'],
   response: PageEvent['response'],
@@ -55,29 +55,11 @@ export async function pageHandler(
   let responseData: API.PowerAppPage.HookReturn | void;
 
   if (change) {
-    let userStorage = await db.getStorageObject<UserModel>({
-      type: 'user',
-      id: user,
-    });
-
-    if (!userStorage) {
-      userStorage = await db.createStorageObject<UserModel>({
-        type: 'user',
-        id: user,
-        token,
-        url,
-        organization,
-        storage: {},
-        installation,
-        team,
-        version,
-      });
-    }
-
-    let userActionStorage = getActionStorage(db, userStorage);
-
-    let [context] = await app.getStorageObjectContexts('pages', storage, {
-      matchedUser: userActionStorage,
+    let [context] = await app.getStorageObjectContexts('page', storage, {
+      page: {
+        user: user.id,
+        path,
+      },
     });
 
     responseData = await change({

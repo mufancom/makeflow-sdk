@@ -1,4 +1,5 @@
 import {API} from '@makeflow/types';
+import {UserId} from '@makeflow/types-nominal';
 
 export interface PageEvent {
   type: 'page';
@@ -20,5 +21,11 @@ export type PageEventObject<
 } & TPageEventObject;
 
 export interface PageRequestEventObject {
-  payload: API.PowerAppPage.RequestHookParams;
+  payload: API.PowerAppPage.RequestHookParams & {
+    // TODO
+    user: {
+      id: UserId;
+    };
+    path?: string;
+  };
 }

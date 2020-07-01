@@ -54,7 +54,7 @@ export async function powerItemHandler(
   let responseData: API.PowerItem.HookReturn | void;
 
   if (change) {
-    let [context] = await app.getStorageObjectContexts('powerItems', storage);
+    let [context] = await app.getStorageObjectContexts('power-item', storage);
 
     responseData = await change({
       context,

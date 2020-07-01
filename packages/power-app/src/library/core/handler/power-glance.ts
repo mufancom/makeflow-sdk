@@ -94,7 +94,7 @@ export async function powerGlanceHandler(
   let responseData: APITypes.PowerGlance.HookReturn | void;
 
   if (change) {
-    let [context] = await app.getStorageObjectContexts('powerGlances', storage);
+    let [context] = await app.getStorageObjectContexts('power-glance', storage);
 
     responseData = await change({
       context,

@@ -59,7 +59,7 @@ export async function powerCustomCheckableItemHandler(
 
   if (change) {
     let [context] = await app.getStorageObjectContexts(
-      'powerCustomCheckableItems',
+      'power-custom-checkable-item',
       storage,
     );
 
