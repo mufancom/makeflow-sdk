@@ -341,7 +341,7 @@ export class PowerApp {
           let context: Context<'page'> = {
             ...initialBasicContext,
             type: 'page',
-            operationToken: storageObject.getField('operationToken')!,
+            id: storageObject.getField('id')!,
             userStorage: getActionStorage(db, userStorage),
             user: {
               id: pageOptions.user,
@@ -368,7 +368,7 @@ export class PowerApp {
           (user): Context<'page'> => ({
             ...initialBasicContext,
             type: 'page',
-            operationToken: storageObject.getField('operationToken')!,
+            id: storageObject.getField('id')!,
             userStorage: getActionStorage<UserModel, TStorage>(
               this.dbAdapter,
               user,

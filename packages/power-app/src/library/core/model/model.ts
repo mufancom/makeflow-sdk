@@ -118,9 +118,11 @@ export type PowerCustomCheckableItemDefinition = __Definition<
 
 // page
 
-export interface PageModel extends IPowerAppResourceModel<'page'> {}
+export interface PageModel extends __Model<'page'> {
+  id: string;
+}
 
-export type PageDefinition = __Definition<PageModel, 'operationToken'>;
+export type PageDefinition = __Definition<PageModel, 'id'>;
 
 // user
 
@@ -168,7 +170,7 @@ export const typeToModelDefinitionDict: {
   },
   page: {
     type: 'page',
-    primaryField: 'operationToken',
+    primaryField: 'id',
     allowedFields: [],
   },
   user: {

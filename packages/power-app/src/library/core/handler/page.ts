@@ -5,7 +5,7 @@ import {PowerApp} from '../../app';
 import {PageModel} from '../model';
 import {PageEvent, PageEventParams} from '../serve';
 import {getChangeAndMigrations, runMigrations} from '../utils';
-import {GeneralDeclare, PowerAppVersion} from '../version';
+import {GeneralDeclareWithInputs, PowerAppVersion} from '../version';
 
 export async function pageHandler(
   app: PowerApp,
@@ -13,7 +13,7 @@ export async function pageHandler(
     params,
     payload: {
       source: {token, url, installation, organization, team, version},
-      token: operationToken,
+      inputs,
       user,
       path,
     },
@@ -26,13 +26,13 @@ export async function pageHandler(
     PageModel
   >({
     type: 'page',
+    id: `${installation}:${params.name}`,
     token,
     url,
     installation,
     organization,
     team,
     version,
-    operationToken,
     storage: {},
   });
 
@@ -64,6 +64,7 @@ export async function pageHandler(
 
     responseData = await change({
       context,
+      inputs,
     });
   }
 
@@ -75,7 +76,7 @@ function getPageChange({
   type,
 }: PageEventParams): (
   definition: PowerAppVersion.Definition,
-) => PowerAppVersion.Page.Change<GeneralDeclare> | undefined {
+) => PowerAppVersion.Page.Change<GeneralDeclareWithInputs> | undefined {
   return ({contributions: {pages = {}} = {}}) => pages[name]?.[type];
 }
 
