@@ -1,3 +1,4 @@
+import {Readable} from 'stream';
 import {URL} from 'url';
 
 import {API as APITypes, PowerApp, Value} from '@makeflow/types';
@@ -19,7 +20,7 @@ const STREAM_CONTENT_TYPE = 'application/octet-stream';
 export type APISource = APITypes.PowerApp.BasicSource;
 
 export interface RequestOptions {
-  body?: string | Dict<any>;
+  body?: string | Dict<any> | Buffer | NodeJS.ReadableStream;
   type?: string;
   requireAccessToken?: boolean;
 }
@@ -285,7 +286,11 @@ export class API<TSourceObject extends APISource = APISource> {
       body = JSON.stringify(body);
     }
 
-    if (typeof body !== 'undefined' && typeof body !== 'string') {
+    if (
+      !(Buffer.isBuffer(body) || body instanceof Readable) &&
+      typeof body !== 'undefined' &&
+      typeof body !== 'string'
+    ) {
       throw new Error('POST_REQUEST_BODY_NOT_SUPPORT');
     }
 
