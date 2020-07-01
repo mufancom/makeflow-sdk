@@ -6,6 +6,7 @@ import {API} from '../api';
 import {
   InstallationModel,
   Model,
+  ModelIdentity,
   PageModel,
   PowerCustomCheckableItemModel,
   PowerGlanceModel,
@@ -15,12 +16,12 @@ import {
 } from './model';
 import {ActionStorage} from './storage';
 
-export interface BasicContext<TModel extends Model, TStorage, TConfigs> {
+export type BasicContext<TModel extends Model, TStorage, TConfigs> = {
   api: API;
   source: APITypes.PowerApp.Source;
   storage: ActionStorage<TModel, TStorage>;
   configs: TConfigs;
-}
+} & ModelIdentity<TModel>;
 
 export type Context<
   TType extends ContextType,

@@ -7,9 +7,9 @@ import {PowerAppVersion} from '../version';
 
 import {getStorageLockKey} from './model';
 
-export async function runMigrations(
+export async function runMigrations<TModel extends Model, TStorage>(
   db: IDBAdapter,
-  storageObject: StorageObject<Model>,
+  storageObject: StorageObject<TModel, TStorage>,
   migrations: PowerAppVersion.MigrationFunction[],
 ): Promise<void> {
   await v.lock(getStorageLockKey(storageObject.identity), async () => {

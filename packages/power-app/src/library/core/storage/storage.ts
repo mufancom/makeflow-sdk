@@ -1,14 +1,10 @@
 import {API} from '@makeflow/types';
 import _ from 'lodash';
-import {Dict} from 'tslang';
 
 import {Model, ModelIdentity} from '../model';
 import {getModelIdentity} from '../utils';
 
-export class StorageObject<
-  TModel extends Model,
-  TStorage extends Dict<any> = Dict<any>
-> {
+export class StorageObject<TModel extends Model, TStorage> {
   get identity(): ModelIdentity<TModel> {
     return getModelIdentity(this.model);
   }
@@ -35,7 +31,7 @@ export class StorageObject<
   }
 
   get storage(): TStorage | undefined {
-    return this.model.storage as any;
+    return this.model.storage as TStorage;
   }
 
   constructor(protected readonly model: TModel) {}

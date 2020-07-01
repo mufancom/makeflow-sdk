@@ -2,6 +2,7 @@ import {API} from '@makeflow/types';
 import _ from 'lodash';
 
 import type {PowerApp} from '../../app';
+import {PowerNodeModel} from '../model';
 import {PowerNodeEvent, PowerNodeEventParams} from '../serve';
 import {getChangeAndMigrations, runMigrations} from '../utils';
 import {GeneralDeclareWithInputs, PowerAppVersion} from '../version';
@@ -20,7 +21,9 @@ export async function powerNodeHandler(
 ): Promise<void> {
   let db = app.dbAdapter;
 
-  let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject({
+  let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject<
+    PowerNodeModel
+  >({
     type: 'power-node',
     token,
     url,

@@ -2,7 +2,7 @@ import type {API} from '@makeflow/types';
 import _ from 'lodash';
 
 import {PowerApp} from '../../app';
-import {UserModel} from '../model';
+import {PageModel, UserModel} from '../model';
 import {PageEvent, PageEventParams} from '../serve';
 import {getActionStorage} from '../storage';
 import {getChangeAndMigrations, runMigrations} from '../utils';
@@ -22,7 +22,9 @@ export async function pageHandler(
 ): Promise<void> {
   let db = app.dbAdapter;
 
-  let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject({
+  let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject<
+    PageModel
+  >({
     type: 'page',
     token,
     url,
@@ -59,7 +61,7 @@ export async function pageHandler(
     });
 
     if (!userStorage) {
-      userStorage = await db.createStorageObject({
+      userStorage = await db.createStorageObject<UserModel>({
         type: 'user',
         id: user,
         token,

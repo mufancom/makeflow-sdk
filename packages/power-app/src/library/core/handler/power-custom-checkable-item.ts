@@ -2,6 +2,7 @@ import {API} from '@makeflow/types';
 import _ from 'lodash';
 
 import type {PowerApp} from '../../app';
+import {PowerCustomCheckableItemModel} from '../model';
 import {
   PowerCustomCheckableItemEvent,
   PowerCustomCheckableItemEventParams,
@@ -24,7 +25,9 @@ export async function powerCustomCheckableItemHandler(
 ): Promise<void> {
   let db = app.dbAdapter;
 
-  let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject({
+  let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject<
+    PowerCustomCheckableItemModel
+  >({
     type: 'power-custom-checkable-item',
     token,
     url,

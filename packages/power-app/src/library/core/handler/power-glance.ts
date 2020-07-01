@@ -75,7 +75,7 @@ export async function powerGlanceHandler(
 
     await runMigrations(db, storage, migrations);
   } else {
-    storage = await db.createStorageObject({
+    storage = await db.createStorageObject<PowerGlanceModel>({
       type: 'power-glance',
       token,
       url,

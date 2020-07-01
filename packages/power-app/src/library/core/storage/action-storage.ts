@@ -57,7 +57,7 @@ type Property<TObject, TPath extends Path<TObject>> = __Property<
 
 export function getActionStorage<TModel extends Model, TStorage>(
   db: IDBAdapter,
-  storageObject: StorageObject<TModel>,
+  storageObject: StorageObject<TModel, TStorage>,
 ): ActionStorage<TModel, TStorage> {
   return new ActionStorage(db, storageObject);
 }
@@ -88,7 +88,7 @@ export class ActionStorage<TModel extends Model, TStorage extends Dict<any>> {
 
   constructor(
     private db: IDBAdapter,
-    private storageObject: StorageObject<TModel>,
+    private storageObject: StorageObject<TModel, TStorage>,
   ) {}
 
   get(): TStorage | undefined;

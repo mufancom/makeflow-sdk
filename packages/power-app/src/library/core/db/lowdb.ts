@@ -39,7 +39,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
   ): Promise<TModel[]> {
     return this.getCollection(partialModel)
       .filter(partialModel as any)
-      .value() as TModel[];
+      .value();
   }
 
   // model
@@ -51,7 +51,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
 
   async upgradeModel<TModel extends Model>(
     version: string,
-    identity: ModelIdentity<TModel>,
+    identity: ModelIdentity<Model>,
     data: Partial<TModel>,
   ): Promise<TModel> {
     let model = Object.entries(
@@ -66,24 +66,24 @@ export class LowdbAdapter extends AbstractDBAdapter {
     return model.value();
   }
 
-  async setStorage<TModel extends Model>(
-    identity: ModelIdentity<TModel>,
+  async setStorage(
+    identity: ModelIdentity<Model>,
     storage: any,
   ): Promise<void> {
-    let model = await this.getCollection<TModel>(identity).find(identity);
+    let model = await this.getCollection(identity).find(identity);
 
     await model.set('storage', storage).write();
   }
 
-  async rename<TModel extends Model>(
-    identity: ModelIdentity<TModel>,
+  async rename(
+    identity: ModelIdentity<Model>,
     path: string,
     newPath: string,
   ): Promise<void> {
     path = `storage.${path}`;
     newPath = `storage.${newPath}`;
 
-    let model = await this.getCollection<TModel>(identity).find(identity);
+    let model = await this.getCollection(identity).find(identity);
 
     if (!model.has(path).value()) {
       return;
@@ -244,16 +244,16 @@ export class LowdbAdapter extends AbstractDBAdapter {
     type,
   }: {
     type: TModel['type'];
-  }): _.CollectionChain<Model> {
-    return this.db.get(type) as _.CollectionChain<Model>;
+  }): _.CollectionChain<TModel> {
+    return this.db.get(type) as _.CollectionChain<TModel>;
   }
 
   private async findOneAndUpdate<TModel extends Model>(
-    identity: ModelIdentity<TModel>,
+    identity: ModelIdentity<Model>,
     path: string,
     updater: (value: any) => any,
   ): Promise<TModel> {
-    let model = await this.getCollection<TModel>(identity).find(identity);
+    let model = this.getCollection(identity).find(identity);
 
     await model.update(`storage.${path}`, updater).write();
 

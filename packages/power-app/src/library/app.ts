@@ -33,6 +33,8 @@ import {
   PowerAppVersion,
   PowerAppVersionInfo,
   PowerGlanceModel,
+  PowerItemModel,
+  PowerNodeModel,
   ServeOptions,
   StorageObject,
   UserModel,
@@ -129,9 +131,10 @@ export class PowerApp {
   ): AsyncGenerator<Context<TContextType, TStorage, TConfigs>> {
     let db = this.dbAdapter;
 
-    let storageObjects: StorageObject<any>[] = await db.getStorageObjects<
-      Exclude<Model, UserModel>
-    >({
+    let storageObjects: StorageObject<
+      any,
+      TStorage
+    >[] = await db.getStorageObjects<Exclude<Model, UserModel>, TStorage>({
       type: CONTEXT_TYPE_TO_MODEL_TYPE_DICT[type],
       ...(filter as any),
     });
@@ -166,34 +169,32 @@ export class PowerApp {
     return contexts;
   }
 
-  async getStorageObjectContexts<TContextType extends ContextType>(
+  async getStorageObjectContexts<TContextType extends ContextType, TStorage>(
     type: TContextType,
-    storageObject: StorageObject<ContextTypeToModel<TContextType>>,
+    storageObject: StorageObject<ContextTypeToModel<TContextType>, TStorage>,
     options: {
-      matchedUser?: ActionStorage<UserModel, any>;
+      matchedUser?: ActionStorage<UserModel, TStorage>;
     } = {},
   ): Promise<Context<TContextType>[]> {
     let db = this.dbAdapter;
 
     let api = new API(storageObject.source);
 
-    let initialBasicContext: BasicContext<any, any, any> = {
+    let initialBasicContext: Omit<
+      BasicContext<any, any, any>,
+      keyof ModelIdentity<Model>
+    > = {
       api,
       storage: getActionStorage(db, storageObject),
       source: storageObject.source,
       configs: {},
     };
 
-    function assertStorageObjectType<T extends StorageObject<any>>(
-      type: Model['type'],
-      storageObject: StorageObject<any>,
-    ): storageObject is T {
-      return storageObject.type === type;
-    }
+    // #region installation
 
     if (type === 'installation') {
       if (
-        !assertStorageObjectType<StorageObject<InstallationModel>>(
+        !assertStorageObjectType<StorageObject<InstallationModel, TStorage>>(
           'installation',
           storageObject,
         )
@@ -205,6 +206,8 @@ export class PowerApp {
 
       let context: Context<'installation'> = {
         ...initialBasicContext,
+        type: 'installation',
+        installation: storageObject.getField('installation')!,
         users: storageObject.getField('users') ?? [],
         configs: storageObject.getField('configs') ?? {},
         resources: storageObject.getField('resources') ?? {
@@ -216,11 +219,13 @@ export class PowerApp {
       return [context] as Context<TContextType>[];
     }
 
+    // #endregion installation
+
     let installationStorageObject = await this.dbAdapter.getStorageObject<
       InstallationModel
     >({
       type: 'installation',
-      installation: storageObject.getField('installation'),
+      installation: storageObject.getField('installation')!,
     });
 
     api.setAccessToken(installationStorageObject?.getField('accessToken'));
@@ -235,20 +240,59 @@ export class PowerApp {
 
     switch (type) {
       case 'powerItems': {
-        let context: Context<'powerItems'> = initialBasicContext;
+        if (
+          !assertStorageObjectType<StorageObject<PowerItemModel, TStorage>>(
+            'power-item',
+            storageObject,
+          )
+        ) {
+          return [];
+        }
+
+        let context: Context<'powerItems'> = {
+          ...initialBasicContext,
+          type: 'power-item',
+          operationToken: storageObject.getField('operationToken')!,
+        };
         return [context] as Context<TContextType>[];
       }
       case 'powerNodes': {
-        let context: Context<'powerNodes'> = initialBasicContext;
+        if (
+          !assertStorageObjectType<StorageObject<PowerNodeModel, TStorage>>(
+            'power-node',
+            storageObject,
+          )
+        ) {
+          return [];
+        }
+
+        let context: Context<'powerNodes'> = {
+          ...initialBasicContext,
+          type: 'power-node',
+          operationToken: storageObject.getField('operationToken')!,
+        };
         return [context] as Context<TContextType>[];
       }
       case 'powerCustomCheckableItems': {
-        let context: Context<'powerCustomCheckableItems'> = initialBasicContext;
+        if (
+          !assertStorageObjectType<StorageObject<PowerItemModel, TStorage>>(
+            'power-custom-checkable-item',
+            storageObject,
+          )
+        ) {
+          return [];
+        }
+
+        let context: Context<'powerCustomCheckableItems'> = {
+          ...initialBasicContext,
+          type: 'power-custom-checkable-item',
+          operationToken: storageObject.getField('operationToken')!,
+        };
         return [context] as Context<TContextType>[];
       }
       case 'powerGlances': {
         if (
-          !assertStorageObjectType<StorageObject<PowerGlanceModel>>(
+          !assertStorageObjectType<StorageObject<PowerGlanceModel, TStorage>>(
             'power-glance',
             storageObject,
           )
@@ -257,6 +301,8 @@ export class PowerApp {
         }
 
         let context: Context<'powerGlances'> = {
+          type: 'power-glance',
+          operationToken: storageObject.getField('operationToken')!,
           ...initialBasicContext,
           powerGlanceConfigs: storageObject.getField('configs')!,
         };
@@ -265,7 +311,7 @@ export class PowerApp {
       }
       case 'pages': {
         if (
-          !assertStorageObjectType<StorageObject<PageModel>>(
+          !assertStorageObjectType<StorageObject<PageModel, TStorage>>(
             'page',
             storageObject,
           )
@@ -299,7 +345,7 @@ export class PowerApp {
   async getUserStorages<TStorage>(
     filter: Partial<UserModel> & {storage?: Partial<TStorage>},
   ): Promise<ActionStorage<UserModel, TStorage>[]> {
-    let users = await this.dbAdapter.getStorageObjects<UserModel>({
+    let users = await this.dbAdapter.getStorageObjects<UserModel, TStorage>({
       type: 'user',
       ...(filter as any),
     });
@@ -317,10 +363,10 @@ export class PowerApp {
 
     let identity: ModelIdentity<UserModel> = {type: 'user', id};
 
-    let storage = await db.getStorageObject<UserModel>(identity);
+    let storage = await db.getStorageObject<UserModel, TStorage>(identity);
 
     if (!storage) {
-      storage = await db.createStorageObject({
+      storage = await db.createStorageObject<UserModel, TStorage>({
         type: 'user',
         id,
         ...source,
@@ -328,7 +374,7 @@ export class PowerApp {
       });
     }
 
-    return getActionStorage(db, storage);
+    return getActionStorage<UserModel, TStorage>(db, storage);
   }
 
   private initialize(): void {
@@ -375,8 +421,15 @@ export class PowerApp {
   }
 }
 
-function assertModelWithOperationToken(
-  storageObject: StorageObject<any>,
-): storageObject is StorageObject<ModelWithOperationToken> {
+function assertModelWithOperationToken<TStorage>(
+  storageObject: StorageObject<any, TStorage>,
+): storageObject is StorageObject<ModelWithOperationToken, TStorage> {
   return !!storageObject.getField('operationToken');
+}
+
+function assertStorageObjectType<T extends StorageObject<any, any>>(
+  type: Model['type'],
+  storageObject: StorageObject<any, any>,
+): storageObject is T {
+  return storageObject.type === type;
 }

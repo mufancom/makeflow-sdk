@@ -2,13 +2,13 @@ import {API} from '@makeflow/types';
 import {OperationTokenToken, UserId} from '@makeflow/types-nominal';
 import {Dict} from 'tslang';
 
-export interface IModel<
+type __Model<
   TType extends string,
   TStorage extends Dict<any> = Dict<any>
-> extends API.PowerApp.Source {
+> = API.PowerApp.Source & {
   type: TType;
   storage: TStorage | undefined;
-}
+};
 
 export type ModelWithOperationToken = Extract<
   Model,
@@ -36,9 +36,9 @@ export type Definition =
 type __Definition<
   TModel,
   TPrimaryField extends
-    | Exclude<keyof TModel, keyof IModel<string>>
+    | Exclude<keyof TModel, keyof __Model<string>>
     | 'installation'
-> = TModel extends IModel<infer Type>
+> = TModel extends __Model<infer Type>
   ? {
       type: Type;
       /**
@@ -49,7 +49,7 @@ type __Definition<
        * 允许更新的字段
        */
       allowedFields: Exclude<
-        Exclude<keyof TModel, keyof IModel<string>>,
+        Exclude<keyof TModel, keyof __Model<string>>,
         TPrimaryField
       >[];
     }
@@ -57,7 +57,7 @@ type __Definition<
 
 // installation
 
-export interface InstallationModel extends IModel<'installation'> {
+export interface InstallationModel extends __Model<'installation'> {
   configs: Dict<unknown>;
   resources: API.PowerApp.ResourcesMapping;
   users: API.PowerApp.UserInfo[];
@@ -70,7 +70,7 @@ export type InstallationDefinition = __Definition<
 >;
 
 export interface IPowerAppResourceModel<TType extends string>
-  extends IModel<TType> {
+  extends __Model<TType> {
   operationToken: OperationTokenToken;
 }
 
@@ -126,10 +126,8 @@ export type PageDefinition = __Definition<PageModel, 'operationToken'>;
 
 /**
  * User 对于同一个 installation 是唯一的
- *
- * 以下字段仅初次记录，不会更新: [ installation | team | version ]
  */
-export interface UserModel extends IModel<'user'> {
+export interface UserModel extends __Model<'user'> {
   id: UserId;
 }
 
@@ -184,10 +182,10 @@ export type ModelToDefinition<TModel extends Model> = ModelTypeToDefinition<
   TModel['type']
 >;
 
-export type ModelIdentity<TModel extends Model> = ModelTypeToDefinition<
-  TModel['type']
-> extends {type: infer TType; primaryField: infer TPrimaryField}
-  ? TPrimaryField extends string
-    ? {type: TType} & Record<TPrimaryField, any>
+export type ModelIdentity<TModel extends Model> = ModelToDefinition<
+  TModel
+> extends {primaryField: infer TPrimaryField}
+  ? TPrimaryField extends keyof TModel
+    ? Pick<TModel, 'type' | TPrimaryField>
     : never
   : never;

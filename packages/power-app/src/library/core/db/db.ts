@@ -1,3 +1,5 @@
+import {Dict} from 'tslang';
+
 import {Model, ModelIdentity} from '../model';
 import {StorageObject} from '../storage';
 import {getModelIdentity} from '../utils';
@@ -17,9 +19,9 @@ abstract class DBAdapter {
 
   constructor(protected options: unknown) {}
 
-  async getStorageObject<TModel extends Model>(
+  async getStorageObject<TModel extends Model, TStorage = Dict<any>>(
     identity: ModelIdentity<TModel>,
-  ): Promise<StorageObject<TModel> | undefined> {
+  ): Promise<StorageObject<TModel, TStorage> | undefined> {
     await this.ready;
 
     let model = (await this.getModel(identity)) as TModel | undefined;
@@ -27,9 +29,9 @@ abstract class DBAdapter {
     return model && new StorageObject(model);
   }
 
-  async getStorageObjects<TModel extends Model>(
+  async getStorageObjects<TModel extends Model, TStorage>(
     partialModel: DefaultQueryType<TModel>,
-  ): Promise<StorageObject<TModel>[]> {
+  ): Promise<StorageObject<TModel, TStorage>[]> {
     await this.ready;
 
     let models = await this.getModelList(partialModel);
@@ -37,9 +39,9 @@ abstract class DBAdapter {
     return models.map(model => new StorageObject(model));
   }
 
-  async createStorageObject<TModel extends Model>(
+  async createStorageObject<TModel extends Model, TStorage = Dict<any>>(
     model: TModel,
-  ): Promise<StorageObject<TModel>> {
+  ): Promise<StorageObject<TModel, TStorage>> {
     await this.ready;
 
     model = await this.createModel(model);
@@ -47,11 +49,11 @@ abstract class DBAdapter {
     return new StorageObject(model);
   }
 
-  async upgradeStorageObject<TModel extends Model>(
+  async upgradeStorageObject<TModel extends Model, TStorage>(
     version: string,
     identity: ModelIdentity<TModel>,
     data: Partial<TModel>,
-  ): Promise<StorageObject<TModel>> {
+  ): Promise<StorageObject<TModel, TStorage>> {
     await this.ready;
 
     let model = await this.upgradeModel(version, identity, data);
@@ -59,10 +61,13 @@ abstract class DBAdapter {
     return new StorageObject(model);
   }
 
-  async createOrUpgradeStorageObject<TModel extends Model>(
+  async createOrUpgradeStorageObject<
+    TModel extends Model,
+    TStorage = Dict<any>
+  >(
     model: TModel,
   ): Promise<{
-    value: StorageObject<TModel>;
+    value: StorageObject<TModel, TStorage>;
     savedVersion: string | undefined;
   }> {
     await this.ready;

@@ -19,14 +19,16 @@ export async function installationHandler(
 
   let responseData = {};
 
-  let installationStorage: StorageObject<InstallationModel> | undefined;
+  let installationStorage: StorageObject<InstallationModel, any> | undefined;
 
   switch (event.type) {
     case 'activate':
     case 'update': {
       let {configs, resources, users} = event.payload;
 
-      let result = await app.dbAdapter.createOrUpgradeStorageObject({
+      let result = await app.dbAdapter.createOrUpgradeStorageObject<
+        InstallationModel
+      >({
         type: 'installation',
         token,
         url,

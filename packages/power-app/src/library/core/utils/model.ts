@@ -37,7 +37,9 @@ export function buildSecureUpdateData(
   return data;
 }
 
-export function getStorageLockKey(identity: ModelIdentity<Model>): string {
+export function getStorageLockKey<TModel extends Model>(
+  identity: ModelIdentity<TModel>,
+): string {
   let {type, ...primaryField} = identity;
 
   return `${type}:${Object.values(primaryField)[0]}`;
