@@ -8,7 +8,6 @@ import {
   Events,
   InstallationEvent,
   PageEvent,
-  PermissionEvent,
   PowerCustomCheckableItemEvent,
   PowerGlanceEvent,
   PowerItemEvent,
@@ -60,21 +59,6 @@ export class KoaAdapter extends AbstractServeAdapter {
             payload: body,
           },
           getResponse<InstallationEvent>(context),
-        );
-      })
-      .post('/permission/:type', context => {
-        let {
-          params: {type},
-          request: {body},
-        } = context;
-
-        this.emit<PermissionEvent>(
-          'permission',
-          {
-            type,
-            payload: body,
-          },
-          getResponse<PermissionEvent>(context),
         );
       })
       .post('/power-item/:name/:type/:action?', context => {

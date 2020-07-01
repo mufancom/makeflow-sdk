@@ -5,7 +5,6 @@ import {
   Events,
   InstallationEvent,
   PageEvent,
-  PermissionEvent,
   PowerCustomCheckableItemEvent,
   PowerGlanceEvent,
   PowerItemEvent,
@@ -62,19 +61,6 @@ export class ExpressAdapter extends AbstractServeAdapter {
               payload: body,
             },
             getResponse<InstallationEvent>(response),
-          );
-        },
-      )
-      .post(
-        '/permission/:type',
-        ({body, params: {type}}, response: Response) => {
-          this.emit<PermissionEvent>(
-            'permission',
-            {
-              type: type as PermissionEvent['eventObject']['type'],
-              payload: body,
-            },
-            getResponse<PermissionEvent>(response),
           );
         },
       )

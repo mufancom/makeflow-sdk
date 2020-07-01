@@ -5,7 +5,6 @@ import {
   Events,
   InstallationEvent,
   PageEvent,
-  PermissionEvent,
   PowerCustomCheckableItemEvent,
   PowerGlanceEvent,
   PowerItemEvent,
@@ -92,30 +91,6 @@ export class HapiAdapter extends AbstractServeAdapter {
                 payload,
               } as InstallationEvent['eventObject'],
               getResponse<InstallationEvent>(h),
-            );
-
-            return h.response(await h.bodyPromise);
-          },
-          options: {
-            auth: {
-              mode: 'required',
-              payload: 'required',
-              strategy: 'source',
-            },
-          },
-        });
-
-        server.route({
-          method: 'POST',
-          path: '/permission/{type}',
-          handler: async ({params, payload}, h) => {
-            adapter.emit<PermissionEvent>(
-              'permission',
-              {
-                type: params.type,
-                payload,
-              } as PermissionEvent['eventObject'],
-              getResponse(h),
             );
 
             return h.response(await h.bodyPromise);

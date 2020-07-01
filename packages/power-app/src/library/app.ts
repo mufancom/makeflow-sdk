@@ -42,7 +42,6 @@ import {
   handlerCatcher,
   installationHandler,
   pageHandler,
-  permissionHandler,
   powerCustomCheckableItemHandler,
   powerGlanceHandler,
   powerItemHandler,
@@ -461,7 +460,6 @@ export class PowerApp {
 
     serveAdapter
       .on('installation', handlerCatcher(this, installationHandler))
-      .on('permission', handlerCatcher(this, permissionHandler))
       .on('power-item', handlerCatcher(this, powerItemHandler))
       .on('power-node', handlerCatcher(this, powerNodeHandler))
       .on('power-glance', handlerCatcher(this, powerGlanceHandler))

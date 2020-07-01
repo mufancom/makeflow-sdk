@@ -17,14 +17,12 @@ export async function installationHandler(
     type,
   } = event;
 
-  let responseData = {};
-
   let installationStorage: StorageObject<InstallationModel, any> | undefined;
 
   switch (event.type) {
     case 'activate':
     case 'update': {
-      let {configs, resources, users} = event.payload;
+      let {configs, resources, users, accessToken} = event.payload;
 
       let result = await app.dbAdapter.createOrUpgradeStorageObject<
         InstallationModel
@@ -39,14 +37,11 @@ export async function installationHandler(
         configs,
         resources,
         users,
+        accessToken,
         storage: {},
       });
 
       installationStorage = result.value;
-
-      responseData = {
-        granted: !!installationStorage.getField('accessToken'),
-      };
 
       break;
     }
@@ -64,7 +59,7 @@ export async function installationHandler(
   );
 
   if (!result?.change) {
-    response(responseData);
+    response({});
     return;
   }
 
@@ -76,9 +71,9 @@ export async function installationHandler(
   let changeResult =
     (await result.change({
       context,
-    })) ?? {};
+    })) || {};
 
-  response({...changeResult, ...responseData});
+  response(changeResult);
 }
 
 function getInstallationChange(
