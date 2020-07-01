@@ -13,7 +13,7 @@ export interface CustomDeclareDict {
   powerNodes: {[key in string]: GeneralDeclareWithInputs};
   powerGlances: {[key in string]: GeneralDeclare};
   powerCustomCheckableItems: {[key in string]: GeneralDeclareWithInputs};
-  pages: {[key in string]: GeneralDeclare};
+  pages: {[key in string]: GeneralDeclareWithInputs};
 }
 
 export interface GeneralDeclare {
@@ -116,7 +116,7 @@ export namespace PowerAppVersion {
           }
         : {}) &
         {
-          [key in string]: Page.Definition<GeneralDeclare>;
+          [key in string]: Page.Definition<GeneralDeclareWithInputs>;
         };
     };
   }
