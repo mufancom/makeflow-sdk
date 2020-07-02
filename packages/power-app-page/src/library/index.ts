@@ -1,92 +1,79 @@
-import {JsSDK} from '@makeflow/types';
+import {PowerAppPageAPI} from '@makeflow/types';
 
-const REQUEST_TIMEOUT = 10000;
+export class PowerAppPage {
+  private id = 0;
 
-class Makeflow implements JsSDK.API {
-  private timestampToResolveMap = new Map<
+  private idToResolverMap = new Map<
     number,
     (value?: any | PromiseLike<any>) => void
   >();
 
   constructor() {
     window.addEventListener('message', ({data}) => {
-      if (!assertResponseEvent(this, data)) {
-        return;
-      }
+      let {id, return: response} = (data ??
+        {}) as PowerAppPageAPI.APIReturnResult;
 
-      let resolver = this.timestampToResolveMap.get(data.timestamp);
+      let resolver = this.idToResolverMap.get(id);
 
       if (!resolver) {
         return;
       }
 
-      this.timestampToResolveMap.delete(data.timestamp);
+      this.idToResolverMap.delete(id);
 
-      resolver(data.response);
+      resolver(response);
     });
   }
 
-  modal(params: JsSDK.ModalEvent['request']): void {
-    this.send('modal', params);
+  showMessage(params: PowerAppPageAPI.ShowMessageOptions): void {
+    this.send('show-message', params);
   }
 
-  message(params: JsSDK.MessageEvent['request']): void {
-    this.send('message', params);
+  async showModal<T>(params: PowerAppPageAPI.ShowModalOptions): Promise<T> {
+    return this.request('show-modal', params);
   }
 
-  async getUserInfo(): Promise<JsSDK.UserInfoEvent['response']> {
-    return this.request('getUserInfo', {});
+  async getUser(
+    options: PowerAppPageAPI.GetUserOptions = {},
+  ): Promise<PowerAppPageAPI.GetUserResult> {
+    return this.request('get-user', options);
   }
 
   private send(
-    type: JsSDK.Event['type'],
-    params: JsSDK.Event['request'],
+    name: PowerAppPageAPI.APITypes['name'],
+    options: PowerAppPageAPI.APITypes['options'],
   ): void {
-    let timestamp = Date.now();
-
-    window.parent.postMessage(
-      {
-        type,
-        request: params,
-        timestamp,
-      },
-      '*',
-    );
+    this.postMessage(name, options);
   }
 
   private request<T>(
-    type: JsSDK.Event['type'],
-    params: JsSDK.Event['request'],
+    name: PowerAppPageAPI.APITypes['name'],
+    options: PowerAppPageAPI.APITypes['options'],
   ): Promise<T> {
-    return new Promise((resolve, reject) => {
-      let timestamp = Date.now();
-
-      window.parent.postMessage(
-        {
-          type,
-          request: params,
-          timestamp,
-        },
-        '*',
-      );
-
-      let timer = setTimeout(reject, REQUEST_TIMEOUT);
-
-      this.timestampToResolveMap.set(timestamp, (value: any) => {
-        resolve(value);
-        clearTimeout(timer);
-      });
+    return new Promise(resolve => {
+      this.idToResolverMap.set(this.postMessage(name, options), resolve);
     });
+  }
+
+  private postMessage(
+    name: PowerAppPageAPI.APITypes['name'],
+    options: PowerAppPageAPI.APITypes['options'],
+  ): number {
+    let id = ++this.id;
+
+    window.parent.postMessage(
+      {
+        id,
+        name,
+        options,
+      } as PowerAppPageAPI.APICall,
+      '*',
+    );
+
+    return id;
   }
 }
 
-export default function (): Makeflow {
-  return new Makeflow();
-}
-
-function assertResponseEvent(
-  api: JsSDK.API,
-  event: any,
-): event is JsSDK.ResponseEvent {
-  return !!(event?.type && event.type in api && event?.timestamp);
+export default function (): PowerAppPage {
+  return new PowerAppPage();
 }

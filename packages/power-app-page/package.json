@@ -13,8 +13,8 @@
   "main": "bld/library/index.js",
   "types": "bld/library/index.d.ts",
   "dependencies": {
-    "@makeflow/types": "^0.1.9",
-    "@makeflow/types-nominal": "^0.1.0",
+    "@makeflow/types": "^0.1.11",
+    "@makeflow/types-nominal": "^0.1.1",
     "tslib": "^2.0.0"
   }
 }
