@@ -19,7 +19,7 @@
   ],
   "dependencies": {
     "@hapi/hapi": "^19.1.1",
-    "@makeflow/types": "0.1.11",
+    "@makeflow/types": "0.1.12",
     "@makeflow/types-nominal": "^0.1.1",
     "express": "^4.17.1",
     "koa": "^2.13.0",

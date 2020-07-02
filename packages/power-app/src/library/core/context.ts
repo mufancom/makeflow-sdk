@@ -66,6 +66,7 @@ export type ContextTypeToBasicMapping = {
       userStorage: ActionStorage<UserModel, any>;
       user: {
         id: UserId;
+        username: string;
       };
       /**
        * e.g. `/a/b/c`
@@ -73,7 +74,12 @@ export type ContextTypeToBasicMapping = {
       path: string | undefined;
     },
   ];
-  user: [UserModel, {}];
+  user: [
+    UserModel,
+    {
+      username: string | undefined;
+    },
+  ];
 };
 
 export type __AssertContextTypeToBasicMapping<

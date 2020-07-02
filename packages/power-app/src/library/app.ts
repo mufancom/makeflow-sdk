@@ -58,7 +58,10 @@ export type MatchContextsFilter<
 
 export interface GetStorageObjectContextsOptions {
   page?: {
-    user?: UserId;
+    user?: {
+      id: UserId;
+      username?: string;
+    };
     path?: string;
   };
 }
@@ -323,18 +326,26 @@ export class PowerApp {
         let pageOptions = options?.page;
 
         if (pageOptions?.user) {
-          let userStorage = await db.getStorageObject<UserModel>({
-            type: 'user',
-            id: pageOptions.user,
-          });
+          let userStorage = await db.getStorageObject<UserModel>(
+            {
+              type: 'user',
+              id: pageOptions.user.id,
+            },
+            {
+              installation: storageObject.source.installation,
+            },
+          );
 
           if (!userStorage) {
-            userStorage = await db.createStorageObject<UserModel>({
+            let {value} = await db.createOrUpgradeStorageObject<UserModel>({
               type: 'user',
-              id: pageOptions.user,
+              id: pageOptions.user.id,
+              username: pageOptions.user.username,
               storage: {},
               ...storageObject.source,
             });
+
+            userStorage = value;
           }
 
           let context: Context<'page'> = {
@@ -343,7 +354,8 @@ export class PowerApp {
             id: storageObject.getField('id')!,
             userStorage: getActionStorage(db, userStorage),
             user: {
-              id: pageOptions.user,
+              id: userStorage.getField('id')!,
+              username: userStorage.getField('username') ?? '',
             },
             path: pageOptions.path,
           };
@@ -374,6 +386,7 @@ export class PowerApp {
             ),
             user: {
               id: user.identity.id,
+              username: user.getField('username') ?? '',
             },
             path: pageOptions?.path,
           }),
@@ -395,6 +408,7 @@ export class PowerApp {
           ...initialBasicContext,
           type: 'user',
           id: storageObject.getField('id')!,
+          username: storageObject.getField('username'),
         };
 
         contexts = [context];
@@ -407,7 +421,13 @@ export class PowerApp {
 
   async getOrCreateUserContext<TStorage>(
     source: APITypes.PowerApp.Source,
-    id: UserId,
+    {
+      id,
+      username,
+    }: {
+      id: UserId;
+      username?: string;
+    },
   ): Promise<Context<'user', TStorage>> {
     let identity: ModelIdentity<UserModel> = {type: 'user', id};
 
@@ -419,9 +439,10 @@ export class PowerApp {
 
     let storage = await this.dbAdapter.createStorageObject<UserModel, TStorage>(
       {
+        ...source,
         type: 'user',
         id,
-        ...source,
+        username,
         storage: {},
       },
     );

@@ -1,3 +1,4 @@
+import {API as APITypes} from '@makeflow/types';
 import _ from 'lodash';
 import {
   Collection,
@@ -29,10 +30,16 @@ export class MongoAdapter extends AbstractDBAdapter {
 
   // query
 
-  async getModel(identity: ModelIdentity<Model>): Promise<Model | undefined> {
+  async getModel(
+    identity: ModelIdentity<Model>,
+    source?: APITypes.PowerApp.Source,
+  ): Promise<Model | undefined> {
     let {type, ...primaryFieldQuery} = identity;
 
-    let model = await this.getCollection({type}).findOne(primaryFieldQuery);
+    let model = await this.getCollection({type}).findOne({
+      ...primaryFieldQuery,
+      ...source,
+    });
 
     return model || undefined;
   }

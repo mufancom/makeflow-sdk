@@ -57,7 +57,7 @@ export async function pageHandler(
   if (change) {
     let [context] = await app.getStorageObjectContexts('page', storage, {
       page: {
-        user: user.id,
+        user,
         path,
       },
     });

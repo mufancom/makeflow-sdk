@@ -131,6 +131,7 @@ export type PageDefinition = __Definition<PageModel, 'id'>;
  */
 export interface UserModel extends __Model<'user'> {
   id: UserId;
+  username: string | undefined;
 }
 
 export type UserDefinition = __Definition<UserModel, 'id'>;
@@ -176,7 +177,7 @@ export const typeToModelDefinitionDict: {
   user: {
     type: 'user',
     primaryField: 'id',
-    allowedFields: [],
+    allowedFields: ['username'],
   },
 };
 

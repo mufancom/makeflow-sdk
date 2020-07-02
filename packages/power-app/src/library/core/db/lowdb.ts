@@ -1,3 +1,4 @@
+import {API as APITypes} from '@makeflow/types';
 import _ from 'lodash';
 import lowdb, {LowdbSync} from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
@@ -24,11 +25,14 @@ export class LowdbAdapter extends AbstractDBAdapter {
 
   // query
 
-  async getModel(identity: ModelIdentity<Model>): Promise<Model | undefined> {
+  async getModel(
+    identity: ModelIdentity<Model>,
+    source?: APITypes.PowerApp.Source,
+  ): Promise<Model | undefined> {
     let {type, ...primaryFieldQuery} = identity;
 
     let model = await this.getCollection({type})
-      .find(primaryFieldQuery)
+      .find({...primaryFieldQuery, ...source})
       .value();
 
     return model || undefined;

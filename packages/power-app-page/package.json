@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app-page",
-  "version": "0.1.0-wip.1",
+  "version": "0.1.0-wip.4",
   "description": "Makeflow PowerApp Page Framework.",
   "publishConfig": {
     "access": "public"
@@ -9,11 +9,16 @@
     "type": "git",
     "url": "https://github.com/makeflow/makeflow-sdk.git"
   },
+  "files": [
+    "src/**/*.ts",
+    "bld",
+    "!*.tsbuildinfo"
+  ],
   "license": "MIT",
   "main": "bld/library/index.js",
   "types": "bld/library/index.d.ts",
   "dependencies": {
-    "@makeflow/types": "^0.1.11",
+    "@makeflow/types": "^0.1.12",
     "@makeflow/types-nominal": "^0.1.1",
     "tslib": "^2.0.0"
   }

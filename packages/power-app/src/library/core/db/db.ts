@@ -1,3 +1,4 @@
+import {API as APITypes} from '@makeflow/types';
 import {Dict} from 'tslang';
 
 import {Model, ModelIdentity} from '../model';
@@ -21,10 +22,11 @@ abstract class DBAdapter {
 
   async getStorageObject<TModel extends Model, TStorage = Dict<any>>(
     identity: ModelIdentity<TModel>,
+    source?: Partial<APITypes.PowerApp.Source>,
   ): Promise<StorageObject<TModel, TStorage> | undefined> {
     await this.ready;
 
-    let model = (await this.getModel(identity)) as TModel | undefined;
+    let model = (await this.getModel(identity, source)) as TModel | undefined;
 
     return model && new StorageObject(model);
   }
@@ -97,6 +99,7 @@ abstract class DBAdapter {
 
   protected abstract async getModel(
     identity: ModelIdentity<Model>,
+    source?: Partial<APITypes.PowerApp.Source>,
   ): Promise<Model | undefined>;
 
   protected abstract async getModelList<TModel extends Model>(
