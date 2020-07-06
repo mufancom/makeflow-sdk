@@ -189,6 +189,6 @@ export type ModelIdentity<TModel extends Model> = ModelToDefinition<
   TModel
 > extends {primaryField: infer TPrimaryField}
   ? TPrimaryField extends keyof TModel
-    ? Pick<TModel, 'type' | TPrimaryField>
+    ? Pick<TModel, 'type' | 'installation' | TPrimaryField>
     : never
   : never;

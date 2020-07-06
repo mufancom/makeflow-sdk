@@ -1,6 +1,6 @@
 import {Plugin} from '@hapi/hapi';
 import {API as APITypes} from '@makeflow/types';
-import {UserId} from '@makeflow/types-nominal';
+import {AppInstallationId, UserId} from '@makeflow/types-nominal';
 import {Express} from 'express';
 import Koa from 'koa';
 import _ from 'lodash';
@@ -223,15 +223,19 @@ export class PowerApp {
       installation: storageObject.getField('installation')!,
     });
 
-    api.setAccessToken(installationStorageObject?.getField('accessToken'));
+    if (!installationStorageObject) {
+      throw Error('未匹配到安装信息');
+    }
+
+    let installationId = installationStorageObject.identity.installation;
+
+    api.setAccessToken(installationStorageObject.getField('accessToken'));
 
     if (assertModelWithOperationToken(storageObject)) {
       api.setOperationToken(storageObject.getField('operationToken'));
     }
 
-    initialBasicContext.configs = installationStorageObject?.getField(
-      'configs',
-    );
+    initialBasicContext.configs = installationStorageObject.getField('configs');
 
     let contexts: Context<ContextType>[] = [];
 
@@ -250,6 +254,7 @@ export class PowerApp {
           ...initialBasicContext,
           type: 'power-item',
           operationToken: storageObject.getField('operationToken')!,
+          installation: installationId,
         };
 
         contexts = [context];
@@ -269,6 +274,7 @@ export class PowerApp {
           ...initialBasicContext,
           type: 'power-node',
           operationToken: storageObject.getField('operationToken')!,
+          installation: installationId,
         };
 
         contexts = [context];
@@ -288,6 +294,7 @@ export class PowerApp {
           ...initialBasicContext,
           type: 'power-custom-checkable-item',
           operationToken: storageObject.getField('operationToken')!,
+          installation: installationId,
         };
 
         contexts = [context];
@@ -304,10 +311,11 @@ export class PowerApp {
         }
 
         let context: Context<'power-glance'> = {
+          ...initialBasicContext,
           type: 'power-glance',
           operationToken: storageObject.getField('operationToken')!,
-          ...initialBasicContext,
           powerGlanceConfigs: storageObject.getField('configs')!,
+          installation: installationId,
         };
 
         contexts = [context];
@@ -326,15 +334,11 @@ export class PowerApp {
         let pageOptions = options?.page;
 
         if (pageOptions?.user) {
-          let userStorage = await db.getStorageObject<UserModel>(
-            {
-              type: 'user',
-              id: pageOptions.user.id,
-            },
-            {
-              installation: storageObject.source.installation,
-            },
-          );
+          let userStorage = await db.getStorageObject<UserModel>({
+            type: 'user',
+            id: pageOptions.user.id,
+            installation: installationId,
+          });
 
           if (!userStorage) {
             let {value} = await db.createOrUpgradeStorageObject<UserModel>({
@@ -358,6 +362,7 @@ export class PowerApp {
               username: userStorage.getField('username') ?? '',
             },
             path: pageOptions.path,
+            installation: installationId,
           };
 
           contexts = [context];
@@ -389,6 +394,7 @@ export class PowerApp {
               username: user.getField('username') ?? '',
             },
             path: pageOptions?.path,
+            installation: installationId,
           }),
         );
 
@@ -409,6 +415,7 @@ export class PowerApp {
           type: 'user',
           id: storageObject.getField('id')!,
           username: storageObject.getField('username'),
+          installation: installationId,
         };
 
         contexts = [context];
@@ -424,12 +431,14 @@ export class PowerApp {
     {
       id,
       username,
+      installation,
     }: {
       id: UserId;
+      installation: AppInstallationId;
       username?: string;
     },
   ): Promise<Context<'user', TStorage>> {
-    let identity: ModelIdentity<UserModel> = {type: 'user', id};
+    let identity: ModelIdentity<UserModel> = {type: 'user', id, installation};
 
     let contexts = await this.getContexts<'user', TStorage>('user', identity);
 
