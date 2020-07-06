@@ -25,6 +25,7 @@ import {
   LowdbOptions,
   Model,
   ModelIdentity,
+  ModelScopedIdentity,
   ModelWithOperationToken,
   MongoAdapter,
   MongoOptions,
@@ -177,7 +178,7 @@ export class PowerApp {
 
     let initialBasicContext: Omit<
       BasicContext<any, any, any>,
-      keyof ModelIdentity<Model>
+      keyof ModelScopedIdentity<Model>
     > = {
       api,
       storage: getActionStorage(db, storageObject),
@@ -227,8 +228,6 @@ export class PowerApp {
       throw Error('未匹配到安装信息');
     }
 
-    let installationId = installationStorageObject.identity.installation;
-
     api.setAccessToken(installationStorageObject.getField('accessToken'));
 
     if (assertModelWithOperationToken(storageObject)) {
@@ -254,7 +253,6 @@ export class PowerApp {
           ...initialBasicContext,
           type: 'power-item',
           operationToken: storageObject.getField('operationToken')!,
-          installation: installationId,
         };
 
         contexts = [context];
@@ -274,7 +272,6 @@ export class PowerApp {
           ...initialBasicContext,
           type: 'power-node',
           operationToken: storageObject.getField('operationToken')!,
-          installation: installationId,
         };
 
         contexts = [context];
@@ -294,7 +291,6 @@ export class PowerApp {
           ...initialBasicContext,
           type: 'power-custom-checkable-item',
           operationToken: storageObject.getField('operationToken')!,
-          installation: installationId,
         };
 
         contexts = [context];
@@ -315,7 +311,6 @@ export class PowerApp {
           type: 'power-glance',
           operationToken: storageObject.getField('operationToken')!,
           powerGlanceConfigs: storageObject.getField('configs')!,
-          installation: installationId,
         };
 
         contexts = [context];
@@ -337,7 +332,7 @@ export class PowerApp {
           let userStorage = await db.getStorageObject<UserModel>({
             type: 'user',
             id: pageOptions.user.id,
-            installation: installationId,
+            installation: storageObject.identity.installation,
           });
 
           if (!userStorage) {
@@ -362,7 +357,6 @@ export class PowerApp {
               username: userStorage.getField('username') ?? '',
             },
             path: pageOptions.path,
-            installation: installationId,
           };
 
           contexts = [context];
@@ -394,7 +388,6 @@ export class PowerApp {
               username: user.getField('username') ?? '',
             },
             path: pageOptions?.path,
-            installation: installationId,
           }),
         );
 
@@ -415,7 +408,6 @@ export class PowerApp {
           type: 'user',
           id: storageObject.getField('id')!,
           username: storageObject.getField('username'),
-          installation: installationId,
         };
 
         contexts = [context];

@@ -7,7 +7,7 @@ import {UserId} from '../types/namespace';
 import {
   InstallationModel,
   Model,
-  ModelIdentity,
+  ModelScopedIdentity,
   PageModel,
   PowerCustomCheckableItemModel,
   PowerGlanceModel,
@@ -22,7 +22,7 @@ export type BasicContext<TModel extends Model, TStorage, TConfigs> = {
   source: APITypes.PowerApp.Source;
   storage: ActionStorage<TModel, TStorage>;
   configs: TConfigs;
-} & ModelIdentity<TModel>;
+} & ModelScopedIdentity<TModel>;
 
 export type Context<
   TType extends ContextType,

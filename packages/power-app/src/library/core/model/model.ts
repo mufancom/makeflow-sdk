@@ -185,10 +185,23 @@ export type ModelToDefinition<TModel extends Model> = ModelTypeToDefinition<
   TModel['type']
 >;
 
-export type ModelIdentity<TModel extends Model> = ModelToDefinition<
+export type ModelPrimaryFieldKey<TModel extends Model> = ModelToDefinition<
   TModel
 > extends {primaryField: infer TPrimaryField}
   ? TPrimaryField extends keyof TModel
-    ? Pick<TModel, 'type' | 'installation' | TPrimaryField>
+    ? TPrimaryField
+    : never
+  : never;
+
+export type ModelIdentity<TModel extends Model> = Pick<
+  TModel,
+  'type' | 'installation' | ModelPrimaryFieldKey<TModel>
+>;
+
+export type ModelScopedIdentity<TModel extends Model> = ModelToDefinition<
+  TModel
+> extends {primaryField: infer TPrimaryField}
+  ? TPrimaryField extends keyof TModel
+    ? Pick<TModel, 'type' | TPrimaryField>
     : never
   : never;

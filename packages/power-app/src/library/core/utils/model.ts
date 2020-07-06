@@ -1,19 +1,28 @@
 import _ from 'lodash';
 import {Dict} from 'tslang';
 
-import {Model, ModelIdentity, typeToModelDefinitionDict} from '../model';
+import {
+  Model,
+  ModelIdentity,
+  ModelPrimaryFieldKey,
+  typeToModelDefinitionDict,
+} from '../model';
 
 export function getModelIdentity<TModel extends Model>(
   model: TModel,
 ): ModelIdentity<TModel> {
   let {type} = model;
 
-  let {primaryField} = typeToModelDefinitionDict[type];
+  let primaryField = typeToModelDefinitionDict[type]
+    .primaryField as ModelPrimaryFieldKey<TModel>;
 
-  return {
+  let identity: ModelIdentity<Model> = {
     type,
-    [primaryField]: (model as any)[primaryField],
-  } as ModelIdentity<TModel>;
+    installation: model.installation,
+    [primaryField]: model[primaryField],
+  };
+
+  return identity as ModelIdentity<TModel>;
 }
 
 export function buildSecureUpdateData(
