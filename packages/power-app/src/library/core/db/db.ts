@@ -74,7 +74,9 @@ abstract class DBAdapter {
   }> {
     await this.ready;
 
-    let storageObject = await this.getStorageObject(getModelIdentity(model));
+    let storageObject = await this.getStorageObject(getModelIdentity(model), {
+      installation: model.installation,
+    });
 
     if (storageObject) {
       return {
