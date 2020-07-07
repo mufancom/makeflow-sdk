@@ -11,6 +11,7 @@ import {
   TeamId,
   UserId,
 } from '@makeflow/types-nominal';
+import {CompositeValueDescriptor} from '@makeflow/types/value';
 import fetch, {BodyInit} from 'node-fetch';
 import {Dict} from 'tslang';
 
@@ -204,6 +205,25 @@ export class API<TSourceObject extends APISource = APISource> {
   }
 
   /**
+   * 更新任务
+   * @params options.id 任务 ID
+   * @params options.brief 任务简述
+   * @params options.description 任务描述
+   * @params options.tags 任务描述
+   * @params options.assignee 负责人
+   * @params options.outputs 任务输出
+   * @params options.associatedTasks 关联任务信息
+   * @params options.postponedTo 延后任务时间
+   * @accessToken
+   */
+  async updateTask({id, ...restOptions}: UpdateTaskOptions): Promise<TaskId> {
+    return this.request(`/task/update?id=${id}`, {
+      requireAccessToken: true,
+      body: restOptions,
+    });
+  }
+
+  /**
    * 发送文件消息到任务
    * @param task 任务ID
    * @param body 文件内容
@@ -331,6 +351,20 @@ export interface CreateTaskOptions {
   outputs?: Dict<Value.CompositeValueDescriptor>;
   associatedTasks?: TaskAssociation[];
   postponedTo?: number;
+}
+
+export interface UpdateTaskOptions {
+  id: TaskId;
+  brief?: string;
+  description?: string;
+  tags?: TagId[];
+  assignee?: UserId;
+  outputs?: Dict<CompositeValueDescriptor>;
+  associatedTasks?: {
+    type: 'blocked-by' | 'blocking' | 'related';
+    task: TaskId;
+  }[];
+  postponedTo?: number | -1 | undefined;
 }
 
 export interface UserCandidate {
