@@ -351,6 +351,7 @@ export interface CreateTaskOptions {
   outputs?: Dict<Value.CompositeValueDescriptor>;
   associatedTasks?: TaskAssociation[];
   postponedTo?: number;
+  assignmentConfirmed?: boolean;
 }
 
 export interface UpdateTaskOptions {
