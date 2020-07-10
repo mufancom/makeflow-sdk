@@ -128,30 +128,30 @@ abstract class DBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     newPath: string,
-  ): Promise<void>;
+  ): Promise<TModel>;
 
   abstract async inc<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
-  ): Promise<void>;
+  ): Promise<TModel>;
 
   abstract async mul<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
-  ): Promise<void>;
+  ): Promise<TModel>;
 
   abstract async set<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
     value: any,
-  ): Promise<void>;
+  ): Promise<TModel>;
 
   abstract async unset<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
-  ): Promise<void>;
+  ): Promise<TModel>;
 
   // array field
 
@@ -168,29 +168,29 @@ abstract class DBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
-  ): Promise<void>;
+  ): Promise<TModel>;
 
   abstract async shift<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
-  ): Promise<void>;
+  ): Promise<TModel>;
 
   abstract async unshift<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
     value: any,
-  ): Promise<void>;
+  ): Promise<TModel>;
 
   abstract async pop<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
-  ): Promise<void>;
+  ): Promise<TModel>;
 
   abstract async push<TModel extends Model, TValue>(
     identity: ModelIdentity<TModel>,
     path: string,
     ...value: TValue[]
-  ): Promise<void>;
+  ): Promise<TModel>;
 }
 
 export const AbstractDBAdapter = DBAdapter;

@@ -34,11 +34,15 @@ export class StorageObject<TModel extends Model, TStorage> {
     return this.model.storage as TStorage;
   }
 
-  constructor(protected readonly model: TModel) {}
+  constructor(private model: TModel) {}
 
   getField<TKey extends keyof TModel>(key: TKey): TModel[TKey] | undefined {
     let model = this.model;
 
     return model?.[key];
+  }
+
+  updateModel(model: TModel): void {
+    this.model = model;
   }
 }
