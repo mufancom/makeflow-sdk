@@ -2136,10 +2136,10 @@
   dependencies:
     tslang "^0.1.21"
 
-"@makeflow/types@0.1.14", "@makeflow/types@^0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.14.tgz#d28720bfc6ca4a7639872cbb2f83f69844a50583"
-  integrity sha512-R4NmOOZjdijFJvuJ9ZsTVBRvSGii1Olba/P4x2ZaE08UgfOopm0KRXncphDEs34rb2cv/g0fch3OQdHfg/P5QQ==
+"@makeflow/types@0.1.15", "@makeflow/types@^0.1.15":
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.15.tgz#67e5c3cdc8dfed2834bfa6579555e4310f766a64"
+  integrity sha512-e5qUdqzDFvdfuareivtsYuYzKzXiCqXsYP8/uCdIa8+NWDp6JEd06CS8kEE8qAgTRnHuY/Ghos5kq7/soBLk0A==
   dependencies:
     "@types/draft-js" "^0.10.32"
     tslang "^0.1.22"
