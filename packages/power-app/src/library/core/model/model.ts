@@ -62,6 +62,7 @@ export interface InstallationModel extends __Model<'installation'> {
   resources: API.PowerApp.ResourcesMapping;
   users: API.PowerApp.UserInfo[];
   accessToken?: string | undefined;
+  disabled?: boolean;
 }
 
 export type InstallationDefinition = __Definition<
@@ -147,7 +148,7 @@ export const typeToModelDefinitionDict: {
   installation: {
     type: 'installation',
     primaryField: 'installation',
-    allowedFields: ['accessToken', 'configs', 'resources', 'users'],
+    allowedFields: ['accessToken', 'configs', 'resources', 'users', 'disabled'],
   },
   'power-item': {
     type: 'power-item',
