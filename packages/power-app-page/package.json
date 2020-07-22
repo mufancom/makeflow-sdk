@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app-page",
-  "version": "0.1.0-wip.4",
+  "version": "0.1.0-wip.5",
   "description": "Makeflow PowerApp Page Framework.",
   "publishConfig": {
     "access": "public"
@@ -18,7 +18,7 @@
   "main": "bld/library/index.js",
   "types": "bld/library/index.d.ts",
   "dependencies": {
-    "@makeflow/types": "^0.1.12",
+    "@makeflow/types": "^0.1.14",
     "@makeflow/types-nominal": "^0.1.1",
     "tslib": "^2.0.0"
   }
