@@ -50,6 +50,7 @@ export type ContextTypeToBasicMapping = {
     {
       users: APITypes.PowerApp.UserInfo[];
       resources: APITypes.PowerApp.ResourcesMapping;
+      disabled: boolean;
     },
   ];
   'power-item': [PowerItemModel, {}];
