@@ -5,6 +5,7 @@ import {API} from '../api';
 import {UserId} from '../types/namespace';
 
 import {
+  DataSourceModel,
   InstallationModel,
   Model,
   ModelScopedIdentity,
@@ -78,6 +79,12 @@ export type ContextTypeToBasicMapping = {
     UserModel,
     {
       username: string | undefined;
+    },
+  ];
+  'data-source': [
+    DataSourceModel,
+    {
+      search: string | undefined;
     },
   ];
 };

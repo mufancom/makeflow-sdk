@@ -238,6 +238,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
         'power-custom-checkable-item': [],
         page: [],
         user: [],
+        'data-source': [],
       })
       .write();
   }
