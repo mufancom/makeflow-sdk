@@ -210,6 +210,7 @@ export class PowerApp {
           tags: {},
           procedures: {},
         },
+        disabled: !!storageObject.getField('disabled'),
       };
 
       return [context] as Context<TContextType>[];
