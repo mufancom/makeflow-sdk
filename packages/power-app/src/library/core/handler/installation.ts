@@ -47,7 +47,10 @@ export async function installationHandler(
       break;
     }
     case 'deactivate': {
-      await app.dbAdapter.upgradeStorageObject<InstallationModel, any>(
+      installationStorage = await app.dbAdapter.upgradeStorageObject<
+        InstallationModel,
+        any
+      >(
         version,
         {
           type: 'installation',
