@@ -211,10 +211,10 @@ export class API<TSourceObject extends APISource = APISource> {
    * @params options.outputs 任务输出
    * @accessToken
    */
-  async updateTask({id, ...restOptions}: UpdateTaskOptions): Promise<TaskId> {
-    return this.request(`/task/update?id=${id}`, {
+  async updateTask(options: UpdateTaskOptions): Promise<TaskId> {
+    return this.request(`/task/update`, {
       requireAccessToken: true,
-      body: restOptions,
+      body: options,
     });
   }
 
