@@ -1,0 +1,27 @@
+{
+  "name": "@makeflow/power-app-express",
+  "version": "0.2.0-wip.24",
+  "description": "Makeflow PowerApp Server Adapter - Express.",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/makeflow/makeflow-sdk.git"
+  },
+  "license": "MIT",
+  "main": "bld/library/index.js",
+  "types": "bld/library/index.d.ts",
+  "files": [
+    "src/**/*.ts",
+    "bld",
+    "!*.tsbuildinfo"
+  ],
+  "dependencies": {
+    "@makeflow/power-app-server-adapter": "0.2.0-wip.24",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.6"
+  }
+}
