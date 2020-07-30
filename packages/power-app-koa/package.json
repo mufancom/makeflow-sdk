@@ -1,0 +1,36 @@
+{
+  "name": "@makeflow/power-app-koa",
+  "version": "0.2.0-wip.24",
+  "description": "Makeflow PowerApp Server Adapter - Koa.",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/makeflow/makeflow-sdk.git"
+  },
+  "license": "MIT",
+  "main": "bld/library/index.js",
+  "types": "bld/library/index.d.ts",
+  "files": [
+    "src/**/*.ts",
+    "bld",
+    "!*.tsbuildinfo"
+  ],
+  "dependencies": {
+    "@makeflow/power-app-server-adapter": "0.2.0-wip.24",
+    "koa": "^2.13.0",
+    "koa-bodyparser": "^4.3.0",
+    "koa-mount": "^4.0.0",
+    "koa-router": "^9.0.1",
+    "tslang": "^0.1.22",
+    "tslib": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.11.3",
+    "@types/koa-bodyparser": "^4.3.0",
+    "@types/koa-mount": "^4.0.0",
+    "@types/koa-router": "^7.4.1",
+    "@types/node": "^14.0.13"
+  }
+}
