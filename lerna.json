@@ -1,4 +1,10 @@
 {
-  "packages": ["packages/cli"],
-  "version": "independent"
+  "npmClient": "yarn",
+  "command": {
+    "publish": {
+      "npmClient": "npm"
+    }
+  },
+  "packages": ["packages/*"],
+  "version": "0.2.0-wip.24"
 }

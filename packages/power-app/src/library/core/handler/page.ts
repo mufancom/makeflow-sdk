@@ -3,29 +3,44 @@ import _ from 'lodash';
 
 import {PowerApp} from '../../app';
 import {PageModel} from '../model';
-import {PageEvent, PageEventParams} from '../serve';
 import {getChangeAndMigrations, runMigrations} from '../utils';
 import {GeneralDeclareWithInputs, PowerAppVersion} from '../version';
 
-export async function pageHandler(
+export type PageHandler = (
+  app: PowerApp,
+  params: PageHandlerParams,
+) => Promise<API.PowerAppPage.HookReturn>;
+
+export interface PageParams {
+  name: string;
+  type: 'request';
+}
+
+interface PageHandlerParams {
+  type: 'page';
+  params: PageParams;
+  body: API.PowerAppPage.RequestHookParams;
+}
+
+export const pageHandler: PageHandler = async function (
   app: PowerApp,
   {
+    type,
     params,
-    payload: {
+    body: {
       source: {token, url, installation, organization, team, version},
       inputs,
       user,
       path,
     },
-  }: PageEvent['eventObject'],
-  response: PageEvent['response'],
-): Promise<void> {
+  },
+) {
   let db = app.dbAdapter;
 
   let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject<
     PageModel
   >({
-    type: 'page',
+    type,
     id: `${installation}:${params.name}`,
     token,
     url,
@@ -45,7 +60,7 @@ export async function pageHandler(
   );
 
   if (!result) {
-    return;
+    return {};
   }
 
   let {change, migrations} = result;
@@ -55,7 +70,7 @@ export async function pageHandler(
   let responseData: API.PowerAppPage.HookReturn | void;
 
   if (change) {
-    let [context] = await app.getStorageObjectContexts('page', storage, {
+    let [context] = await app.getStorageObjectContexts(type, storage, {
       page: {
         user,
         path,
@@ -68,13 +83,13 @@ export async function pageHandler(
     });
   }
 
-  response(responseData || {});
-}
+  return responseData || {};
+};
 
 function getPageChange({
   name,
   type,
-}: PageEventParams): (
+}: PageParams): (
   definition: PowerAppVersion.Definition,
 ) => PowerAppVersion.Page.Change<GeneralDeclareWithInputs> | undefined {
   return ({contributions: {pages = {}} = {}}) => pages[name]?.[type];
@@ -82,7 +97,7 @@ function getPageChange({
 
 function getPageMigrations({
   name,
-}: PageEventParams): (
+}: PageParams): (
   type: keyof PowerAppVersion.Migrations,
   definitions: PowerAppVersion.Definition[],
 ) => PowerAppVersion.MigrationFunction[] {

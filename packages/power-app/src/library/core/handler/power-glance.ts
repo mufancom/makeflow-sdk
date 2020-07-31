@@ -4,28 +4,67 @@ import _ from 'lodash';
 import {API} from '../../api';
 import type {PowerApp} from '../../app';
 import {PowerGlanceModel} from '../model';
-import {PowerGlanceEvent, PowerGlanceEventParams} from '../serve';
 import {getChangeAndMigrations, runMigrations} from '../utils';
 import {GeneralDeclare, PowerAppVersion} from '../version';
 
-export async function powerGlanceHandler(
+export type PowerGlanceHandler = (
+  app: PowerApp,
+  params: PowerGlanceHandlerParams,
+) => Promise<APITypes.PowerGlance.HookReturn>;
+
+type PowerGlanceHandlerParams<
+  TPowerGlanceHandlerParams extends _PowerGlanceHandlerParams = _PowerGlanceHandlerParams
+> = {
+  type: 'power-glance';
+  params: PowerGlanceParams;
+} & TPowerGlanceHandlerParams;
+
+export interface PowerGlanceParams {
+  name: string;
+  type: 'initialize' | 'change' | 'dispose';
+}
+
+type _PowerGlanceHandlerParams =
+  | PowerGlanceInitializeHandlerParams
+  | PowerGlanceUpdateHandlerParams
+  | PowerGlanceDisposeHandlerParams;
+
+export interface PowerGlanceInitializeHandlerParams {
+  body: APITypes.PowerGlance.InitializeHookParams;
+}
+
+export interface PowerGlanceUpdateHandlerParams {
+  body: APITypes.PowerGlance.UpdateHookParams;
+}
+
+export interface PowerGlanceDisposeHandlerParams {
+  body: APITypes.PowerGlance.DisposeHookParams & {
+    clock: undefined;
+    resources: undefined;
+    configs: undefined;
+  } & {
+    powerGlanceConfigs: undefined;
+  };
+}
+
+export const powerGlanceHandler: PowerGlanceHandler = async function (
   app: PowerApp,
   {
+    type,
     params,
-    payload: {
+    body: {
       token: operationToken,
       source: {token, url, installation, organization, team, version},
       clock = 0,
       resources = [],
       powerGlanceConfigs = {},
     },
-  }: PowerGlanceEvent['eventObject'],
-  response: PowerGlanceEvent['response'],
-): Promise<void> {
+  },
+) {
   let db = app.dbAdapter;
 
   let storage = await db.getStorageObject<PowerGlanceModel>({
-    type: 'power-glance',
+    type,
     operationToken,
     installation,
   });
@@ -39,7 +78,7 @@ export async function powerGlanceHandler(
   );
 
   if (!result) {
-    return;
+    return {};
   }
 
   let {change, migrations} = result;
@@ -62,8 +101,7 @@ export async function powerGlanceHandler(
 
           powerGlanceConfigs = result.powerGlanceConfigs;
         } catch (error) {
-          response({});
-          return;
+          return {};
         }
       }
     }
@@ -77,7 +115,7 @@ export async function powerGlanceHandler(
     await runMigrations(db, storage, migrations);
   } else {
     storage = await db.createStorageObject<PowerGlanceModel>({
-      type: 'power-glance',
+      type,
       token,
       url,
       installation,
@@ -95,7 +133,7 @@ export async function powerGlanceHandler(
   let responseData: APITypes.PowerGlance.HookReturn | void;
 
   if (change) {
-    let [context] = await app.getStorageObjectContexts('power-glance', storage);
+    let [context] = await app.getStorageObjectContexts(type, storage);
 
     responseData = await change({
       context,
@@ -103,13 +141,13 @@ export async function powerGlanceHandler(
     });
   }
 
-  response(responseData || {});
-}
+  return responseData || {};
+};
 
 function getPowerGlanceChange({
   name,
   type,
-}: PowerGlanceEventParams): (
+}: PowerGlanceParams): (
   definition: PowerAppVersion.Definition,
 ) => PowerAppVersion.PowerGlance.Change<GeneralDeclare> | undefined {
   return ({contributions: {powerGlances = {}} = {}}) => {
@@ -125,7 +163,7 @@ function getPowerGlanceChange({
 
 function getPowerGlanceMigrations({
   name,
-}: PowerGlanceEventParams): (
+}: PowerGlanceParams): (
   type: keyof PowerAppVersion.Migrations,
   definitions: PowerAppVersion.Definition[],
 ) => PowerAppVersion.MigrationFunction[] {

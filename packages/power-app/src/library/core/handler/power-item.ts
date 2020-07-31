@@ -3,28 +3,70 @@ import _ from 'lodash';
 
 import type {PowerApp} from '../../app';
 import {PowerItemModel} from '../model';
-import {PowerItemEvent, PowerItemEventParams} from '../serve';
 import {getChangeAndMigrations, runMigrations} from '../utils';
 import {GeneralDeclareWithInputs, PowerAppVersion} from '../version';
 
-export async function powerItemHandler(
+export type PowerItemHandler = (
+  app: PowerApp,
+  params: PowerItemHandlerParams,
+) => Promise<API.PowerItem.HookReturn>;
+
+type PowerItemHandlerParams<
+  TPowerItemHandlerParams extends _PowerItemHandlerParams = _PowerItemHandlerParams
+> = {
+  type: 'power-item';
+  params: PowerItemParams;
+} & TPowerItemHandlerParams;
+
+interface PowerItemParams {
+  name: string;
+  type: 'activate' | 'update' | 'deactivate' | 'action';
+  action: string | undefined;
+}
+
+type _PowerItemHandlerParams =
+  | PowerItemActivateHandlerParams
+  | PowerItemDeactivateHandlerParams
+  | PowerItemUpdateHandlerParams
+  | PowerItemActionHandlerParams;
+
+interface PowerItemActivateHandlerParams {
+  body: API.PowerItem.ActivateHookParams;
+}
+
+interface PowerItemDeactivateHandlerParams {
+  body: API.PowerItem.DeactivateHookParams & {
+    inputs: undefined;
+    configs: undefined;
+  };
+}
+
+interface PowerItemUpdateHandlerParams {
+  body: API.PowerItem.UpdateHookParams;
+}
+
+interface PowerItemActionHandlerParams {
+  body: API.PowerItem.ActionHookParams;
+}
+
+export const powerItemHandler: PowerItemHandler = async function (
   app: PowerApp,
   {
+    type,
     params,
-    payload: {
+    body: {
       token: operationToken,
       source: {token, url, installation, organization, team, version},
       inputs = {},
     },
-  }: PowerItemEvent['eventObject'],
-  response: PowerItemEvent['response'],
-): Promise<void> {
+  },
+) {
   let db = app.dbAdapter;
 
   let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject<
     PowerItemModel
   >({
-    type: 'power-item',
+    type,
     token,
     url,
     installation,
@@ -44,7 +86,7 @@ export async function powerItemHandler(
   );
 
   if (!result) {
-    return;
+    return {};
   }
 
   let {change, migrations} = result;
@@ -54,7 +96,7 @@ export async function powerItemHandler(
   let responseData: API.PowerItem.HookReturn | void;
 
   if (change) {
-    let [context] = await app.getStorageObjectContexts('power-item', storage);
+    let [context] = await app.getStorageObjectContexts(type, storage);
 
     responseData = await change({
       context,
@@ -62,14 +104,14 @@ export async function powerItemHandler(
     });
   }
 
-  response(responseData || {});
-}
+  return responseData || {};
+};
 
 function getPowerItemChange({
   name,
   type,
   action,
-}: PowerItemEventParams): (
+}: PowerItemParams): (
   definition: PowerAppVersion.Definition,
 ) => PowerAppVersion.PowerItem.Change<GeneralDeclareWithInputs> | undefined {
   return ({contributions: {powerItems = {}} = {}}) => {
@@ -85,7 +127,7 @@ function getPowerItemChange({
 
 function getPowerItemMigrations({
   name,
-}: PowerItemEventParams): (
+}: PowerItemParams): (
   type: keyof PowerAppVersion.Migrations,
   definitions: PowerAppVersion.Definition[],
 ) => PowerAppVersion.MigrationFunction[] {

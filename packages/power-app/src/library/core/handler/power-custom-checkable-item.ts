@@ -3,32 +3,45 @@ import _ from 'lodash';
 
 import type {PowerApp} from '../../app';
 import {PowerCustomCheckableItemModel} from '../model';
-import {
-  PowerCustomCheckableItemEvent,
-  PowerCustomCheckableItemEventParams,
-} from '../serve';
 import {getChangeAndMigrations, runMigrations} from '../utils';
 import {GeneralDeclareWithInputs, PowerAppVersion} from '../version';
 
-export async function powerCustomCheckableItemHandler(
+export type PowerCustomCheckableItemHandler = (
+  app: PowerApp,
+  params: PowerCustomCheckableItemHandlerParams,
+) => Promise<API.PowerCustomCheckableItem.HookReturn>;
+
+export interface PowerCustomCheckableItemParams {
+  name: string;
+}
+
+interface PowerCustomCheckableItemHandlerParams {
+  type: 'power-custom-checkable-item';
+  params: PowerCustomCheckableItemParams;
+  body: API.PowerCustomCheckableItem.HookParams & {
+    source: API.PowerApp.Source;
+  };
+}
+
+export const powerCustomCheckableItemHandler: PowerCustomCheckableItemHandler = async function (
   app: PowerApp,
   {
+    type,
     params,
-    payload: {
+    body: {
       source: {token, url, installation, organization, team, version},
       token: operationToken,
       inputs = {},
       context: {url: requestUrl},
     },
-  }: PowerCustomCheckableItemEvent['eventObject'],
-  response: PowerCustomCheckableItemEvent['response'],
-): Promise<void> {
+  },
+) {
   let db = app.dbAdapter;
 
   let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject<
     PowerCustomCheckableItemModel
   >({
-    type: 'power-custom-checkable-item',
+    type,
     token,
     url,
     installation,
@@ -48,7 +61,7 @@ export async function powerCustomCheckableItemHandler(
   );
 
   if (!result) {
-    return;
+    return {};
   }
 
   let {change, migrations} = result;
@@ -58,10 +71,7 @@ export async function powerCustomCheckableItemHandler(
   let responseData: API.PowerCustomCheckableItem.HookReturn | void;
 
   if (change) {
-    let [context] = await app.getStorageObjectContexts(
-      'power-custom-checkable-item',
-      storage,
-    );
+    let [context] = await app.getStorageObjectContexts(type, storage);
 
     responseData = await change({
       context,
@@ -70,12 +80,12 @@ export async function powerCustomCheckableItemHandler(
     });
   }
 
-  response(responseData || {});
-}
+  return responseData || {};
+};
 
 function getPowerCustomCheckableItemChange({
   name,
-}: PowerCustomCheckableItemEventParams): (
+}: PowerCustomCheckableItemParams): (
   definition: PowerAppVersion.Definition,
 ) =>
   | PowerAppVersion.PowerCustomCheckableItem.Change<GeneralDeclareWithInputs>
@@ -86,7 +96,7 @@ function getPowerCustomCheckableItemChange({
 
 function getPowerCustomCheckableItemMigrations({
   name,
-}: PowerCustomCheckableItemEventParams): (
+}: PowerCustomCheckableItemParams): (
   type: keyof PowerAppVersion.Migrations,
   definitions: PowerAppVersion.Definition[],
 ) => PowerAppVersion.MigrationFunction[] {

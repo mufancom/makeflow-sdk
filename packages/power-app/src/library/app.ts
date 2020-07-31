@@ -1,11 +1,13 @@
-import {Plugin} from '@hapi/hapi';
+import {
+  AdapterServeOptions,
+  PowerAppAdapter,
+  PowerAppRoute,
+} from '@makeflow/power-app-server-adapter';
 import {API as APITypes} from '@makeflow/types';
 import {AppInstallationId, UserId} from '@makeflow/types-nominal';
-import {Express} from 'express';
-import Koa from 'koa';
 import _ from 'lodash';
 import {validRange} from 'semver';
-import {Constructor, Dict} from 'tslang';
+import {Dict} from 'tslang';
 
 import {API} from './api';
 import {
@@ -15,12 +17,8 @@ import {
   ContextTypeToBasicMapping,
   ContextTypeToModel,
   CustomDeclareDict,
-  ExpressAdapter,
-  HapiAdapter,
   IDBAdapter,
-  IServeAdapter,
   InstallationModel,
-  KoaAdapter,
   LowdbAdapter,
   LowdbOptions,
   Model,
@@ -35,10 +33,8 @@ import {
   PowerGlanceModel,
   PowerItemModel,
   PowerNodeModel,
-  ServeOptions,
   StorageObject,
   UserModel,
-  checkVersionsQualified,
   getActionStorage,
   handlerCatcher,
   installationHandler,
@@ -103,20 +99,148 @@ export class PowerApp {
     });
   }
 
-  serve(options?: ServeOptions): void {
-    this.buildServeAdapter(KoaAdapter, options).serve();
+  serve(adapter: PowerAppAdapter<any>, options?: AdapterServeOptions): void {
+    const routes: PowerAppRoute<ContextType, any, any, any>[] = [
+      {
+        type: 'installation',
+        paths: [
+          'installation',
+          {
+            name: 'type',
+          },
+        ],
+        handler: handlerCatcher(this, installationHandler),
+      },
+      {
+        type: 'power-item',
+        paths: [
+          'power-item',
+          {
+            name: 'name',
+          },
+          {
+            name: 'type',
+          },
+          {
+            name: 'action',
+            optional: true,
+          },
+        ],
+        validator(params) {
+          let {type, action} = Object(params);
+
+          switch (type) {
+            case 'activate':
+            case 'update':
+            case 'deactivate':
+              return true;
+            case 'action':
+              return !!action;
+            default:
+              return false;
+          }
+        },
+        handler: handlerCatcher(this, powerItemHandler),
+      },
+      {
+        type: 'power-node',
+        paths: [
+          'power-node',
+          {
+            name: 'name',
+          },
+          {
+            name: 'type',
+          },
+          {
+            name: 'action',
+            optional: true,
+          },
+        ],
+        validator(params) {
+          let {type, action} = Object(params);
+
+          switch (type) {
+            case 'activate':
+            case 'update':
+            case 'deactivate':
+              return true;
+            case 'action':
+              return !!action;
+            default:
+              return false;
+          }
+        },
+        handler: handlerCatcher(this, powerNodeHandler),
+      },
+      {
+        type: 'power-glance',
+        paths: [
+          'power-glance',
+          {
+            name: 'name',
+          },
+          {
+            name: 'type',
+          },
+        ],
+        validator(params) {
+          let {type} = Object(params);
+
+          switch (type) {
+            case 'initialize':
+            case 'change':
+            case 'dispose':
+              return true;
+            default:
+              return false;
+          }
+        },
+        handler: handlerCatcher(this, powerGlanceHandler),
+      },
+      {
+        type: 'power-custom-checkable-item',
+        paths: [
+          'power-custom-checkable-item',
+          {
+            name: 'name',
+          },
+        ],
+        handler: handlerCatcher(this, powerCustomCheckableItemHandler),
+      },
+      {
+        type: 'page',
+        paths: [
+          'page',
+          {
+            name: 'name',
+          },
+          {
+            name: 'type',
+          },
+        ],
+        handler: handlerCatcher(this, pageHandler),
+      },
+    ];
+
+    adapter({
+      authenticate() {
+        return true;
+      },
+      routes,
+    }).serve(options);
   }
 
-  koa(path?: ServeOptions['path']): Koa.Middleware {
-    return this.buildServeAdapter(KoaAdapter, {path}).middleware();
-  }
-
-  express(path?: ServeOptions['path']): Express {
-    return this.buildServeAdapter(ExpressAdapter, {path}).middleware();
-  }
-
-  hapi<T>(): Plugin<T> {
-    return this.buildServeAdapter(HapiAdapter, {}).middleware();
+  middleware<TMiddleware>(
+    adapter: PowerAppAdapter<TMiddleware>,
+    options?: AdapterServeOptions,
+  ): TMiddleware {
+    return adapter({
+      authenticate() {
+        return true;
+      },
+      routes: [],
+    }).middleware(options);
   }
 
   async *getContextIterable<
@@ -470,32 +594,6 @@ export class PowerApp {
         this.dbAdapter = new LowdbAdapter({});
         break;
     }
-  }
-
-  private buildServeAdapter(
-    Adapter: Constructor<IServeAdapter>,
-    options?: ServeOptions,
-  ): IServeAdapter {
-    this.checkVersionsQualified();
-
-    let serveAdapter = new Adapter(this.options.source?.token, options);
-
-    serveAdapter
-      .on('installation', handlerCatcher(this, installationHandler))
-      .on('power-item', handlerCatcher(this, powerItemHandler))
-      .on('power-node', handlerCatcher(this, powerNodeHandler))
-      .on('power-glance', handlerCatcher(this, powerGlanceHandler))
-      .on(
-        'power-custom-checkable-item',
-        handlerCatcher(this, powerCustomCheckableItemHandler),
-      )
-      .on('page', handlerCatcher(this, pageHandler));
-
-    return serveAdapter;
-  }
-
-  private checkVersionsQualified(): void {
-    this.definitions = checkVersionsQualified(this.definitions);
   }
 }
 

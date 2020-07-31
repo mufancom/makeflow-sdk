@@ -3,8 +3,7 @@
   "compilerOptions": {
     "composite": true,
 
-    "types": ["node", "@makeflow/types-nominal/default"],
-    "lib": ["DOM"],
+    "types": ["node"],
 
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

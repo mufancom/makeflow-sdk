@@ -1,16 +1,21 @@
+import {PowerAppRoute} from '@makeflow/power-app-server-adapter';
+
 import {PowerApp} from '../../app';
-import {Events} from '../serve';
+import {ContextType} from '../context';
 
 import {errorLog} from './log';
 
-export function handlerCatcher<TEvent extends Events>(
+export function handlerCatcher(
   app: PowerApp,
-  handler: (...args: any[]) => Promise<void>,
-): (event: TEvent['eventObject'], response: TEvent['response']) => void {
-  return (event, response) => {
-    handler(app, event, response).catch(error => {
+  handler: (app: PowerApp, params: any) => Promise<any>,
+): PowerAppRoute<ContextType, any, any, any>['handler'] {
+  return async params => {
+    try {
+      let result = await handler(app, params);
+      return result;
+    } catch (error) {
       errorLog(error);
-      response({});
-    });
+      return {};
+    }
   };
 }
