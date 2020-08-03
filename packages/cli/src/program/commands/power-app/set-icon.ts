@@ -16,7 +16,7 @@ import {API} from '../../core';
 
 const api = new API(config.api, config.token);
 
-export class SetLogoOptions extends Options {
+export class SetIconOptions extends Options {
   @option({
     flag: 'n',
     description: 'The name of the published power app',
@@ -26,18 +26,18 @@ export class SetLogoOptions extends Options {
 
   @option({
     flag: 'f',
-    description: 'The file path of the logo',
+    description: 'The file path of the icon',
     required: true,
   })
   file!: Castable.File;
 }
 
 @command({
-  description: 'Set a logo for a published power app.',
+  description: 'Set an icon for a published power app.',
 })
 export default class extends Command {
   @metadata
-  async execute({name, file}: SetLogoOptions): Promise<void> {
+  async execute({name, file}: SetIconOptions): Promise<void> {
     await file.assert();
 
     let type = Mime.getType(file.fullName);
@@ -46,16 +46,16 @@ export default class extends Command {
       throw new Error(`Cannot recognize the type of file "${file.fullName}"`);
     }
 
-    let logoBuffer = await file.buffer();
+    let iconBuffer = await file.buffer();
 
-    await this.updateLogo(name, logoBuffer, type);
+    await this.updateIcon(name, iconBuffer, type);
 
     console.info(
-      `The logo of powerApp "${name}" has been successfully updated!`,
+      `The icon of powerApp "${name}" has been successfully updated!`,
     );
   }
 
-  private async updateLogo(
+  private async updateIcon(
     name: string,
     fileBuffer: Buffer,
     type: string,
@@ -67,7 +67,7 @@ export default class extends Command {
     }
 
     return api.upload(
-      `/power-app/update-logo?${QueryString.stringify({name})}`,
+      `/power-app/update-icon?${QueryString.stringify({name})}`,
       fileBuffer,
       type,
     );

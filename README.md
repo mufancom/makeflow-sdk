@@ -44,13 +44,13 @@ You can use `mf publish power-app.json` to publish a power app to makeflow. The 
 
 There are a few subcommands to administer the published power apps in makeflow.
 
-##### `set-logo`
+##### `set-icon`
 
 - Options
   - `-n, --name <name>`: The name of the published power app
-  - `-f, --file <file>`: The file path of the logo
+  - `-f, --file <file>`: The file path of the icon
 
-You can use `mf power-app set-logo --name power-app-name --file logo-file-path.png` to set a logo (`logo-file-path.png`) to a published power app (`power-app-name`).
+You can use `mf power-app set-icon --name power-app-name --file icon-file-path.png` to set an icon (`icon-file-path.png`) to a published power app (`power-app-name`).
 
 ## Makeflow Power App
 
