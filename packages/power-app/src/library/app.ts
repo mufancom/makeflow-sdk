@@ -100,6 +100,8 @@ export class PowerApp {
   }
 
   serve(adapter: PowerAppAdapter<any>, options?: AdapterServeOptions): void {
+    let token = this.options.source?.token;
+
     const routes: PowerAppRoute<ContextType, any, any, any>[] = [
       {
         type: 'installation',
@@ -224,8 +226,16 @@ export class PowerApp {
     ];
 
     adapter({
-      authenticate() {
-        return true;
+      authenticate(body) {
+        if (!token) {
+          return true;
+        }
+
+        if (!body.source) {
+          return false;
+        }
+
+        return _.isEqual(token, body.source.token);
       },
       routes,
     }).serve(options);

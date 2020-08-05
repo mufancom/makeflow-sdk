@@ -2,7 +2,7 @@ import {API} from '@makeflow/types';
 import {OperationTokenToken, UserId} from '@makeflow/types-nominal';
 import {Dict} from 'tslang';
 
-type __Model<
+export type BasicModel<
   TType extends string,
   TStorage extends Dict<any> = Dict<any>
 > = API.PowerApp.Source & {
@@ -36,9 +36,9 @@ export type Definition =
 type __Definition<
   TModel,
   TPrimaryField extends
-    | Exclude<keyof TModel, keyof __Model<string>>
+    | Exclude<keyof TModel, keyof BasicModel<string>>
     | 'installation'
-> = TModel extends __Model<infer Type>
+> = TModel extends BasicModel<infer Type>
   ? {
       type: Type;
       /**
@@ -49,7 +49,7 @@ type __Definition<
        * 允许更新的字段
        */
       allowedFields: Exclude<
-        Exclude<keyof TModel, keyof __Model<string>>,
+        Exclude<keyof TModel, keyof BasicModel<string>>,
         TPrimaryField
       >[];
     }
@@ -57,7 +57,7 @@ type __Definition<
 
 // installation
 
-export interface InstallationModel extends __Model<'installation'> {
+export interface InstallationModel extends BasicModel<'installation'> {
   configs: Dict<unknown>;
   resources: API.PowerApp.ResourcesMapping;
   users: API.PowerApp.UserInfo[];
@@ -70,7 +70,7 @@ export type InstallationDefinition = __Definition<
 >;
 
 export interface IPowerAppResourceModel<TType extends string>
-  extends __Model<TType> {
+  extends BasicModel<TType> {
   operationToken: OperationTokenToken;
 }
 
@@ -118,7 +118,7 @@ export type PowerCustomCheckableItemDefinition = __Definition<
 
 // page
 
-export interface PageModel extends __Model<'page'> {
+export interface PageModel extends BasicModel<'page'> {
   id: string;
 }
 
@@ -129,7 +129,7 @@ export type PageDefinition = __Definition<PageModel, 'id'>;
 /**
  * User 对于同一个 installation 是唯一的
  */
-export interface UserModel extends __Model<'user'> {
+export interface UserModel extends BasicModel<'user'> {
   id: UserId;
   username: string | undefined;
 }

@@ -45,7 +45,7 @@ export interface InstallationUpdateHandlerParams {
 
 export const installationHandler: InstallationHandler = async function (
   app: PowerApp,
-  {params: {type}, body},
+  {type, params: {type: hookType}, body},
 ) {
   let {
     source: {token, url, installation, version, organization, team},
@@ -53,7 +53,7 @@ export const installationHandler: InstallationHandler = async function (
 
   let installationStorage: StorageObject<InstallationModel, any> | undefined;
 
-  switch (type) {
+  switch (hookType) {
     case 'activate':
     case 'update': {
       let {configs, resources, users, accessToken} = body as
@@ -63,7 +63,7 @@ export const installationHandler: InstallationHandler = async function (
       let result = await app.dbAdapter.createOrUpgradeStorageObject<
         InstallationModel
       >({
-        type: 'installation',
+        type,
         token,
         url,
         installation,
@@ -91,17 +91,14 @@ export const installationHandler: InstallationHandler = async function (
     version,
     undefined,
     app.definitions,
-    getInstallationChange(type),
+    getInstallationChange(hookType),
   );
 
   if (!result?.change) {
     return {};
   }
 
-  let [context] = await app.getStorageObjectContexts(
-    'installation',
-    installationStorage,
-  );
+  let [context] = await app.getStorageObjectContexts(type, installationStorage);
 
   let changeResult =
     (await result.change({

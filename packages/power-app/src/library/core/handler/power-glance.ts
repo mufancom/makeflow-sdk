@@ -106,7 +106,7 @@ export const powerGlanceHandler: PowerGlanceHandler = async function (
       }
     }
 
-    await db.upgradeStorageObject(version, storage.identity, {
+    storage = await db.upgradeStorageObject(version, storage.identity, {
       disposed: params.type === 'dispose',
       configs: powerGlanceConfigs,
       clock,
