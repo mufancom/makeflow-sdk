@@ -72,7 +72,7 @@ export type FlattenQuerySourceObject<T extends object> = {
 export function flattenObjectToQuery<T extends object>(
   object: FlattenQuerySourceObject<T>,
   omitUndefined = true,
-): object {
+): FilterQuery<T> {
   let query: Dict<unknown> = {};
 
   for (let [key, value] of Object.entries(object)) {
@@ -111,5 +111,5 @@ export function flattenObjectToQuery<T extends object>(
     Object.assign(query, subQuery);
   }
 
-  return query;
+  return query as FilterQuery<T>;
 }

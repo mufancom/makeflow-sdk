@@ -431,7 +431,11 @@ export class PowerApp {
       username?: string;
     },
   ): Promise<Context<'user', TStorage>> {
-    let identity: ModelIdentity<UserModel> = {type: 'user', id, installation};
+    let identity: ModelIdentity<UserModel> = {
+      type: 'user',
+      id,
+      installation: {id: installation},
+    };
 
     let contexts = await this.getContexts<'user', TStorage>('user', identity);
 

@@ -3,7 +3,6 @@ import _ from 'lodash';
 import {
   Collection,
   Db,
-  FilterQuery,
   FindOneAndUpdateOption,
   MongoClient,
   OnlyFieldsOfType,
@@ -37,8 +36,8 @@ export class MongoAdapter extends AbstractDBAdapter {
     let {type, ...primaryFieldQuery} = identity;
 
     let model = await this.getCollection({type}).findOne({
-      ...primaryFieldQuery,
-      ...source,
+      ...flattenObjectToQuery(primaryFieldQuery),
+      ...(source ? flattenObjectToQuery(source) : undefined),
     });
 
     return model || undefined;
@@ -235,9 +234,11 @@ export class MongoAdapter extends AbstractDBAdapter {
     update: UpdateQuery<any>,
     options: FindOneAndUpdateOption = {},
   ): Promise<TModel> {
+    let identityQuery = flattenObjectToQuery<ModelIdentity<TModel>>(identity);
+
     let {value: newModel, lastErrorObject} = await this.getCollection<TModel>(
       identity,
-    ).findOneAndUpdate(identity as FilterQuery<TModel>, update, {
+    ).findOneAndUpdate(identityQuery, update, {
       returnOriginal: false,
       ...options,
     });

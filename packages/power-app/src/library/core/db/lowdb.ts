@@ -185,6 +185,10 @@ export class LowdbAdapter extends AbstractDBAdapter {
     data: any,
   ): Promise<TModel> {
     return this.findOneAndUpdate(identity, path, value => {
+      if (value === undefined) {
+        return [data];
+      }
+
       if (!_.isArray(value)) {
         return value;
       }
@@ -214,6 +218,10 @@ export class LowdbAdapter extends AbstractDBAdapter {
     ...list: TValue[]
   ): Promise<TModel> {
     return this.findOneAndUpdate(identity, path, value => {
+      if (value === undefined) {
+        return list;
+      }
+
       if (!_.isArray(value)) {
         return value;
       }
