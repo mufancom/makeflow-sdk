@@ -57,7 +57,7 @@ export default class extends Command {
       throw new ExpectedError('Please login with `mf login` first');
     }
 
-    return api.call('/power-app/publish', {
+    return api.post('/power-app/publish', {
       definition,
       token,
     });
