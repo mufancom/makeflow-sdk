@@ -2136,18 +2136,10 @@
   dependencies:
     tslang "^0.1.21"
 
-"@makeflow/types@0.1.15", "@makeflow/types@^0.1.15":
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.15.tgz#67e5c3cdc8dfed2834bfa6579555e4310f766a64"
-  integrity sha512-e5qUdqzDFvdfuareivtsYuYzKzXiCqXsYP8/uCdIa8+NWDp6JEd06CS8kEE8qAgTRnHuY/Ghos5kq7/soBLk0A==
-  dependencies:
-    "@types/draft-js" "^0.10.32"
-    tslang "^0.1.22"
-
-"@makeflow/types@^0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.9.tgz#3cc3a932a1660a75f5f04b83b55808492046cd17"
-  integrity sha512-3kSljFdHstpNvZP4m/R18fcKkxkvFlLYbwUqUy9MY/aMA7glwykb8y9Wkv6obPgPnd7We7wiWm5tQRGzcgOOdg==
+"@makeflow/types@^0.1.17":
+  version "0.1.17"
+  resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.17.tgz#e77f6d9bfee433b7b3ec96ecddc152ce69e3dc4d"
+  integrity sha512-BOw5fE79LJ7sl1GjC7r0mpihG3HA2tN4GjDO3KI0OjsVWSoJumuQIRpa5bEEmg2yd6RjMhdkA+MdCm5yCOYkLA==
   dependencies:
     "@types/draft-js" "^0.10.32"
     tslang "^0.1.22"
