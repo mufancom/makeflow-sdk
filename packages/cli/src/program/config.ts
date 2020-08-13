@@ -10,7 +10,7 @@ export interface SDKConfig {
 }
 
 const DEFAULT_CONFIG: SDKConfig = {
-  api: 'https://makeflow.com/api/v1',
+  api: 'https://www.makeflow.com/api/v1',
 };
 
 export const config: SDKConfig = {...DEFAULT_CONFIG};

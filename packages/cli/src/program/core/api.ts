@@ -1,5 +1,7 @@
 import {ExpectedError} from 'clime';
-import fetch from 'node-fetch';
+import fetch, {BodyInit} from 'node-fetch';
+
+const JSONContentType = 'application/json';
 
 interface APISuccessResult {
   data: any;
@@ -36,18 +38,32 @@ export class API {
     return this.apiBaseURL + path;
   }
 
-  async call<T>(
+  async post<T>(
     path: string,
     data: unknown,
     ignoreAccessToken = false,
   ): Promise<T> {
+    return this.call('POST', path, JSON.stringify(data), ignoreAccessToken);
+  }
+
+  async upload<T>(path: string, data: Buffer, type: string): Promise<T> {
+    return this.call('POST', path, data, false, type);
+  }
+
+  async call<T>(
+    method: string,
+    path: string,
+    body: BodyInit,
+    ignoreAccessToken = false,
+    type = JSONContentType,
+  ): Promise<T> {
     let url = this.getURL(path);
 
     let response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(data),
+      method,
+      body,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': type,
         ...(ignoreAccessToken
           ? undefined
           : {
