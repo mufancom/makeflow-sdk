@@ -15,6 +15,7 @@ import {
   ContextTypeToBasicMapping,
   ContextTypeToModel,
   CustomDeclareDict,
+  DataSourceModel,
   ExpressAdapter,
   HapiAdapter,
   IDBAdapter,
@@ -39,6 +40,7 @@ import {
   StorageObject,
   UserModel,
   checkVersionsQualified,
+  dataSourceHandler,
   getActionStorage,
   handlerCatcher,
   installationHandler,
@@ -64,6 +66,9 @@ export interface GetStorageObjectContextsOptions {
       username?: string;
     };
     path?: string;
+  };
+  'data-source'?: {
+    search?: string;
   };
 }
 
@@ -414,6 +419,26 @@ export class PowerApp {
         contexts = [context];
         break;
       }
+      case 'data-source': {
+        if (
+          !assertStorageObjectType<StorageObject<DataSourceModel, TStorage>>(
+            'data-source',
+            storageObject,
+          )
+        ) {
+          return [];
+        }
+
+        let context: Context<'data-source'> = {
+          ...initialBasicContext,
+          type: 'data-source',
+          id: storageObject.getField('id')!,
+          search: options?.['data-source']?.search,
+        };
+
+        contexts = [context];
+        break;
+      }
     }
 
     return contexts as Context<TContextType>[];
@@ -490,7 +515,8 @@ export class PowerApp {
         'power-custom-checkable-item',
         handlerCatcher(this, powerCustomCheckableItemHandler),
       )
-      .on('page', handlerCatcher(this, pageHandler));
+      .on('page', handlerCatcher(this, pageHandler))
+      .on('data-source', handlerCatcher(this, dataSourceHandler));
 
     return serveAdapter;
   }

@@ -1,3 +1,4 @@
+import {DataSourceEvent} from './data-source';
 import {InstallationEvent} from './installation';
 import {PageEvent} from './page';
 import {PowerCustomCheckableItemEvent} from './power-custom-checkable-item';
@@ -11,6 +12,7 @@ export * from './power-node';
 export * from './power-glance';
 export * from './power-custom-checkable-item';
 export * from './page';
+export * from './data-source';
 
 export type Events =
   | InstallationEvent
@@ -18,7 +20,8 @@ export type Events =
   | PowerNodeEvent
   | PowerGlanceEvent
   | PowerCustomCheckableItemEvent
-  | PageEvent;
+  | PageEvent
+  | DataSourceEvent;
 
 export type EventType = Events['type'];
 

@@ -30,7 +30,7 @@ export function buildSecureUpdateData(
   identity: ModelIdentity<Model>,
   model: Dict<any>,
 ): Dict<any> {
-  let {allowedFields} = typeToModelDefinitionDict[identity.type];
+  let {allowedFields = []} = typeToModelDefinitionDict[identity.type];
   let allowedFieldSet = new Set<string>(allowedFields);
 
   let data = _.clone(model);

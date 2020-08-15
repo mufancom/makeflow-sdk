@@ -2,6 +2,7 @@ import {Plugin, ResponseToolkit, server} from '@hapi/hapi';
 import _ from 'lodash';
 
 import {
+  DataSourceEvent,
   Events,
   InstallationEvent,
   PageEvent,
@@ -231,6 +232,34 @@ export class HapiAdapter extends AbstractServeAdapter {
                 payload,
               } as PageEvent['eventObject'],
               getResponse<PageEvent>(h),
+            );
+
+            return h.response(await h.bodyPromise);
+          },
+          options: {
+            auth: {
+              mode: 'required',
+              payload: 'required',
+              strategy: 'source',
+            },
+          },
+        });
+
+        server.route({
+          method: 'POST',
+          path: '/data-source/{name}/{type}',
+          handler: async ({params, payload}, h) => {
+            if (!isPageEventParams(params)) {
+              return;
+            }
+
+            adapter.emit<DataSourceEvent>(
+              'data-source',
+              {
+                params,
+                payload,
+              } as DataSourceEvent['eventObject'],
+              getResponse<DataSourceEvent>(h),
             );
 
             return h.response(await h.bodyPromise);
