@@ -22,7 +22,8 @@ export type Model =
   | PowerGlanceModel
   | PowerCustomCheckableItemModel
   | PageModel
-  | UserModel;
+  | UserModel
+  | DataSourceModel;
 
 export type Definition =
   | InstallationDefinition
@@ -31,7 +32,8 @@ export type Definition =
   | PowerGlanceDefinition
   | PowerCustomCheckableItemDefinition
   | PageDefinition
-  | UserDefinition;
+  | UserDefinition
+  | DataSourceDefinition;
 
 type __Definition<
   TModel,
@@ -48,9 +50,9 @@ type __Definition<
       /**
        * 允许更新的字段
        */
-      allowedFields: Exclude<
-        Exclude<keyof TModel, keyof __Model<string>>,
-        TPrimaryField
+      allowedFields?: Exclude<
+        keyof TModel,
+        keyof __Model<string> | TPrimaryField
       >[];
     }
   : never;
@@ -137,6 +139,14 @@ export interface UserModel extends __Model<'user'> {
 
 export type UserDefinition = __Definition<UserModel, 'id'>;
 
+// data-source
+
+export interface DataSourceModel extends __Model<'data-source'> {
+  id: string;
+}
+
+export type DataSourceDefinition = __Definition<DataSourceModel, 'id'>;
+
 type ModelTypeToDefinition<TType extends Model['type']> = Extract<
   Definition,
   {type: TType}
@@ -153,12 +163,10 @@ export const typeToModelDefinitionDict: {
   'power-item': {
     type: 'power-item',
     primaryField: 'operationToken',
-    allowedFields: [],
   },
   'power-node': {
     type: 'power-node',
     primaryField: 'operationToken',
-    allowedFields: [],
   },
   'power-glance': {
     type: 'power-glance',
@@ -168,17 +176,19 @@ export const typeToModelDefinitionDict: {
   'power-custom-checkable-item': {
     type: 'power-custom-checkable-item',
     primaryField: 'operationToken',
-    allowedFields: [],
   },
   page: {
     type: 'page',
     primaryField: 'id',
-    allowedFields: [],
   },
   user: {
     type: 'user',
     primaryField: 'id',
     allowedFields: ['username'],
+  },
+  'data-source': {
+    type: 'data-source',
+    primaryField: 'id',
   },
 };
 

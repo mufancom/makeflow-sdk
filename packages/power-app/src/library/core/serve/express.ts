@@ -2,6 +2,7 @@ import express, {Express, Response, Router} from 'express';
 import _ from 'lodash';
 
 import {
+  DataSourceEvent,
   Events,
   InstallationEvent,
   PageEvent,
@@ -145,7 +146,24 @@ export class ExpressAdapter extends AbstractServeAdapter {
           },
           getResponse<PageEvent>(response),
         );
-      });
+      })
+      .post(
+        '/data-source/:name/:type',
+        ({body, params}, response: Response) => {
+          if (!isPageEventParams(params)) {
+            return;
+          }
+
+          this.emit<DataSourceEvent>(
+            'data-source',
+            {
+              payload: body,
+              params,
+            },
+            getResponse<DataSourceEvent>(response),
+          );
+        },
+      );
 
     this.app.use(express.json()).use(path, router);
   }
