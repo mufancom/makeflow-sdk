@@ -15,7 +15,14 @@ export async function powerCustomCheckableItemHandler(
   {
     params,
     payload: {
-      source: {token, url, installation, organization, team, version},
+      source: {
+        token,
+        url,
+        installation: originalInstallation,
+        organization: originalOrganization,
+        team: originalTeam,
+        version,
+      },
       token: operationToken,
       inputs = {},
       context: {url: requestUrl},
@@ -24,6 +31,20 @@ export async function powerCustomCheckableItemHandler(
   response: PowerCustomCheckableItemEvent['response'],
 ): Promise<void> {
   let db = app.dbAdapter;
+
+  // To fit the old version of Makeflow
+  let organization =
+    typeof originalOrganization === 'string'
+      ? {id: originalOrganization}
+      : originalOrganization;
+  let team =
+    typeof originalTeam === 'string'
+      ? {id: originalTeam, abstract: false}
+      : originalTeam;
+  let installation =
+    typeof originalInstallation === 'string'
+      ? {id: originalInstallation}
+      : originalInstallation;
 
   let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject<
     PowerCustomCheckableItemModel
