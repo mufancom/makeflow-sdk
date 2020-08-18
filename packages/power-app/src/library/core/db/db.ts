@@ -9,11 +9,6 @@ export interface IDBAdapter extends DBAdapter {}
 export type DefaultQueryType<TModel extends Model> = Partial<TModel> &
   Required<{type: TModel['type']}>;
 
-export interface StorageDefinitionInfo<TModel extends Model> {
-  primaryField: keyof TModel;
-  allowedFields: (keyof TModel)[];
-}
-
 abstract class DBAdapter {
   private readonly ready = this.initialize();
 

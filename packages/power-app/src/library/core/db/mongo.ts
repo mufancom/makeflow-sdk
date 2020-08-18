@@ -1,4 +1,3 @@
-import {API as APITypes} from '@makeflow/types';
 import _ from 'lodash';
 import {
   Collection,
@@ -29,15 +28,11 @@ export class MongoAdapter extends AbstractDBAdapter {
 
   // query
 
-  async getModel(
-    identity: ModelIdentity<Model>,
-    source?: APITypes.PowerApp.Source,
-  ): Promise<Model | undefined> {
-    let {type, ...primaryFieldQuery} = identity;
+  async getModel(identity: ModelIdentity<Model>): Promise<Model | undefined> {
+    let {type, id} = identity;
 
     let model = await this.getCollection({type}).findOne({
-      ...flattenObjectToQuery(primaryFieldQuery),
-      ...(source ? flattenObjectToQuery(source) : undefined),
+      id,
     });
 
     return model || undefined;
@@ -230,10 +225,12 @@ export class MongoAdapter extends AbstractDBAdapter {
   }
 
   private async findOneAndUpdate<TModel extends Model>(
-    identity: ModelIdentity<TModel>,
+    {id, type}: ModelIdentity<TModel>,
     update: UpdateQuery<any>,
     options: FindOneAndUpdateOption = {},
   ): Promise<TModel> {
+    let identity = {id, type};
+
     let identityQuery = flattenObjectToQuery<ModelIdentity<TModel>>(identity);
 
     let {value: newModel, lastErrorObject} = await this.getCollection<TModel>(

@@ -46,6 +46,7 @@ export async function powerNodeHandler(
     PowerNodeModel
   >({
     type: 'power-node',
+    id: operationToken,
     token,
     url,
     installation,

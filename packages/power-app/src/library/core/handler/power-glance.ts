@@ -47,8 +47,7 @@ export async function powerGlanceHandler(
 
   let storage = await db.getStorageObject<PowerGlanceModel>({
     type: 'power-glance',
-    operationToken,
-    installation,
+    id: operationToken,
   });
 
   let result = getChangeAndMigrations(
@@ -99,6 +98,7 @@ export async function powerGlanceHandler(
   } else {
     storage = await db.createStorageObject<PowerGlanceModel>({
       type: 'power-glance',
+      id: operationToken,
       token,
       url,
       installation,

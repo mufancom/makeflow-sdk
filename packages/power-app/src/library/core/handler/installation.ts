@@ -41,6 +41,8 @@ export async function installationHandler(
       ? {id: originalInstallation}
       : originalInstallation;
 
+  let installationId = installation.id;
+
   let installationStorage: StorageObject<InstallationModel, any> | undefined;
 
   switch (event.type) {
@@ -70,6 +72,7 @@ export async function installationHandler(
         InstallationModel
       >({
         type: 'installation',
+        id: installationId,
         token,
         url,
         installation,
@@ -96,7 +99,7 @@ export async function installationHandler(
         version,
         {
           type: 'installation',
-          installation,
+          id: installationId,
         },
         {
           disabled: true,

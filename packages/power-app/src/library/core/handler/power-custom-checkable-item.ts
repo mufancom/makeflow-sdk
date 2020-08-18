@@ -50,6 +50,7 @@ export async function powerCustomCheckableItemHandler(
     PowerCustomCheckableItemModel
   >({
     type: 'power-custom-checkable-item',
+    id: operationToken,
     token,
     url,
     installation,

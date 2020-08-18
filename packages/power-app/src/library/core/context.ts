@@ -8,7 +8,7 @@ import {
   DataSourceModel,
   InstallationModel,
   Model,
-  ModelScopedIdentity,
+  ModelIdentity,
   PageModel,
   PowerCustomCheckableItemModel,
   PowerGlanceModel,
@@ -23,7 +23,7 @@ export type BasicContext<TModel extends Model, TStorage, TConfigs> = {
   source: APITypes.PowerApp.Source;
   storage: ActionStorage<TModel, TStorage>;
   configs: TConfigs;
-} & ModelScopedIdentity<TModel>;
+} & ModelIdentity<TModel>;
 
 export type Context<
   TType extends ContextType,

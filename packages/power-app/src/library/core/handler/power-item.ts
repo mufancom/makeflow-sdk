@@ -46,6 +46,7 @@ export async function powerItemHandler(
     PowerItemModel
   >({
     type: 'power-item',
+    id: operationToken,
     token,
     url,
     installation,
