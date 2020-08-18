@@ -212,6 +212,8 @@ export class MongoAdapter extends AbstractDBAdapter {
     });
 
     this.db = client.db(name);
+
+    await this.migrationRunner(this.db);
   }
 
   // helper
