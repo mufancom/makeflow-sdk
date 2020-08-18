@@ -181,6 +181,8 @@ export class PowerApp {
 
     let api = new API(storageObject.source);
 
+    let appInstallationId = storageObject.getField('installation')?.id!;
+
     let initialBasicContext: Omit<
       BasicContext<any, any, any>,
       keyof ModelIdentity<Model>
@@ -190,8 +192,6 @@ export class PowerApp {
       source: storageObject.source,
       configs: {},
     };
-
-    let appInstallationId = storageObject.getField('id')! as AppInstallationId;
 
     // #region installation
 
