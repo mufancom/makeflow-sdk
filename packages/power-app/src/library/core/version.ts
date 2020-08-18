@@ -14,6 +14,7 @@ export interface CustomDeclareDict {
   powerGlances: {[key in string]: GeneralDeclare};
   powerCustomCheckableItems: {[key in string]: GeneralDeclareWithInputs};
   pages: {[key in string]: GeneralDeclareWithInputs};
+  dataSources: {[key in string]: GeneralDeclareWithInputs};
 }
 
 export interface GeneralDeclare {
@@ -117,6 +118,18 @@ export namespace PowerAppVersion {
         : {}) &
         {
           [key in string]: Page.Definition<GeneralDeclareWithInputs>;
+        };
+
+      dataSources?: (TCustomDeclareDict['dataSources'] extends CustomDeclareDict['dataSources']
+        ? {
+            [TKey in keyof TCustomDeclareDict['dataSources']]: DataSource.Definition<
+              TCustomDeclareDict['dataSources'][TKey] &
+                Pick<TInstallationDeclare, 'configs'>
+            >;
+          }
+        : {}) &
+        {
+          [key in string]: DataSource.Definition<GeneralDeclareWithInputs>;
         };
     };
   }
@@ -235,6 +248,18 @@ export namespace PowerAppVersion {
       TDeclare,
       APITypes.PowerAppPage.HookReturn
     >;
+
+    export interface Definition<TDeclare> {
+      request?: Change<TDeclare>;
+      migrations?: Migrations<ExtractDeclareStorage<TDeclare>>;
+    }
+  }
+
+  // data-source
+
+  export namespace DataSource {
+    // TODO(boen): data-source 返回值类型
+    export type Change<TDeclare> = GeneralChange<'data-source', TDeclare, any>;
 
     export interface Definition<TDeclare> {
       request?: Change<TDeclare>;

@@ -5,6 +5,7 @@ import Router, {RouterContext} from 'koa-router';
 import _ from 'lodash';
 
 import {
+  DataSourceEvent,
   Events,
   InstallationEvent,
   PageEvent,
@@ -146,6 +147,21 @@ export class KoaAdapter extends AbstractServeAdapter {
             params,
           },
           getResponse<PageEvent>(context),
+        );
+      })
+      .post('/data-source/:name/:type', context => {
+        let {
+          params,
+          request: {body},
+        } = context;
+
+        this.emit<DataSourceEvent>(
+          'data-source',
+          {
+            payload: body,
+            params,
+          },
+          getResponse<DataSourceEvent>(context),
         );
       });
 
