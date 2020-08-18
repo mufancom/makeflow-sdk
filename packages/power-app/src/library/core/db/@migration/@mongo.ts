@@ -80,13 +80,25 @@ async function mongo2(db: Db): Promise<void> {
       let item = {...doc};
 
       if ('operationToken' in item) {
+        if (item.id) {
+          return;
+        }
+
         item.id = item.operationToken;
       } else if (item.type === 'user') {
         let userId = item.id;
 
+        if (userId.includes(':')) {
+          return;
+        }
+
         item.id = `${item.installation.id}:${userId}`;
         item.userId = userId;
       } else if (item.type === 'installation') {
+        if (item.id) {
+          return;
+        }
+
         item.id = item.installation.id;
       }
 
