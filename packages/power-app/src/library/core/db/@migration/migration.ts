@@ -7,33 +7,37 @@ import Mongo from './@mongo';
 export async function migrationRunner(db: LowdbSync<any> | Db): Promise<void> {
   let latestCount = 0;
 
-  // because class Db extends EventEmitter
-  if ('on' in db) {
-    for (let [name, fn] of Object.entries(Mongo)) {
-      let count = await getMongoMigrationNumber(db);
-      latestCount = +name.slice(-1);
+  try {
+    // because class Db extends EventEmitter
+    if ('on' in db) {
+      for (let [name, fn] of Object.entries(Mongo)) {
+        let count = await getMongoMigrationNumber(db);
+        latestCount = +name.slice(-1);
 
-      if (count >= latestCount) {
-        continue;
+        if (count >= latestCount) {
+          continue;
+        }
+
+        await fn(db);
       }
 
-      await fn(db);
-    }
+      await setMongoMigrationNumber(db, latestCount);
+    } else {
+      for (let [name, fn] of Object.entries(LowDB)) {
+        let count = await getLowDBMigrationNumber(db);
+        latestCount = +name.slice(-1);
 
-    await setMongoMigrationNumber(db, latestCount);
-  } else {
-    for (let [name, fn] of Object.entries(LowDB)) {
-      let count = await getLowDBMigrationNumber(db);
-      latestCount = +name.slice(-1);
+        if (count >= latestCount) {
+          continue;
+        }
 
-      if (count >= latestCount) {
-        continue;
+        await fn(db);
       }
 
-      await fn(db);
+      await setLowDBMigrationNumber(db, latestCount);
     }
-
-    await setLowDBMigrationNumber(db, latestCount);
+  } catch (error) {
+    console.info('migrationRunner error :', error);
   }
 }
 
@@ -47,7 +51,9 @@ async function setMongoMigrationNumber(db: Db, count: number): Promise<void> {
   await db.collection<{count: number}>('migration').updateOne(
     {},
     {
-      count,
+      $set: {
+        count,
+      },
     },
     {upsert: true},
   );
