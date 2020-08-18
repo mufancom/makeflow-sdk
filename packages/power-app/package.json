@@ -18,7 +18,7 @@
     "!*.tsbuildinfo"
   ],
   "scripts": {
-    "prepublishOnly": "rimraf bld && tsc --build ./src/library"
+    "prepublishOnly": "yarn rimraf bld && yarn tsc --build ./src/library"
   },
   "dependencies": {
     "@hapi/hapi": "^19.1.1",
