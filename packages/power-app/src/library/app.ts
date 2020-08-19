@@ -23,7 +23,6 @@ import {
   LowdbOptions,
   Model,
   ModelIdentity,
-  ModelScopedIdentity,
   ModelWithOperationToken,
   MongoAdapter,
   MongoOptions,
@@ -36,6 +35,7 @@ import {
   StorageObject,
   UserModel,
   getActionStorage,
+  getInstallationResourceId,
   handlerCatcher,
   installationHandler,
   pageHandler,
@@ -313,9 +313,11 @@ export class PowerApp {
 
     let api = new API(storageObject.source);
 
+    let appInstallationId = storageObject.getField('installation')?.id!;
+
     let initialBasicContext: Omit<
       BasicContext<any, any, any>,
-      keyof ModelScopedIdentity<Model>
+      keyof ModelIdentity<Model>
     > = {
       api,
       storage: getActionStorage(db, storageObject),
@@ -340,7 +342,7 @@ export class PowerApp {
       let context: Context<'installation'> = {
         ...initialBasicContext,
         type: 'installation',
-        installation: storageObject.getField('installation')!,
+        id: appInstallationId,
         users: storageObject.getField('users') ?? [],
         configs: storageObject.getField('configs') ?? {},
         resources: storageObject.getField('resources') ?? {
@@ -359,7 +361,7 @@ export class PowerApp {
       InstallationModel
     >({
       type: 'installation',
-      installation: storageObject.getField('installation')!,
+      id: appInstallationId,
     });
 
     if (!installationStorageObject) {
@@ -390,7 +392,7 @@ export class PowerApp {
         let context: Context<'power-item'> = {
           ...initialBasicContext,
           type: 'power-item',
-          operationToken: storageObject.getField('operationToken')!,
+          id: storageObject.getField('operationToken')!,
         };
 
         contexts = [context];
@@ -409,7 +411,7 @@ export class PowerApp {
         let context: Context<'power-node'> = {
           ...initialBasicContext,
           type: 'power-node',
-          operationToken: storageObject.getField('operationToken')!,
+          id: storageObject.getField('operationToken')!,
         };
 
         contexts = [context];
@@ -428,7 +430,7 @@ export class PowerApp {
         let context: Context<'power-custom-checkable-item'> = {
           ...initialBasicContext,
           type: 'power-custom-checkable-item',
-          operationToken: storageObject.getField('operationToken')!,
+          id: storageObject.getField('operationToken')!,
         };
 
         contexts = [context];
@@ -447,7 +449,7 @@ export class PowerApp {
         let context: Context<'power-glance'> = {
           ...initialBasicContext,
           type: 'power-glance',
-          operationToken: storageObject.getField('operationToken')!,
+          id: storageObject.getField('operationToken')!,
           powerGlanceConfigs: storageObject.getField('configs')!,
         };
 
@@ -467,16 +469,21 @@ export class PowerApp {
         let pageOptions = options?.page;
 
         if (pageOptions?.user) {
+          let userModelId = getInstallationResourceId(
+            appInstallationId,
+            pageOptions.user.id,
+          );
+
           let userStorage = await db.getStorageObject<UserModel>({
             type: 'user',
-            id: pageOptions.user.id,
-            installation: storageObject.identity.installation,
+            id: userModelId,
           });
 
           if (!userStorage) {
             let {value} = await db.createOrUpgradeStorageObject<UserModel>({
               type: 'user',
-              id: pageOptions.user.id,
+              id: userModelId,
+              userId: pageOptions.user.id,
               username: pageOptions.user.username,
               storage: {},
               ...storageObject.source,
@@ -491,7 +498,7 @@ export class PowerApp {
             id: storageObject.getField('id')!,
             userStorage: getActionStorage(db, userStorage),
             user: {
-              id: userStorage.getField('id')!,
+              id: userStorage.getField('userId')!,
               username: userStorage.getField('username') ?? '',
             },
             path: pageOptions.path,
@@ -522,7 +529,7 @@ export class PowerApp {
               user,
             ),
             user: {
-              id: user.identity.id,
+              id: user.getField('userId')!,
               username: user.getField('username') ?? '',
             },
             path: pageOptions?.path,
@@ -579,7 +586,7 @@ export class PowerApp {
   async getOrCreateUserContext<TStorage>(
     source: APITypes.PowerApp.Source,
     {
-      id,
+      id: userId,
       username,
       installation,
     }: {
@@ -588,9 +595,12 @@ export class PowerApp {
       username?: string;
     },
   ): Promise<Context<'user', TStorage>> {
-    let identity: ModelIdentity<UserModel> = {type: 'user', id, installation};
+    let userModelId = getInstallationResourceId(installation, userId);
 
-    let contexts = await this.getContexts<'user', TStorage>('user', identity);
+    let contexts = await this.getContexts<'user', TStorage>('user', {
+      type: 'user',
+      id: userModelId,
+    });
 
     if (contexts.length) {
       return contexts[0];
@@ -600,7 +610,8 @@ export class PowerApp {
       {
         ...source,
         type: 'user',
-        id,
+        id: userModelId,
+        userId,
         username,
         storage: {},
       },

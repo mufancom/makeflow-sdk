@@ -1,6 +1,7 @@
 import {API} from '@makeflow/types';
 
 import type {PowerApp} from '../../app';
+import {TeamId} from '../../types/namespace';
 import {InstallationModel} from '../model';
 import {StorageObject} from '../storage';
 import {getChangeAndMigrations} from '../utils';
@@ -48,8 +49,31 @@ export const installationHandler: InstallationHandler = async function (
   {type, params: {type: hookType}, body},
 ) {
   let {
-    source: {token, url, installation, version, organization, team},
+    source: {
+      token,
+      url,
+      installation: originalInstallation,
+      version,
+      organization: originalOrganization,
+      team,
+    },
   } = body;
+
+  // To fit the old version of Makeflow
+  let organization =
+    typeof originalOrganization === 'string'
+      ? {id: originalOrganization}
+      : originalOrganization;
+  let team =
+    typeof originalTeam === 'string'
+      ? {id: originalTeam, abstract: false}
+      : originalTeam;
+  let installation =
+    typeof originalInstallation === 'string'
+      ? {id: originalInstallation}
+      : originalInstallation;
+
+  let installationId = installation.id;
 
   let installationStorage: StorageObject<InstallationModel, any> | undefined;
 
@@ -60,10 +84,29 @@ export const installationHandler: InstallationHandler = async function (
         | InstallationActivateHandlerParams['body']
         | InstallationUpdateHandlerParams['body'];
 
+      // To fit the old version of Makeflow
+      if (users.length) {
+        users =
+          typeof users[0].team === 'string'
+            ? users.map(
+                ({team, ...rest}): API.PowerApp.UserInfo => {
+                  return {
+                    ...rest,
+                    team: {
+                      id: (team as unknown) as TeamId,
+                      abstract: false,
+                    },
+                  };
+                },
+              )
+            : users;
+      }
+
       let result = await app.dbAdapter.createOrUpgradeStorageObject<
         InstallationModel
       >({
-        type,
+        type: 'installation',
+        id: installationId,
         token,
         url,
         installation,
@@ -90,7 +133,7 @@ export const installationHandler: InstallationHandler = async function (
         version,
         {
           type: 'installation',
-          installation,
+          id: installationId,
         },
         {
           disabled: true,

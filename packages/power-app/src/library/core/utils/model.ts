@@ -1,28 +1,20 @@
+import {AppInstallationId} from '@makeflow/types-nominal';
 import _ from 'lodash';
 import {Dict} from 'tslang';
 
-import {
-  Model,
-  ModelIdentity,
-  ModelPrimaryFieldKey,
-  typeToModelDefinitionDict,
-} from '../model';
+import {Model, ModelIdentity, typeToModelDefinitionDict} from '../model';
 
 export function getModelIdentity<TModel extends Model>(
   model: TModel,
 ): ModelIdentity<TModel> {
-  let {type} = model;
-
-  let primaryField = typeToModelDefinitionDict[type]
-    .primaryField as ModelPrimaryFieldKey<TModel>;
+  let {type, id} = model;
 
   let identity: ModelIdentity<Model> = {
     type,
-    installation: model.installation,
-    [primaryField]: model[primaryField],
+    id,
   };
 
-  return identity as ModelIdentity<TModel>;
+  return identity;
 }
 
 export function buildSecureUpdateData(
@@ -46,10 +38,17 @@ export function buildSecureUpdateData(
   return data;
 }
 
+export function getInstallationResourceId(
+  installation: AppInstallationId,
+  id: string,
+): string {
+  return `${installation}:${id}`;
+}
+
 export function getStorageLockKey<TModel extends Model>(
   identity: ModelIdentity<TModel>,
 ): string {
-  let {type, ...primaryField} = identity;
+  let {type, id} = identity;
 
-  return `${type}:${Object.values(primaryField)[0]}`;
+  return `${type}:${id}`;
 }

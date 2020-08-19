@@ -1,4 +1,3 @@
-import {API as APITypes} from '@makeflow/types';
 import _ from 'lodash';
 import lowdb, {LowdbSync} from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
@@ -25,15 +24,10 @@ export class LowdbAdapter extends AbstractDBAdapter {
 
   // query
 
-  async getModel(
-    identity: ModelIdentity<Model>,
-    source?: APITypes.PowerApp.Source,
-  ): Promise<Model | undefined> {
-    let {type, ...primaryFieldQuery} = identity;
+  async getModel(identity: ModelIdentity<Model>): Promise<Model | undefined> {
+    let {type, id} = identity;
 
-    let model = await this.getCollection({type})
-      .find({...primaryFieldQuery, ...source})
-      .value();
+    let model = await this.getCollection({type}).find({id}).value();
 
     return model || undefined;
   }
@@ -58,11 +52,13 @@ export class LowdbAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<Model>,
     data: Partial<TModel>,
   ): Promise<TModel> {
+    let {id} = identity;
+
     let model = Object.entries(
       buildSecureUpdateData(version, identity, data),
     ).reduce<any>(
       (model, [key, value]) => model.set(key, value),
-      this.getCollection(identity).find(identity),
+      this.getCollection(identity).find({id}),
     );
 
     model.write();
@@ -71,23 +67,23 @@ export class LowdbAdapter extends AbstractDBAdapter {
   }
 
   async setStorage(
-    identity: ModelIdentity<Model>,
+    {id, type}: ModelIdentity<Model>,
     storage: any,
   ): Promise<void> {
-    let model = await this.getCollection(identity).find(identity);
+    let model = await this.getCollection({type}).find({id});
 
     await model.set('storage', storage).write();
   }
 
   async rename<TModel extends Model>(
-    identity: ModelIdentity<Model>,
+    {type, id}: ModelIdentity<Model>,
     path: string,
     newPath: string,
   ): Promise<TModel> {
     path = `storage.${path}`;
     newPath = `storage.${newPath}`;
 
-    let model = await this.getCollection(identity).find(identity);
+    let model = await this.getCollection({type}).find({id});
 
     if (model.has(path).value()) {
       let value = model.get(path).value();
@@ -185,6 +181,10 @@ export class LowdbAdapter extends AbstractDBAdapter {
     data: any,
   ): Promise<TModel> {
     return this.findOneAndUpdate(identity, path, value => {
+      if (value === undefined) {
+        return [data];
+      }
+
       if (!_.isArray(value)) {
         return value;
       }
@@ -214,6 +214,10 @@ export class LowdbAdapter extends AbstractDBAdapter {
     ...list: TValue[]
   ): Promise<TModel> {
     return this.findOneAndUpdate(identity, path, value => {
+      if (value === undefined) {
+        return list;
+      }
+
       if (!_.isArray(value)) {
         return value;
       }
@@ -241,6 +245,8 @@ export class LowdbAdapter extends AbstractDBAdapter {
         'data-source': [],
       })
       .write();
+
+    await this.migrationRunner(this.db);
   }
 
   // helper
@@ -258,7 +264,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
     path: string,
     updater: (value: any) => any,
   ): Promise<TModel> {
-    let model = this.getCollection(identity).find(identity);
+    let model = this.getCollection(identity).find({id: identity.id});
 
     await model.update(`storage.${path}`, updater).write();
 
