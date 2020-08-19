@@ -3,7 +3,11 @@ import _ from 'lodash';
 import {PowerApp} from '../../app';
 import {DataSourceModel} from '../model';
 import {DataSourceEvent, DataSourceEventParams} from '../serve';
-import {getChangeAndMigrations, runMigrations} from '../utils';
+import {
+  getChangeAndMigrations,
+  getInstallationResourceId,
+  runMigrations,
+} from '../utils';
 import {GeneralDeclareWithInputs, PowerAppVersion} from '../version';
 
 export async function dataSourceHandler(
@@ -24,7 +28,7 @@ export async function dataSourceHandler(
     DataSourceModel
   >({
     type: 'data-source',
-    id: `${installation}:${params.name}`,
+    id: getInstallationResourceId(installation.id, params.name),
     token,
     url,
     installation,

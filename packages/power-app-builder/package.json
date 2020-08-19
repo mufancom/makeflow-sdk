@@ -8,7 +8,7 @@
     "build": "parcel build --public-url /app-builder/ --out-dir bld/program src/program/index.html"
   },
   "dependencies": {
-    "@makeflow/types": "^0.1.9",
+    "@makeflow/types": "^0.1.17",
     "@makeflow/types-nominal": "^0.1.1",
     "antd": "^3.26.8",
     "lodash": "^4.17.15",

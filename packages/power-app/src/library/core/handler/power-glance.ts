@@ -14,7 +14,14 @@ export async function powerGlanceHandler(
     params,
     payload: {
       token: operationToken,
-      source: {token, url, installation, organization, team, version},
+      source: {
+        token,
+        url,
+        installation: originalInstallation,
+        organization: originalOrganization,
+        team: originalTeam,
+        version,
+      },
       clock = 0,
       resources = [],
       powerGlanceConfigs = {},
@@ -24,10 +31,23 @@ export async function powerGlanceHandler(
 ): Promise<void> {
   let db = app.dbAdapter;
 
+  // To fit the old version of Makeflow
+  let organization =
+    typeof originalOrganization === 'string'
+      ? {id: originalOrganization}
+      : originalOrganization;
+  let team =
+    typeof originalTeam === 'string'
+      ? {id: originalTeam, abstract: false}
+      : originalTeam;
+  let installation =
+    typeof originalInstallation === 'string'
+      ? {id: originalInstallation}
+      : originalInstallation;
+
   let storage = await db.getStorageObject<PowerGlanceModel>({
     type: 'power-glance',
-    operationToken,
-    installation,
+    id: operationToken,
   });
 
   let result = getChangeAndMigrations(
@@ -78,6 +98,7 @@ export async function powerGlanceHandler(
   } else {
     storage = await db.createStorageObject<PowerGlanceModel>({
       type: 'power-glance',
+      id: operationToken,
       token,
       url,
       installation,

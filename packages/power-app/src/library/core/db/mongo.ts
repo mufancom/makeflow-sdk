@@ -1,9 +1,7 @@
-import {API as APITypes} from '@makeflow/types';
 import _ from 'lodash';
 import {
   Collection,
   Db,
-  FilterQuery,
   FindOneAndUpdateOption,
   MongoClient,
   OnlyFieldsOfType,
@@ -30,15 +28,11 @@ export class MongoAdapter extends AbstractDBAdapter {
 
   // query
 
-  async getModel(
-    identity: ModelIdentity<Model>,
-    source?: APITypes.PowerApp.Source,
-  ): Promise<Model | undefined> {
-    let {type, ...primaryFieldQuery} = identity;
+  async getModel(identity: ModelIdentity<Model>): Promise<Model | undefined> {
+    let {type, id} = identity;
 
     let model = await this.getCollection({type}).findOne({
-      ...primaryFieldQuery,
-      ...source,
+      id,
     });
 
     return model || undefined;
@@ -218,6 +212,8 @@ export class MongoAdapter extends AbstractDBAdapter {
     });
 
     this.db = client.db(name);
+
+    await this.migrationRunner(this.db);
   }
 
   // helper
@@ -231,13 +227,17 @@ export class MongoAdapter extends AbstractDBAdapter {
   }
 
   private async findOneAndUpdate<TModel extends Model>(
-    identity: ModelIdentity<TModel>,
+    {id, type}: ModelIdentity<TModel>,
     update: UpdateQuery<any>,
     options: FindOneAndUpdateOption = {},
   ): Promise<TModel> {
+    let identity = {id, type};
+
+    let identityQuery = flattenObjectToQuery<ModelIdentity<TModel>>(identity);
+
     let {value: newModel, lastErrorObject} = await this.getCollection<TModel>(
       identity,
-    ).findOneAndUpdate(identity as FilterQuery<TModel>, update, {
+    ).findOneAndUpdate(identityQuery, update, {
       returnOriginal: false,
       ...options,
     });

@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app",
-  "version": "0.2.0-wip.32",
+  "version": "0.2.0-wip.40",
   "description": "Makeflow PowerApp Node.js Framework.",
   "publishConfig": {
     "access": "public"
@@ -17,9 +17,12 @@
     "bld",
     "!*.tsbuildinfo"
   ],
+  "scripts": {
+    "prepublishOnly": "yarn rimraf bld && yarn tsc --build ./src/library"
+  },
   "dependencies": {
     "@hapi/hapi": "^19.1.1",
-    "@makeflow/types": "0.1.15",
+    "@makeflow/types": "^0.1.17",
     "@makeflow/types-nominal": "^0.1.1",
     "express": "^4.17.1",
     "koa": "^2.13.0",
@@ -46,6 +49,7 @@
     "@types/mongodb": "^3.5.20",
     "@types/node": "^14.0.13",
     "@types/node-fetch": "^2.5.7",
-    "@types/semver": "^7.2.0"
+    "@types/semver": "^7.2.0",
+    "rimraf": "^3.0.2"
   }
 }

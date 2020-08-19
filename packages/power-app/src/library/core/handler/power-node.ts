@@ -13,7 +13,14 @@ export async function powerNodeHandler(
     params,
     payload: {
       token: operationToken,
-      source: {token, url, installation, organization, team, version},
+      source: {
+        token,
+        url,
+        installation: originalInstallation,
+        organization: originalOrganization,
+        team: originalTeam,
+        version,
+      },
       inputs = {},
     },
   }: PowerNodeEvent['eventObject'],
@@ -21,10 +28,25 @@ export async function powerNodeHandler(
 ): Promise<void> {
   let db = app.dbAdapter;
 
+  // To fit the old version of Makeflow
+  let organization =
+    typeof originalOrganization === 'string'
+      ? {id: originalOrganization}
+      : originalOrganization;
+  let team =
+    typeof originalTeam === 'string'
+      ? {id: originalTeam, abstract: false}
+      : originalTeam;
+  let installation =
+    typeof originalInstallation === 'string'
+      ? {id: originalInstallation}
+      : originalInstallation;
+
   let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject<
     PowerNodeModel
   >({
     type: 'power-node',
+    id: operationToken,
     token,
     url,
     installation,

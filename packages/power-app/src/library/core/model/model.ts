@@ -1,12 +1,18 @@
 import {API} from '@makeflow/types';
-import {OperationTokenToken, UserId} from '@makeflow/types-nominal';
+import {
+  AppInstallationId,
+  OperationTokenToken,
+  UserId,
+} from '@makeflow/types-nominal';
 import {Dict} from 'tslang';
 
 type __Model<
   TType extends string,
+  TId extends string,
   TStorage extends Dict<any> = Dict<any>
 > = API.PowerApp.Source & {
   type: TType;
+  id: TId;
   storage: TStorage | undefined;
 };
 
@@ -35,31 +41,20 @@ export type Definition =
   | UserDefinition
   | DataSourceDefinition;
 
-type __Definition<
-  TModel,
-  TPrimaryField extends
-    | Exclude<keyof TModel, keyof __Model<string>>
-    | 'installation'
-> = TModel extends __Model<infer Type>
+type __Definition<TModel> = TModel extends __Model<infer Type, string>
   ? {
       type: Type;
       /**
-       * 查询时的主要条件
-       */
-      primaryField: TPrimaryField;
-      /**
        * 允许更新的字段
        */
-      allowedFields?: Exclude<
-        keyof TModel,
-        keyof __Model<string> | TPrimaryField
-      >[];
+      allowedFields?: Exclude<keyof TModel, keyof __Model<string, string>>[];
     }
   : never;
 
 // installation
 
-export interface InstallationModel extends __Model<'installation'> {
+export interface InstallationModel
+  extends __Model<'installation', AppInstallationId> {
   configs: Dict<unknown>;
   resources: API.PowerApp.ResourcesMapping;
   users: API.PowerApp.UserInfo[];
@@ -67,13 +62,10 @@ export interface InstallationModel extends __Model<'installation'> {
   disabled?: boolean;
 }
 
-export type InstallationDefinition = __Definition<
-  InstallationModel,
-  'installation'
->;
+export type InstallationDefinition = __Definition<InstallationModel>;
 
 export interface IPowerAppResourceModel<TType extends string>
-  extends __Model<TType> {
+  extends __Model<TType, OperationTokenToken> {
   operationToken: OperationTokenToken;
 }
 
@@ -81,19 +73,13 @@ export interface IPowerAppResourceModel<TType extends string>
 
 export interface PowerItemModel extends IPowerAppResourceModel<'power-item'> {}
 
-export type PowerItemDefinition = __Definition<
-  PowerItemModel,
-  'operationToken'
->;
+export type PowerItemDefinition = __Definition<PowerItemModel>;
 
 // power-node
 
 export interface PowerNodeModel extends IPowerAppResourceModel<'power-node'> {}
 
-export type PowerNodeDefinition = __Definition<
-  PowerNodeModel,
-  'operationToken'
->;
+export type PowerNodeDefinition = __Definition<PowerNodeModel>;
 
 // power-glance
 
@@ -104,10 +90,7 @@ export interface PowerGlanceModel
   disposed: boolean | undefined;
 }
 
-export type PowerGlanceDefinition = __Definition<
-  PowerGlanceModel,
-  'operationToken'
->;
+export type PowerGlanceDefinition = __Definition<PowerGlanceModel>;
 
 // power-custom-checkable-item
 
@@ -115,37 +98,31 @@ export interface PowerCustomCheckableItemModel
   extends IPowerAppResourceModel<'power-custom-checkable-item'> {}
 
 export type PowerCustomCheckableItemDefinition = __Definition<
-  PowerCustomCheckableItemModel,
-  'operationToken'
+  PowerCustomCheckableItemModel
 >;
 
 // page
 
-export interface PageModel extends __Model<'page'> {
-  id: string;
-}
+export interface PageModel extends __Model<'page', string> {}
 
-export type PageDefinition = __Definition<PageModel, 'id'>;
+export type PageDefinition = __Definition<PageModel>;
 
 // user
 
-/**
- * User 对于同一个 installation 是唯一的
- */
-export interface UserModel extends __Model<'user'> {
-  id: UserId;
+export interface UserModel extends __Model<'user', string> {
+  userId: UserId;
   username: string | undefined;
 }
 
-export type UserDefinition = __Definition<UserModel, 'id'>;
+export type UserDefinition = __Definition<UserModel>;
 
 // data-source
 
-export interface DataSourceModel extends __Model<'data-source'> {
+export interface DataSourceModel extends __Model<'data-source', string> {
   id: string;
 }
 
-export type DataSourceDefinition = __Definition<DataSourceModel, 'id'>;
+export type DataSourceDefinition = __Definition<DataSourceModel>;
 
 type ModelTypeToDefinition<TType extends Model['type']> = Extract<
   Definition,
@@ -157,38 +134,30 @@ export const typeToModelDefinitionDict: {
 } = {
   installation: {
     type: 'installation',
-    primaryField: 'installation',
     allowedFields: ['accessToken', 'configs', 'resources', 'users', 'disabled'],
   },
   'power-item': {
     type: 'power-item',
-    primaryField: 'operationToken',
   },
   'power-node': {
     type: 'power-node',
-    primaryField: 'operationToken',
   },
   'power-glance': {
     type: 'power-glance',
-    primaryField: 'operationToken',
     allowedFields: ['clock', 'disposed', 'configs'],
   },
   'power-custom-checkable-item': {
     type: 'power-custom-checkable-item',
-    primaryField: 'operationToken',
   },
   page: {
     type: 'page',
-    primaryField: 'id',
   },
   user: {
     type: 'user',
-    primaryField: 'id',
     allowedFields: ['username'],
   },
   'data-source': {
     type: 'data-source',
-    primaryField: 'id',
   },
 };
 
@@ -196,23 +165,4 @@ export type ModelToDefinition<TModel extends Model> = ModelTypeToDefinition<
   TModel['type']
 >;
 
-export type ModelPrimaryFieldKey<TModel extends Model> = ModelToDefinition<
-  TModel
-> extends {primaryField: infer TPrimaryField}
-  ? TPrimaryField extends keyof TModel
-    ? TPrimaryField
-    : never
-  : never;
-
-export type ModelIdentity<TModel extends Model> = Pick<
-  TModel,
-  'type' | 'installation' | ModelPrimaryFieldKey<TModel>
->;
-
-export type ModelScopedIdentity<TModel extends Model> = ModelToDefinition<
-  TModel
-> extends {primaryField: infer TPrimaryField}
-  ? TPrimaryField extends keyof TModel
-    ? Pick<TModel, 'type' | TPrimaryField>
-    : never
-  : never;
+export type ModelIdentity<TModel extends Model> = Pick<TModel, 'type' | 'id'>;

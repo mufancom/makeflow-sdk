@@ -1,4 +1,7 @@
+import {API} from '@makeflow/types';
+
 import type {PowerApp} from '../../app';
+import {TeamId} from '../../types/namespace';
 import {InstallationModel} from '../model';
 import {InstallationEvent} from '../serve';
 import {StorageObject} from '../storage';
@@ -12,10 +15,33 @@ export async function installationHandler(
 ): Promise<void> {
   let {
     payload: {
-      source: {token, url, installation, version, organization, team},
+      source: {
+        token,
+        url,
+        installation: originalInstallation,
+        version,
+        organization: originalOrganization,
+        team: originalTeam,
+      },
     },
     type,
   } = event;
+
+  // To fit the old version of Makeflow
+  let organization =
+    typeof originalOrganization === 'string'
+      ? {id: originalOrganization}
+      : originalOrganization;
+  let team =
+    typeof originalTeam === 'string'
+      ? {id: originalTeam, abstract: false}
+      : originalTeam;
+  let installation =
+    typeof originalInstallation === 'string'
+      ? {id: originalInstallation}
+      : originalInstallation;
+
+  let installationId = installation.id;
 
   let installationStorage: StorageObject<InstallationModel, any> | undefined;
 
@@ -24,10 +50,29 @@ export async function installationHandler(
     case 'update': {
       let {configs, resources, users, accessToken} = event.payload;
 
+      // To fit the old version of Makeflow
+      if (users.length) {
+        users =
+          typeof users[0].team === 'string'
+            ? users.map(
+                ({team, ...rest}): API.PowerApp.UserInfo => {
+                  return {
+                    ...rest,
+                    team: {
+                      id: (team as unknown) as TeamId,
+                      abstract: false,
+                    },
+                  };
+                },
+              )
+            : users;
+      }
+
       let result = await app.dbAdapter.createOrUpgradeStorageObject<
         InstallationModel
       >({
         type: 'installation',
+        id: installationId,
         token,
         url,
         installation,
@@ -54,7 +99,7 @@ export async function installationHandler(
         version,
         {
           type: 'installation',
-          installation,
+          id: installationId,
         },
         {
           disabled: true,
