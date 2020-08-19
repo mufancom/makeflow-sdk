@@ -87,8 +87,8 @@ export class MongoAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     newPath: string,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
       $rename: {
         [`storage.${path}`]: `storage.${newPath}`,
       },
@@ -99,8 +99,8 @@ export class MongoAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
       $inc: {
         [`storage.${path}`]: size,
       } as OnlyFieldsOfType<TModel>,
@@ -111,8 +111,8 @@ export class MongoAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
       $mul: {
         [`storage.${path}`]: size,
       } as OnlyFieldsOfType<TModel>,
@@ -123,8 +123,8 @@ export class MongoAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     value: any,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
       $set: {
         [`storage.${path}`]: value,
       },
@@ -134,8 +134,8 @@ export class MongoAdapter extends AbstractDBAdapter {
   async unset<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
       $unset: {
         [`storage.${path}`]: '',
       },
@@ -146,8 +146,8 @@ export class MongoAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
       $push: {
         [`storage.${path}`]: {
           $each: [],
@@ -160,8 +160,8 @@ export class MongoAdapter extends AbstractDBAdapter {
   async shift<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
       $pop: {
         [`storage.${path}`]: -1,
       } as OnlyFieldsOfType<TModel>,
@@ -172,8 +172,8 @@ export class MongoAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     value: any,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
       $push: {
         [`storage.${path}`]: {
           $each: [value],
@@ -186,8 +186,8 @@ export class MongoAdapter extends AbstractDBAdapter {
   async pop<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
       $pop: {
         [`storage.${path}`]: 1,
       } as OnlyFieldsOfType<TModel>,
@@ -198,8 +198,8 @@ export class MongoAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     ...value: TValue[]
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
       $push: {
         [`storage.${path}`]: {
           $each: value,

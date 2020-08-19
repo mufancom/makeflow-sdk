@@ -61,6 +61,9 @@ export interface GetStorageObjectContextsOptions {
     };
     path?: string;
   };
+  'data-source'?: {
+    search?: string;
+  };
 }
 
 export type PowerAppSource = Partial<
@@ -344,6 +347,7 @@ export class PowerApp {
           tags: {},
           procedures: {},
         },
+        disabled: !!storageObject.getField('disabled'),
       };
 
       return [context] as Context<TContextType>[];
@@ -542,6 +546,26 @@ export class PowerApp {
           type: 'user',
           id: storageObject.getField('id')!,
           username: storageObject.getField('username'),
+        };
+
+        contexts = [context];
+        break;
+      }
+      case 'data-source': {
+        if (
+          !assertStorageObjectType<StorageObject<DataSourceModel, TStorage>>(
+            'data-source',
+            storageObject,
+          )
+        ) {
+          return [];
+        }
+
+        let context: Context<'data-source'> = {
+          ...initialBasicContext,
+          type: 'data-source',
+          id: storageObject.getField('id')!,
+          search: options?.['data-source']?.search,
         };
 
         contexts = [context];

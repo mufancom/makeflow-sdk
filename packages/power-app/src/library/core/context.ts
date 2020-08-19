@@ -5,6 +5,7 @@ import {API} from '../api';
 import {UserId} from '../types/namespace';
 
 import {
+  DataSourceModel,
   InstallationModel,
   Model,
   ModelScopedIdentity,
@@ -49,6 +50,7 @@ export type ContextTypeToBasicMapping = {
     {
       users: APITypes.PowerApp.UserInfo[];
       resources: APITypes.PowerApp.ResourcesMapping;
+      disabled: boolean;
     },
   ];
   'power-item': [PowerItemModel, {}];
@@ -78,6 +80,12 @@ export type ContextTypeToBasicMapping = {
     UserModel,
     {
       username: string | undefined;
+    },
+  ];
+  'data-source': [
+    DataSourceModel,
+    {
+      search: string | undefined;
     },
   ];
 };

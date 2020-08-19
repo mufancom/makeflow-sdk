@@ -79,31 +79,31 @@ export class LowdbAdapter extends AbstractDBAdapter {
     await model.set('storage', storage).write();
   }
 
-  async rename(
+  async rename<TModel extends Model>(
     identity: ModelIdentity<Model>,
     path: string,
     newPath: string,
-  ): Promise<void> {
+  ): Promise<TModel> {
     path = `storage.${path}`;
     newPath = `storage.${newPath}`;
 
     let model = await this.getCollection(identity).find(identity);
 
-    if (!model.has(path).value()) {
-      return;
+    if (model.has(path).value()) {
+      let value = model.get(path).value();
+
+      await model.set(newPath, value).unset(path).write();
     }
 
-    let value = model.get(path).value();
-
-    await model.set(newPath, value).unset(path).write();
+    return model.value() as TModel;
   }
 
   async inc<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, path, value => {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, path, value => {
       if (!_.isNumber(value)) {
         return value;
       }
@@ -116,8 +116,8 @@ export class LowdbAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, path, value => {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, path, value => {
       if (!_.isNumber(value)) {
         return value;
       }
@@ -130,15 +130,15 @@ export class LowdbAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     value: any,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, path, () => value);
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, path, () => value);
   }
 
   async unset<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, path, () => undefined);
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, path, () => undefined);
   }
 
   // array field
@@ -147,8 +147,8 @@ export class LowdbAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, path, value => {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, path, value => {
       if (!_.isArray(value)) {
         return value;
       }
@@ -168,8 +168,8 @@ export class LowdbAdapter extends AbstractDBAdapter {
   async shift<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, path, value => {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, path, value => {
       if (!_.isArray(value)) {
         return value;
       }
@@ -183,8 +183,8 @@ export class LowdbAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     data: any,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, path, value => {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, path, value => {
       if (!_.isArray(value)) {
         return value;
       }
@@ -197,8 +197,8 @@ export class LowdbAdapter extends AbstractDBAdapter {
   async pop<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, path, value => {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, path, value => {
       if (!_.isArray(value)) {
         return value;
       }
@@ -212,8 +212,8 @@ export class LowdbAdapter extends AbstractDBAdapter {
     identity: ModelIdentity<TModel>,
     path: string,
     ...list: TValue[]
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, path, value => {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, path, value => {
       if (!_.isArray(value)) {
         return value;
       }
@@ -238,6 +238,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
         'power-custom-checkable-item': [],
         page: [],
         user: [],
+        'data-source': [],
       })
       .write();
   }

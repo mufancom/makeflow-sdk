@@ -125,21 +125,36 @@ export class ActionStorage<TModel extends Model, TStorage extends Dict<any>> {
   async rename(path: Path<TStorage>, newPath: string): Promise<void>;
   @lock
   async rename(path: any, newPath: string): Promise<void> {
-    await this.db.rename(this.storageObject.identity, flatPath(path), newPath);
+    let model = await this.db.rename(
+      this.storageObject.identity,
+      flatPath(path),
+      newPath,
+    );
+    this.storageObject.updateModel(model);
   }
 
   async inc(path: keyof TStorage, size: number): Promise<void>;
   async inc(path: Path<TStorage>, size: number): Promise<void>;
   @lock
   async inc(path: any, size: number): Promise<void> {
-    await this.db.inc(this.storageObject.identity, flatPath(path), size);
+    let model = await this.db.inc(
+      this.storageObject.identity,
+      flatPath(path),
+      size,
+    );
+    this.storageObject.updateModel(model);
   }
 
   async mul(path: keyof TStorage, size: number): Promise<void>;
   async mul(path: Path<TStorage>, size: number): Promise<void>;
   @lock
   async mul(path: any, size: number): Promise<void> {
-    await this.db.mul(this.storageObject.identity, flatPath(path), size);
+    let model = await this.db.mul(
+      this.storageObject.identity,
+      flatPath(path),
+      size,
+    );
+    this.storageObject.updateModel(model);
   }
 
   async set<TPath extends keyof TStorage>(
@@ -152,14 +167,23 @@ export class ActionStorage<TModel extends Model, TStorage extends Dict<any>> {
   ): Promise<void>;
   @lock
   async set(path: any, value: any): Promise<void> {
-    await this.db.set(this.storageObject.identity, flatPath(path), value);
+    let model = await this.db.set(
+      this.storageObject.identity,
+      flatPath(path),
+      value,
+    );
+    this.storageObject.updateModel(model);
   }
 
   async unset(path: keyof TStorage): Promise<void>;
   async unset(path: Path<TStorage>): Promise<void>;
   @lock
   async unset(path: any): Promise<void> {
-    await this.db.unset(this.storageObject.identity, flatPath(path));
+    let model = await this.db.unset(
+      this.storageObject.identity,
+      flatPath(path),
+    );
+    this.storageObject.updateModel(model);
   }
 
   // array field
@@ -176,14 +200,23 @@ export class ActionStorage<TModel extends Model, TStorage extends Dict<any>> {
   async slice(path: Path<TStorage>, size: number): Promise<void>;
   @lock
   async slice(path: any, size: number): Promise<void> {
-    await this.db.slice(this.storageObject.identity, flatPath(path), size);
+    let model = await this.db.slice(
+      this.storageObject.identity,
+      flatPath(path),
+      size,
+    );
+    this.storageObject.updateModel(model);
   }
 
   async shift(path: keyof TStorage): Promise<void>;
   async shift(path: Path<TStorage>): Promise<void>;
   @lock
   async shift(path: any): Promise<void> {
-    await this.db.shift(this.storageObject.identity, flatPath(path));
+    let model = await this.db.shift(
+      this.storageObject.identity,
+      flatPath(path),
+    );
+    this.storageObject.updateModel(model);
   }
 
   async unshift<TPath extends keyof TStorage>(
@@ -196,14 +229,20 @@ export class ActionStorage<TModel extends Model, TStorage extends Dict<any>> {
   ): Promise<void>;
   @lock
   async unshift(path: any, value: any): Promise<void> {
-    await this.db.unshift(this.storageObject.identity, flatPath(path), value);
+    let model = await this.db.unshift(
+      this.storageObject.identity,
+      flatPath(path),
+      value,
+    );
+    this.storageObject.updateModel(model);
   }
 
   async pop(path: keyof TStorage): Promise<void>;
   async pop(path: Path<TStorage>): Promise<void>;
   @lock
   async pop(path: any): Promise<void> {
-    await this.db.pop(this.storageObject.identity, flatPath(path));
+    let model = await this.db.pop(this.storageObject.identity, flatPath(path));
+    this.storageObject.updateModel(model);
   }
 
   async push<TPath extends keyof TStorage>(
@@ -216,7 +255,12 @@ export class ActionStorage<TModel extends Model, TStorage extends Dict<any>> {
   ): Promise<void>;
   @lock
   async push(path: any, ...value: any[]): Promise<void> {
-    await this.db.push(this.storageObject.identity, flatPath(path), ...value);
+    let model = await this.db.push(
+      this.storageObject.identity,
+      flatPath(path),
+      ...value,
+    );
+    this.storageObject.updateModel(model);
   }
 }
 

@@ -89,7 +89,7 @@ export default class extends Command {
   }
 
   private async getUserId(username: string, password: string): Promise<string> {
-    let result = await api.call<MFUserCandidate[]>(
+    let result = await api.post<MFUserCandidate[]>(
       '/account/list-users',
       {
         mobile: username,
@@ -131,7 +131,7 @@ export default class extends Command {
   ): Promise<void> {
     let userId = await this.getUserId(username, password);
 
-    let accessToken = await api.call<string>(
+    let accessToken = await api.post<string>(
       '/access-token/create',
       {
         mobile: username,

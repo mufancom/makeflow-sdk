@@ -33,6 +33,10 @@ export class PowerAppPage {
     return this.request('show-modal', params);
   }
 
+  setHeight(params: PowerAppPageAPI.SetHeightOptions): void {
+    this.send('set-height', params);
+  }
+
   async getUser(
     options: PowerAppPageAPI.GetUserOptions = {},
   ): Promise<PowerAppPageAPI.GetUserResult> {

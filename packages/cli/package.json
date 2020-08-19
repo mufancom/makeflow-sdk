@@ -20,6 +20,7 @@
   ],
   "dependencies": {
     "clime": "^0.5.14",
+    "mime": "^2.4.6",
     "node-fetch": "^2.6.0",
     "prompts": "^2.3.2",
     "tslib": "^2.0.0"

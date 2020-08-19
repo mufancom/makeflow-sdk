@@ -75,11 +75,27 @@ export const installationHandler: InstallationHandler = async function (
         users,
         accessToken,
         storage: {},
+        disabled: false,
       });
 
       installationStorage = result.value;
 
       break;
+    }
+    case 'deactivate': {
+      installationStorage = await app.dbAdapter.upgradeStorageObject<
+        InstallationModel,
+        any
+      >(
+        version,
+        {
+          type: 'installation',
+          installation,
+        },
+        {
+          disabled: true,
+        },
+      );
     }
   }
 
