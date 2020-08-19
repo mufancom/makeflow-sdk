@@ -2136,7 +2136,14 @@
   dependencies:
     tslang "^0.1.21"
 
-"@makeflow/types@^0.1.17":
+"@makeflow/types-nominal@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@makeflow/types-nominal/-/types-nominal-0.1.2.tgz#b8239f394af388652acb8af1873fdcd094bce7f4"
+  integrity sha512-oxXr+KpbIM6b0beBvFB0RdNeZLMk94BXozBQO4vCEYHPsbWOvGr3uLI1ghc0gfGC2I4bi4GxNivzgROAAWLrSw==
+  dependencies:
+    tslang "^0.1.22"
+
+"@makeflow/types@0.1.17", "@makeflow/types@^0.1.17":
   version "0.1.17"
   resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.17.tgz#e77f6d9bfee433b7b3ec96ecddc152ce69e3dc4d"
   integrity sha512-BOw5fE79LJ7sl1GjC7r0mpihG3HA2tN4GjDO3KI0OjsVWSoJumuQIRpa5bEEmg2yd6RjMhdkA+MdCm5yCOYkLA==
