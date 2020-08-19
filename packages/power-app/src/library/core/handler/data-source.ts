@@ -1,8 +1,8 @@
+import {API} from '@makeflow/types';
 import _ from 'lodash';
 
 import {PowerApp} from '../../app';
 import {DataSourceModel} from '../model';
-import {DataSourceEvent, DataSourceEventParams} from '../serve';
 import {
   getChangeAndMigrations,
   getInstallationResourceId,
@@ -10,18 +10,34 @@ import {
 } from '../utils';
 import {GeneralDeclareWithInputs, PowerAppVersion} from '../version';
 
-export async function dataSourceHandler(
+export type DataSourceHandler = (
+  app: PowerApp,
+  params: DataSourceHandlerParams,
+  // TODO(boen): data-source 返回值校验
+) => Promise<any>;
+
+export interface DataSourceParams {
+  name: string;
+  type: 'request';
+}
+
+interface DataSourceHandlerParams {
+  type: 'dataSource';
+  params: DataSourceParams;
+  body: API.ProcedureField.DataSourceParams;
+}
+
+export const dataSourceHandler: DataSourceHandler = async (
   app: PowerApp,
   {
     params,
-    payload: {
+    body: {
       source: {token, url, installation, organization, team, version},
       inputs,
       search,
     },
-  }: DataSourceEvent['eventObject'],
-  response: DataSourceEvent['response'],
-): Promise<void> {
+  },
+) => {
   let db = app.dbAdapter;
 
   let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject<
@@ -54,7 +70,7 @@ export async function dataSourceHandler(
 
   await runMigrations(db, storage, migrations);
 
-  let responseData: Parameters<DataSourceEvent['response']>[0];
+  let responseData: any;
 
   if (change) {
     let [context] = await app.getStorageObjectContexts('data-source', storage, {
@@ -69,13 +85,13 @@ export async function dataSourceHandler(
     });
   }
 
-  response(responseData || {});
-}
+  return responseData || {};
+};
 
 function getDataSourceChange({
   name,
   type,
-}: DataSourceEventParams): (
+}: DataSourceParams): (
   definition: PowerAppVersion.Definition,
 ) => PowerAppVersion.DataSource.Change<GeneralDeclareWithInputs> | undefined {
   return ({contributions: {dataSources = {}} = {}}) =>
@@ -84,7 +100,7 @@ function getDataSourceChange({
 
 function getDataSourceMigrations({
   name,
-}: DataSourceEventParams): (
+}: DataSourceParams): (
   type: keyof PowerAppVersion.Migrations,
   definitions: PowerAppVersion.Definition[],
 ) => PowerAppVersion.MigrationFunction[] {

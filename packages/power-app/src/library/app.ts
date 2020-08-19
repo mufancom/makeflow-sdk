@@ -1,3 +1,4 @@
+/* eslint-disable @magicspace/no-unnecessary-type-assertion */
 import {
   AdapterServeOptions,
   PowerAppAdapter,
@@ -17,6 +18,7 @@ import {
   ContextTypeToBasicMapping,
   ContextTypeToModel,
   CustomDeclareDict,
+  DataSourceModel,
   IDBAdapter,
   InstallationModel,
   LowdbAdapter,
@@ -34,6 +36,7 @@ import {
   PowerNodeModel,
   StorageObject,
   UserModel,
+  dataSourceHandler,
   getActionStorage,
   getInstallationResourceId,
   handlerCatcher,
@@ -225,6 +228,19 @@ export class PowerApp {
           },
         ],
         handler: handlerCatcher(this, pageHandler),
+      },
+      {
+        type: 'data-source',
+        paths: [
+          'data-source',
+          {
+            name: 'name',
+          },
+          {
+            name: 'type',
+          },
+        ],
+        handler: handlerCatcher(this, dataSourceHandler),
       },
     ];
 
