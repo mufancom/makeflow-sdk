@@ -55,7 +55,7 @@ export const installationHandler: InstallationHandler = async function (
       installation: originalInstallation,
       version,
       organization: originalOrganization,
-      team,
+      team: originalTeam,
     },
   } = body;
 
