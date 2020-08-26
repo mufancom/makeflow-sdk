@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app-server-adapter",
-  "version": "0.2.0-wip.24",
+  "version": "0.3.0-wip.1",
   "description": "Makeflow PowerApp Server Adapter Types.",
   "publishConfig": {
     "access": "public"
@@ -8,6 +8,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/makeflow/makeflow-sdk.git"
+  },
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "tsc -p ./src/library/tsconfig.json"
   },
   "license": "MIT",
   "main": "bld/library/index.js",

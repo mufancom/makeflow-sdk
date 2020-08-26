@@ -7,11 +7,11 @@ import {errorLog} from './log';
 
 export function handlerCatcher(
   app: PowerApp,
-  handler: (app: PowerApp, params: any) => Promise<any>,
+  handler: (app: PowerApp, data: any) => Promise<any>,
 ): PowerAppRoute<ContextType, any, any, any>['handler'] {
-  return async params => {
+  return async data => {
     try {
-      let result = await handler(app, params);
+      let result = await handler(app, data);
       return result;
     } catch (error) {
       errorLog(error);

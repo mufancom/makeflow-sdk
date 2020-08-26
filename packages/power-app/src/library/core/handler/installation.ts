@@ -49,29 +49,8 @@ export const installationHandler: InstallationHandler = async function (
   {type, params: {type: hookType}, body},
 ) {
   let {
-    source: {
-      token,
-      url,
-      installation: originalInstallation,
-      version,
-      organization: originalOrganization,
-      team: originalTeam,
-    },
+    source: {token, url, installation, version, organization, team},
   } = body;
-
-  // To fit the old version of Makeflow
-  let organization =
-    typeof originalOrganization === 'string'
-      ? {id: originalOrganization}
-      : originalOrganization;
-  let team =
-    typeof originalTeam === 'string'
-      ? {id: originalTeam, abstract: false}
-      : originalTeam;
-  let installation =
-    typeof originalInstallation === 'string'
-      ? {id: originalInstallation}
-      : originalInstallation;
 
   let installationId = installation.id;
 

@@ -32,14 +32,7 @@ export const pageHandler: PageHandler = async function (
     type,
     params,
     body: {
-      source: {
-        token,
-        url,
-        installation: originalInstallation,
-        organization: originalOrganization,
-        team: originalTeam,
-        version,
-      },
+      source: {token, url, installation, organization, team, version},
       inputs,
       user,
       path,
@@ -47,20 +40,6 @@ export const pageHandler: PageHandler = async function (
   },
 ) {
   let db = app.dbAdapter;
-
-  // To fit the old version of Makeflow
-  let organization =
-    typeof originalOrganization === 'string'
-      ? {id: originalOrganization}
-      : originalOrganization;
-  let team =
-    typeof originalTeam === 'string'
-      ? {id: originalTeam, abstract: false}
-      : originalTeam;
-  let installation =
-    typeof originalInstallation === 'string'
-      ? {id: originalInstallation}
-      : originalInstallation;
 
   let {value: storage, savedVersion} = await db.createOrUpgradeStorageObject<
     PageModel

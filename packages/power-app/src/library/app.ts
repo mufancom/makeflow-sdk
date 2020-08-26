@@ -1,8 +1,6 @@
-/* eslint-disable @magicspace/no-unnecessary-type-assertion */
 import {
   AdapterServeOptions,
   PowerAppAdapter,
-  PowerAppRoute,
 } from '@makeflow/power-app-server-adapter';
 import {API as APITypes} from '@makeflow/types';
 import {AppInstallationId, UserId} from '@makeflow/types-nominal';
@@ -36,16 +34,9 @@ import {
   PowerNodeModel,
   StorageObject,
   UserModel,
-  dataSourceHandler,
+  buildRoutes,
   getActionStorage,
   getInstallationResourceId,
-  handlerCatcher,
-  installationHandler,
-  pageHandler,
-  powerCustomCheckableItemHandler,
-  powerGlanceHandler,
-  powerItemHandler,
-  powerNodeHandler,
 } from './core';
 
 export type MatchContextsFilter<
@@ -106,170 +97,14 @@ export class PowerApp {
   }
 
   serve(adapter: PowerAppAdapter<any>, options?: AdapterServeOptions): void {
-    let token = this.options.source?.token;
-
-    const routes: PowerAppRoute<ContextType, any, any, any>[] = [
-      {
-        type: 'installation',
-        paths: [
-          'installation',
-          {
-            name: 'type',
-          },
-        ],
-        handler: handlerCatcher(this, installationHandler),
-      },
-      {
-        type: 'power-item',
-        paths: [
-          'power-item',
-          {
-            name: 'name',
-          },
-          {
-            name: 'type',
-          },
-          {
-            name: 'action',
-            optional: true,
-          },
-        ],
-        validator(params) {
-          let {type, action} = Object(params);
-
-          switch (type) {
-            case 'activate':
-            case 'update':
-            case 'deactivate':
-              return true;
-            case 'action':
-              return !!action;
-            default:
-              return false;
-          }
-        },
-        handler: handlerCatcher(this, powerItemHandler),
-      },
-      {
-        type: 'power-node',
-        paths: [
-          'power-node',
-          {
-            name: 'name',
-          },
-          {
-            name: 'type',
-          },
-          {
-            name: 'action',
-            optional: true,
-          },
-        ],
-        validator(params) {
-          let {type, action} = Object(params);
-
-          switch (type) {
-            case 'activate':
-            case 'update':
-            case 'deactivate':
-              return true;
-            case 'action':
-              return !!action;
-            default:
-              return false;
-          }
-        },
-        handler: handlerCatcher(this, powerNodeHandler),
-      },
-      {
-        type: 'power-glance',
-        paths: [
-          'power-glance',
-          {
-            name: 'name',
-          },
-          {
-            name: 'type',
-          },
-        ],
-        validator(params) {
-          let {type} = Object(params);
-
-          switch (type) {
-            case 'initialize':
-            case 'change':
-            case 'dispose':
-              return true;
-            default:
-              return false;
-          }
-        },
-        handler: handlerCatcher(this, powerGlanceHandler),
-      },
-      {
-        type: 'power-custom-checkable-item',
-        paths: [
-          'power-custom-checkable-item',
-          {
-            name: 'name',
-          },
-        ],
-        handler: handlerCatcher(this, powerCustomCheckableItemHandler),
-      },
-      {
-        type: 'page',
-        paths: [
-          'page',
-          {
-            name: 'name',
-          },
-          {
-            name: 'type',
-          },
-        ],
-        handler: handlerCatcher(this, pageHandler),
-      },
-      {
-        type: 'data-source',
-        paths: [
-          'data-source',
-          {
-            name: 'name',
-          },
-          {
-            name: 'type',
-          },
-        ],
-        handler: handlerCatcher(this, dataSourceHandler),
-      },
-    ];
-
-    adapter({
-      authenticate(body) {
-        if (!token) {
-          return true;
-        }
-
-        if (!body.source) {
-          return false;
-        }
-
-        return _.isEqual(token, body.source.token);
-      },
-      routes,
-    }).serve(options);
+    this.buildAdapter(adapter).serve(options);
   }
 
   middleware<TMiddleware>(
     adapter: PowerAppAdapter<TMiddleware>,
     options?: AdapterServeOptions,
   ): TMiddleware {
-    return adapter({
-      authenticate() {
-        return true;
-      },
-      routes: [],
-    }).middleware(options);
+    return this.buildAdapter<TMiddleware>(adapter).middleware(options);
   }
 
   async *getContextIterable<
@@ -655,6 +490,27 @@ export class PowerApp {
         this.dbAdapter = new LowdbAdapter({});
         break;
     }
+  }
+
+  private buildAdapter<TMiddleware>(
+    adapter: PowerAppAdapter<any>,
+  ): ReturnType<PowerAppAdapter<TMiddleware>> {
+    let token = this.options.source?.token;
+
+    return adapter({
+      authenticate(body) {
+        if (!token) {
+          return true;
+        }
+
+        if (!body.source) {
+          return false;
+        }
+
+        return _.isEqual(token, body.source.token);
+      },
+      routes: buildRoutes(this),
+    });
   }
 }
 

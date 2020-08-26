@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app-hapi",
-  "version": "0.2.0-wip.24",
+  "version": "0.3.0-wip.1",
   "description": "Makeflow PowerApp Server Adapter - Hapi.",
   "publishConfig": {
     "access": "public"
@@ -8,6 +8,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/makeflow/makeflow-sdk.git"
+  },
+  "scripts": {
+    "build": "tsc -p ./src/library/tsconfig.json"
   },
   "license": "MIT",
   "main": "bld/library/index.js",
@@ -19,7 +22,7 @@
   ],
   "dependencies": {
     "@hapi/hapi": "^19.1.1",
-    "@makeflow/power-app-server-adapter": "0.2.0-wip.24"
+    "@makeflow/power-app-server-adapter": "0.3.0-wip.1"
   },
   "devDependencies": {
     "@types/hapi__hapi": "^19.0.3"

@@ -5,3 +5,4 @@ export * from './handler';
 export * from './utils';
 export * from './context';
 export * from './version';
+export * from './routes';
