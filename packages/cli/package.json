@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/cli",
-  "version": "0.1.0-wip.6",
+  "version": "0.3.0-wip.2",
   "description": "Command line interface for Makeflow.",
   "publishConfig": {
     "access": "public"
