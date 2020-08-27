@@ -10,7 +10,7 @@
     "bld/**"
   ],
   "scripts": {
-    "lerna:publish": "lerna publish prerelease --registry=https://registry.npmjs.org",
+    "lerna:publish": "yarn build-ts && lerna publish prerelease --registry=https://registry.npmjs.org",
     "build-ts": "tsc --build tsconfig.full.json",
     "lint": "run-in-every eslint-project --echo --parallel -- eslint --config {configFileName} .",
     "lint-prettier": "prettier --check \"**/*.{ts,tsx,js,jsx,json,yml,md}\""
