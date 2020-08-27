@@ -245,8 +245,6 @@ export class LowdbAdapter extends AbstractDBAdapter {
         'data-source': [],
       })
       .write();
-
-    await this.migrationRunner(this.db);
   }
 
   // helper
