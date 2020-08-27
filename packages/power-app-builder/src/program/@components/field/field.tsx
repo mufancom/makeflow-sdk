@@ -1,5 +1,6 @@
 import {
   Field as FieldTypes,
+  PowerAppDataSource,
   PowerAppInput,
   PowerAppProcedureField,
   PowerItem,
@@ -138,9 +139,7 @@ export const AppField: FC<{
                 })
               }
             ></Options>
-          ) : (
-            undefined
-          )}
+          ) : undefined}
 
           {Data ? (
             <>
@@ -198,15 +197,15 @@ export const AppField: FC<{
                 <>
                   <Form.Item label="数据源地址" required>
                     <Input
-                      placeholder="url"
-                      value={dataSource?.url}
+                      placeholder="name"
+                      value={dataSource?.name}
                       onChange={({target: {value}}) =>
                         onPartChange({
                           data: undefined,
                           initialData: undefined,
                           dataSource: {
                             ...dataSource,
-                            url: value,
+                            name: value as PowerAppDataSource.Name,
                           },
                         })
                       }
@@ -221,19 +220,20 @@ export const AppField: FC<{
                         onPartChange({
                           data: undefined,
                           initialData: undefined,
-                          dataSource: {url: dataSource?.url ?? '', inputs},
+                          dataSource: {
+                            name:
+                              dataSource?.name ??
+                              ('' as PowerAppDataSource.Name),
+                            inputs,
+                          },
                         })
                       }
                     ></SettingTabs>
                   </Form.Item>
                 </>
-              ) : (
-                undefined
-              )}
+              ) : undefined}
             </>
-          ) : (
-            undefined
-          )}
+          ) : undefined}
         </>
       ) : (
         '已折叠'
@@ -414,9 +414,7 @@ const ItemBuildInField: FC<{
                   ))
                 : undefined}
             </>
-          ) : (
-            undefined
-          )}
+          ) : undefined}
 
           <Form.Item label="初始值 (initialValue)">
             <Radio.Group
@@ -451,9 +449,7 @@ const ItemBuildInField: FC<{
                   })
                 }
               />
-            ) : (
-              undefined
-            )}
+            ) : undefined}
 
             {initialValue?.type === 'variable' ? (
               <Input
@@ -468,9 +464,7 @@ const ItemBuildInField: FC<{
                   })
                 }
               />
-            ) : (
-              undefined
-            )}
+            ) : undefined}
 
             {initialValue?.type === 'expression' ? (
               <Input
@@ -485,9 +479,7 @@ const ItemBuildInField: FC<{
                   })
                 }
               />
-            ) : (
-              undefined
-            )}
+            ) : undefined}
           </Form.Item>
 
           <Form.Item label="输出变量名 (output)">
@@ -669,9 +661,7 @@ export const ItemCustomField: FC<{
                   })
                 }
               />
-            ) : (
-              undefined
-            )}
+            ) : undefined}
 
             {initialValue?.type === 'variable' ? (
               <Input
@@ -686,9 +676,7 @@ export const ItemCustomField: FC<{
                   })
                 }
               />
-            ) : (
-              undefined
-            )}
+            ) : undefined}
 
             {initialValue?.type === 'expression' ? (
               <Input
@@ -703,9 +691,7 @@ export const ItemCustomField: FC<{
                   })
                 }
               />
-            ) : (
-              undefined
-            )}
+            ) : undefined}
           </Form.Item>
 
           <Form.Item label="输出变量名 (output)">
@@ -790,9 +776,7 @@ const ItemCustomFieldBaseDefinition: FC<{
                 })
               }
             ></Options>
-          ) : (
-            undefined
-          )}
+          ) : undefined}
 
           {Data ? (
             <>
@@ -833,14 +817,14 @@ const ItemCustomFieldBaseDefinition: FC<{
                 <>
                   <Form.Item label="数据源地址" required>
                     <Input
-                      placeholder="url"
-                      value={dataSource?.url}
+                      placeholder="name"
+                      value={dataSource?.name}
                       onChange={({target: {value}}) =>
                         onPartChange({
                           data: undefined,
                           dataSource: {
                             ...dataSource,
-                            url: value,
+                            name: value as PowerAppDataSource.Name,
                           },
                         })
                       }
@@ -854,19 +838,20 @@ const ItemCustomFieldBaseDefinition: FC<{
                       onChange={inputs =>
                         onPartChange({
                           data: undefined,
-                          dataSource: {url: dataSource?.url ?? '', inputs},
+                          dataSource: {
+                            name:
+                              dataSource?.name ??
+                              ('' as PowerAppDataSource.Name),
+                            inputs,
+                          },
                         })
                       }
                     ></SettingTabs>
                   </Form.Item>
                 </>
-              ) : (
-                undefined
-              )}
+              ) : undefined}
             </>
-          ) : (
-            undefined
-          )}
+          ) : undefined}
         </>
       ) : (
         '已折叠'

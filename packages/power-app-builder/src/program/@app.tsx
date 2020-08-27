@@ -167,7 +167,7 @@ export const App: FC = () => {
                       onChange={values =>
                         setState({
                           ...state,
-                          permissions: values as AccessControl.PermissionName[],
+                          permissions: values as AccessControl.AccessTokenPermissionName[],
                         })
                       }
                     />

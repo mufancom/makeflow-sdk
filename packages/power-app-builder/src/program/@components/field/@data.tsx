@@ -185,6 +185,10 @@ const BaseFieldDataDict: {[key in Field.BaseFieldType]: FC<DataProps>[]} = {
   'procedure-array': [],
   'tag-array': [],
   'file-array': [],
+  // TODO: not support. just fix types
+  table: [],
+  textarea: [],
+  'user-array': [],
 };
 
 const BuildInFieldDataDict: {
@@ -205,6 +209,11 @@ const BuildInFieldDataDict: {
   'procedure-array': [],
   'tag-array': [],
   'file-array': [],
+  // TODO: not support. just fix types
+  'search-select': [],
+  table: [],
+  textarea: [],
+  'user-array': [],
 };
 
 export function getBaseFieldData(

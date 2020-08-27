@@ -10,7 +10,7 @@ export const Page: FC<{
 
   let definition = value;
 
-  let {displayName, name, description, icon, shortcut} = definition;
+  let {displayName, name, description, icon, pinned} = definition;
 
   let onPartChange = (part: Partial<PowerAppPage.Definition>): void => {
     onChange({
@@ -86,8 +86,8 @@ export const Page: FC<{
           <Form.Item label="开启快捷访问">
             <Switch
               title="桌面端将列入 tab 栏中,移动端将列入快捷入口"
-              checked={shortcut}
-              onChange={shortcut => onPartChange({shortcut})}
+              checked={pinned}
+              onChange={pinned => onPartChange({pinned})}
             />
           </Form.Item>
         </>

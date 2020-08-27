@@ -4,7 +4,7 @@ import {AccessControl} from '@makeflow/types';
 
 export const permissionData: {
   label: string;
-  value: AccessControl.PermissionName;
+  value: AccessControl.AccessTokenPermissionName;
 }[] = [
   {
     label: '通过信息模糊匹配用户',
