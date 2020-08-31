@@ -61,6 +61,7 @@ export async function installationHandler(
                     team: {
                       id: (team as unknown) as TeamId,
                       abstract: false,
+                      displayName: '',
                     },
                   };
                 },

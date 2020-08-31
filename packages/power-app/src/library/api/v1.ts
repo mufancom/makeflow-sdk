@@ -18,7 +18,7 @@ import {Dict} from 'tslang';
 const JSON_CONTENT_TYPE = 'application/json;charset=UTF-8';
 const STREAM_CONTENT_TYPE = 'application/octet-stream';
 
-export type APISource = APITypes.PowerApp.BasicSource;
+export type APISource = Partial<APITypes.PowerApp.Source>;
 
 export interface RequestOptions {
   body?: string | Dict<any> | Buffer | NodeJS.ReadableStream;
@@ -275,6 +275,24 @@ export class API<TSourceObject extends APISource = APISource> {
       requireAccessToken: true,
       body: {
         email,
+      },
+    });
+  }
+
+  /**
+   * 获取团队用户
+   * @param team 团队 id
+   * @accessToken
+   */
+  async getTeamUsers(
+    team: TeamId | undefined = this.source.team?.id,
+    subTeams = false,
+  ): Promise<APITypes.PowerApp.UserInfo[]> {
+    return this.request('/user/get-users', {
+      requireAccessToken: true,
+      body: {
+        team,
+        subTeams,
       },
     });
   }
