@@ -1,4 +1,4 @@
-import {API as APITypes} from '@makeflow/types';
+import {API as APITypes, User} from '@makeflow/types';
 import {Dict} from 'tslang';
 
 import {API} from '../api';
@@ -48,7 +48,7 @@ export type ContextTypeToBasicMapping = {
   installation: [
     InstallationModel,
     {
-      users: APITypes.PowerApp.UserInfo[];
+      users: User.TeamUserInfo[];
       resources: APITypes.PowerApp.ResourcesMapping;
       disabled: boolean;
     },
