@@ -1,7 +1,7 @@
 import {Readable} from 'stream';
 import {URL} from 'url';
 
-import {API as APITypes, PowerApp, Value} from '@makeflow/types';
+import {API as APITypes, PowerApp, User, Value} from '@makeflow/types';
 import {
   OperationTokenToken,
   OrganizationId,
@@ -286,13 +286,13 @@ export class API<TSourceObject extends APISource = APISource> {
    */
   async getTeamUsers(
     team: TeamId | undefined = this.source.team?.id,
-    subTeams = false,
-  ): Promise<APITypes.PowerApp.UserInfo[]> {
+    includeSubTeams = false,
+  ): Promise<User.TeamUserInfo[]> {
     return this.request('/user/get-users', {
       requireAccessToken: true,
       body: {
         team,
-        subTeams,
+        includeSubTeams,
       },
     });
   }

@@ -1,4 +1,4 @@
-import {API} from '@makeflow/types';
+import {User} from '@makeflow/types';
 
 import type {PowerApp} from '../../app';
 import {TeamId} from '../../types/namespace';
@@ -55,7 +55,7 @@ export async function installationHandler(
         users =
           typeof users[0].team === 'string'
             ? users.map(
-                ({team, ...rest}): API.PowerApp.UserInfo => {
+                ({team, ...rest}): User.TeamUserInfo => {
                   return {
                     ...rest,
                     team: {
