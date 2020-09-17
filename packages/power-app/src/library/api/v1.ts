@@ -1,7 +1,7 @@
 import {Readable} from 'stream';
 import {URL} from 'url';
 
-import {API as APITypes, PowerApp, Value} from '@makeflow/types';
+import {API as APITypes, PowerApp, User, Value} from '@makeflow/types';
 import {
   OperationTokenToken,
   OrganizationId,
@@ -18,7 +18,7 @@ import {Dict} from 'tslang';
 const JSON_CONTENT_TYPE = 'application/json;charset=UTF-8';
 const STREAM_CONTENT_TYPE = 'application/octet-stream';
 
-export type APISource = APITypes.PowerApp.BasicSource;
+export type APISource = Partial<APITypes.PowerApp.Source>;
 
 export interface RequestOptions {
   body?: string | Dict<any> | Buffer | NodeJS.ReadableStream;
@@ -275,6 +275,24 @@ export class API<TSourceObject extends APISource = APISource> {
       requireAccessToken: true,
       body: {
         email,
+      },
+    });
+  }
+
+  /**
+   * 获取团队用户
+   * @param team 团队 id
+   * @accessToken
+   */
+  async getTeamUsers(
+    team: TeamId | undefined = this.source.team?.id,
+    includeSubTeams = false,
+  ): Promise<User.TeamUserInfo[]> {
+    return this.request('/user/get-users', {
+      requireAccessToken: true,
+      body: {
+        team,
+        includeSubTeams,
       },
     });
   }

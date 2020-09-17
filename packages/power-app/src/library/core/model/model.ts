@@ -1,4 +1,4 @@
-import {API} from '@makeflow/types';
+import {API, User} from '@makeflow/types';
 import {
   AppInstallationId,
   OperationTokenToken,
@@ -57,7 +57,7 @@ export interface InstallationModel
   extends BasicModel<'installation', AppInstallationId> {
   configs: Dict<unknown>;
   resources: API.PowerApp.ResourcesMapping;
-  users: API.PowerApp.UserInfo[];
+  users: User.TeamUserInfo[];
   accessToken?: string | undefined;
   disabled?: boolean;
 }
