@@ -4,16 +4,12 @@ import {Model, ModelIdentity} from '../model';
 import {StorageObject} from '../storage';
 import {getModelIdentity} from '../utils';
 
-import {migrationRunner} from './@migration';
-
 export interface IDBAdapter extends DBAdapter {}
 
 export type DefaultQueryType<TModel extends Model> = Partial<TModel> &
   Required<{type: TModel['type']}>;
 
 abstract class DBAdapter {
-  protected readonly migrationRunner = migrationRunner;
-
   private readonly ready = this.initialize();
 
   constructor(protected options: unknown) {}
