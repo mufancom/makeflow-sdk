@@ -22,8 +22,8 @@
   },
   "dependencies": {
     "@makeflow/power-app-server-adapter": "^0.3.0-wip.2",
-    "@makeflow/types": "^0.1.0",
-    "@makeflow/types-nominal": "^0.1.0",
+    "@makeflow/types": "latest",
+    "@makeflow/types-nominal": "latest",
     "@types/lowdb": "^1.0.9",
     "@types/mongodb": "^3.5.20",
     "@types/node": "^14.0.13",
