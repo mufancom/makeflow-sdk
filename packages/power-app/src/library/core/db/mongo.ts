@@ -227,7 +227,7 @@ export class MongoAdapter extends AbstractDBAdapter {
   private async findOneAndUpdate<TModel extends Model>(
     {id, type}: ModelIdentity<TModel>,
     update: UpdateQuery<any>,
-    options: FindOneAndUpdateOption = {},
+    options: FindOneAndUpdateOption<TModel> = {},
   ): Promise<TModel> {
     let identity = {id, type};
 

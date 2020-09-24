@@ -1,5 +1,5 @@
 import {
-  AccessControl,
+  AccessToken,
   PowerApp,
   PowerAppConfig,
   PowerAppPage,
@@ -167,7 +167,7 @@ export const App: FC = () => {
                       onChange={values =>
                         setState({
                           ...state,
-                          permissions: values as AccessControl.AccessTokenPermissionName[],
+                          permissions: values as AccessToken.AccessTokenPermissionName[],
                         })
                       }
                     />
