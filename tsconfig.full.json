@@ -3,11 +3,6 @@
   "references": [
     {"path": "packages/cli/src/program"},
 
-    {"path": "packages/power-app/src/library"},
-
-    {"path": "packages/power-app-page/src/library"},
-
-    {"path": "packages/power-app-builder/src/program"},
 
     {"path": "packages/power-app-server-adapter/src/library"},
 
@@ -15,6 +10,13 @@
 
     {"path": "packages/power-app-express/src/library"},
 
-    {"path": "packages/power-app-hapi/src/library"}
+    {"path": "packages/power-app-hapi/src/library"},
+
+    {"path": "packages/power-app/src/library"},
+
+    {"path": "packages/power-app-page/src/library"},
+
+    {"path": "packages/power-app-builder/src/program"},
+
   ]
 }

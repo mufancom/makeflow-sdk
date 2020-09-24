@@ -21,7 +21,7 @@
     "prepublishOnly": "yarn rimraf bld && yarn tsc --build ./src/library"
   },
   "dependencies": {
-    "@makeflow/power-app-server-adapter": "^0.3.0-wip.2",
+    "@makeflow/power-app-server-adapter": "^0.3.0-wip",
     "@makeflow/types": "latest",
     "@makeflow/types-nominal": "latest",
     "@types/lowdb": "^1.0.9",

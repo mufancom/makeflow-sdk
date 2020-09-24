@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app-server-adapter",
-  "version": "0.3.0-wip.2",
+  "version": "0.3.0-wip.3",
   "description": "Makeflow PowerApp Server Adapter Types.",
   "publishConfig": {
     "access": "public"

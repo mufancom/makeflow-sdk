@@ -22,7 +22,7 @@
   ],
   "dependencies": {
     "@hapi/hapi": "^19.1.1",
-    "@makeflow/power-app-server-adapter": "^0.3.0-wip.2",
+    "@makeflow/power-app-server-adapter": "^0.3.0-wip",
     "@types/hapi__hapi": "^19.0.3"
   }
 }
