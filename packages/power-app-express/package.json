@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app-express",
-  "version": "0.3.0-wip.2",
+  "version": "0.3.0-wip.4",
   "description": "Makeflow PowerApp Server Adapter - Express.",
   "publishConfig": {
     "access": "public"
@@ -21,7 +21,7 @@
     "!*.tsbuildinfo"
   ],
   "dependencies": {
-    "@makeflow/power-app-server-adapter": "^0.3.0-wip",
+    "@makeflow/power-app-server-adapter": "^0.3.0-wip.4",
     "@types/express": "^4.17.6",
     "express": "^4.17.1"
   }
