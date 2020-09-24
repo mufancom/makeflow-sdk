@@ -1,4 +1,4 @@
-import {User} from '@makeflow/types';
+import {API, User} from '@makeflow/types';
 
 import type {PowerApp} from '../../app';
 import {TeamId} from '../../types/namespace';

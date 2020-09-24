@@ -96,8 +96,8 @@ export class PowerApp {
     });
   }
 
-  serve(adapter: PowerAppAdapter<any>, options?: AdapterServeOptions): void {
-    this.buildAdapter(adapter).serve(options);
+  serve(adapter: PowerAppAdapter<any>, path?: string): void {
+    this.buildAdapter(adapter).serve({path});
   }
 
   middleware<TMiddleware>(
