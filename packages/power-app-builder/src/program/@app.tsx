@@ -77,7 +77,7 @@ export const App: FC = () => {
             </Button>
           </div>
           <div style={{padding: 24, minHeight: 360}}>
-            <Component state={state} setState={setState} />
+            {Component && <Component state={state} setState={setState} />}
           </div>
         </Content>
         <Footer style={{textAlign: 'center'}}>
