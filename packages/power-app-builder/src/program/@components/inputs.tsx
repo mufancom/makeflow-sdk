@@ -59,6 +59,14 @@ export const Inputs: FC<{
                 bind: undefined,
                 default: undefined,
               });
+            } else if (value) {
+              onPartChange({
+                default: undefined,
+              });
+            } else {
+              onPartChange({
+                bind: undefined,
+              });
             }
           }}
         >

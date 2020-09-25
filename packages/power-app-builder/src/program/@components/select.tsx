@@ -1,4 +1,9 @@
-import {PowerAppConfig, ProcedureField} from '@makeflow/types';
+import {
+  Field,
+  GlanceReport,
+  PowerAppConfig,
+  ProcedureField,
+} from '@makeflow/types';
 import {Select} from 'antd';
 import {SelectProps} from 'antd/lib/select';
 import React, {FC} from 'react';
@@ -12,8 +17,10 @@ export const BuiltInProcedureFieldSelect: FC<SelectProps<
     'date',
     'select',
     'select-array',
+    'search-select',
     'radio',
     'user',
+    'user-array',
     'team',
     'team-array',
     'procedure-array',
@@ -24,6 +31,8 @@ export const BuiltInProcedureFieldSelect: FC<SelectProps<
     'text',
     'text-array',
     'password',
+    'textarea',
+    'table',
   ];
 
   return (
@@ -37,7 +46,9 @@ export const BuiltInProcedureFieldSelect: FC<SelectProps<
   );
 };
 
-export const ConfigFieldTypeSelect: FC<SelectProps> = props => {
+export const ConfigFieldTypeSelect: FC<SelectProps<
+  PowerAppConfig.ConfigFieldType
+>> = props => {
   const types: PowerAppConfig.ConfigFieldType[] = [
     'text',
     'password',
@@ -63,8 +74,8 @@ export const ConfigFieldTypeSelect: FC<SelectProps> = props => {
   );
 };
 
-export const FieldTypeSelect: FC<SelectProps> = props => {
-  const types = [
+export const FieldTypeSelect: FC<SelectProps<Field.BaseFieldType>> = props => {
+  const types: Field.BaseFieldType[] = [
     'input',
     'input-array',
     'date',
@@ -72,6 +83,7 @@ export const FieldTypeSelect: FC<SelectProps> = props => {
     'select-array',
     'radio',
     'user',
+    'user-array',
     'team',
     'team-array',
     'procedure-array',
@@ -79,6 +91,8 @@ export const FieldTypeSelect: FC<SelectProps> = props => {
     'file',
     'file-array',
     'link',
+    'table',
+    'textarea',
   ];
 
   return (
@@ -92,12 +106,16 @@ export const FieldTypeSelect: FC<SelectProps> = props => {
   );
 };
 
-export const FieldIconTypeSelect: FC<SelectProps> = props => {
-  const types = [
+export const FieldIconTypeSelect: FC<SelectProps<
+  ProcedureField.IconName
+>> = props => {
+  const types: ProcedureField.IconName[] = [
     'text',
     'password',
+    'textarea',
     'date',
     'select',
+    'search',
     'radio',
     'user',
     'team',
@@ -105,6 +123,7 @@ export const FieldIconTypeSelect: FC<SelectProps> = props => {
     'tag',
     'file',
     'link',
+    'table',
   ];
 
   return (
@@ -118,8 +137,10 @@ export const FieldIconTypeSelect: FC<SelectProps> = props => {
   );
 };
 
-export const ReportIconTypeSelect: FC<SelectProps> = props => {
-  const types = [
+export const ReportIconTypeSelect: FC<SelectProps<
+  GlanceReport.IconName
+>> = props => {
+  const types: GlanceReport.IconName[] = [
     'chart-bar',
     'chart-pie',
     'star',
@@ -127,6 +148,7 @@ export const ReportIconTypeSelect: FC<SelectProps> = props => {
     'chart-line',
     'chart-area',
     'bug',
+    'table',
   ];
 
   return (
@@ -140,13 +162,16 @@ export const ReportIconTypeSelect: FC<SelectProps> = props => {
   );
 };
 
-export const ElementTypeSelect: FC<SelectProps> = props => {
-  const types = [
+export const ElementTypeSelect: FC<SelectProps<
+  GlanceReport.ElementType
+>> = props => {
+  const types: GlanceReport.ElementType[] = [
     'number',
     'text-line',
     'number-per-user',
     'chart',
     'chart-per-user',
+    'table',
   ];
 
   return (

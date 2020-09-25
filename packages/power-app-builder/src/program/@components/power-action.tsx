@@ -134,7 +134,7 @@ export const PowerNodeAction: FC<{
   );
 };
 
-function PowerAppInputOptions({
+export function PowerAppInputOptions({
   value = [],
   onChange,
 }: {

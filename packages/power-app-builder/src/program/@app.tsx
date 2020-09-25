@@ -1,5 +1,5 @@
 import {PowerApp} from '@makeflow/types';
-import {Breadcrumb, Button, Layout, Menu, notification} from 'antd';
+import {BackTop, Breadcrumb, Button, Layout, Menu, notification} from 'antd';
 import _ from 'lodash';
 import React, {FC, useState} from 'react';
 import {v4 as uuid} from 'uuid';
@@ -33,7 +33,7 @@ export const App: FC = () => {
         theme="light"
       >
         <div className="logo" style={{margin: '24px 0', overflow: 'hidden'}}>
-          <Button type="link">Power App Builder</Button>
+          <Button type="link">PowerApp Builder V2.0</Button>
         </div>
         <Menu
           defaultSelectedKeys={['Basic']}
@@ -54,8 +54,8 @@ export const App: FC = () => {
           <Menu.Item key="Resources">Resources</Menu.Item>
         </Menu>
       </Sider>
-      <Layout className="site-layout">
-        <Content style={{margin: '0 16px'}}>
+      <Layout>
+        <Content style={{margin: '0 16px', maxWidth: 1200}}>
           <div style={{display: 'flex', alignItems: 'center'}}>
             <Breadcrumb style={{margin: '16px 0', flex: 1}}>
               <Breadcrumb.Item>PowerApp</Breadcrumb.Item>
@@ -65,14 +65,15 @@ export const App: FC = () => {
               Copy Definition
             </Button>
             &nbsp;
-            <Button type="primary" onClick={() => exportDefinition(state)}>
+            <Button
+              style={{marginRight: 24}}
+              type="primary"
+              onClick={() => exportDefinition(state)}
+            >
               Export Definition
             </Button>
           </div>
-          <div
-            className="site-layout-background"
-            style={{padding: 24, minHeight: 360}}
-          >
+          <div style={{padding: 24, minHeight: 360}}>
             <Component state={state} setState={setState} />
           </div>
         </Content>
@@ -87,6 +88,7 @@ export const App: FC = () => {
         </Footer>
       </Layout>
       <Start onChange={importedDefinition => setState(importedDefinition)} />
+      <BackTop />
     </Layout>
   );
 };

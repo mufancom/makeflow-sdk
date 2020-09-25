@@ -147,7 +147,7 @@ function TagVariables({
         type="primary"
         style={{marginBottom: 16}}
       >
-        Add new
+        Add New
       </Button>
       <Table<PowerApp.TagVariable>
         rowKey={input => String(_.findIndex(dataSource, input))}

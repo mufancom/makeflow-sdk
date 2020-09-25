@@ -318,7 +318,7 @@ const ItemBuildInField: FC<{
           }
         >
           <Radio.Button value={false}>writeable</Radio.Button>
-          <Radio.Button value={true}>readOnly</Radio.Button>
+          <Radio.Button value={true}>readonly</Radio.Button>
         </Radio.Group>
       </Form.Item>
 
@@ -526,7 +526,7 @@ export const ItemCustomField: FC<{
           }
         >
           <Radio.Button value={false}>writeable</Radio.Button>
-          <Radio.Button value={true}>readOnly</Radio.Button>
+          <Radio.Button value={true}>readonly</Radio.Button>
         </Radio.Group>
       </Form.Item>
 
@@ -572,7 +572,7 @@ export const ItemCustomField: FC<{
         <Form.Item label="BaseFieldType" required>
           <FieldTypeSelect
             placeholder="base"
-            value={def as string}
+            value={def as FieldTypes.BaseFieldType}
             onChange={(value: FieldTypes.BaseFieldType) =>
               onPartChange({
                 definition: value,

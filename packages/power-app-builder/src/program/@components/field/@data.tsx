@@ -1,8 +1,10 @@
 import {Field, Field as FieldTypes, ProcedureField} from '@makeflow/types';
-import {Button, DatePicker, Form, Input, Switch, Table} from 'antd';
+import {Button, DatePicker, Form, Input, Radio, Switch, Table} from 'antd';
 import _ from 'lodash';
 import moment from 'moment';
 import React, {FC} from 'react';
+
+import {BuiltInProcedureFieldSelect} from '../select';
 
 interface DataProps<TData = object> {
   value: TData;
@@ -58,7 +60,7 @@ const SelectAlikeData: FC<DataProps<FieldTypes.SelectAlikeFieldData>> = ({
         type="primary"
         style={{marginBottom: 10}}
       >
-        Add new
+        Add New
       </Button>
       <Table<FieldTypes.SelectAlikeFieldCandidate>
         rowKey={input => String(_.findIndex(dataSource, input))}
@@ -170,6 +172,96 @@ const LinkData: FC<DataProps<Partial<FieldTypes.LinkBaseFieldData>>> = ({
   </Form.Item>
 );
 
+const TableData: FC<DataProps<
+  Partial<FieldTypes.TableBaseFieldData<string>>
+>> = ({value: {columns = []}, onChange}) => {
+  function handlerChange(
+    fn: (event: React.ChangeEvent<HTMLInputElement>) => void,
+  ): (event: React.ChangeEvent<HTMLInputElement>) => void {
+    return event => {
+      fn.call(undefined, event);
+      onChange({columns});
+    };
+  }
+
+  return (
+    <Form.Item label="Columns">
+      <Table<FieldTypes.TableBaseFieldColumn<string>>
+        rowKey={input => String(_.findIndex(columns, input))}
+        size="small"
+        pagination={false}
+        bordered
+        dataSource={columns}
+        columns={[
+          {
+            title: 'Name',
+            dataIndex: 'name',
+            render: (text, input, index) => (
+              <Input
+                placeholder="name"
+                value={text}
+                onChange={handlerChange(({target: {value}}) =>
+                  columns.splice(index, 1, {
+                    ...input,
+                    name: value,
+                  }),
+                )}
+              />
+            ),
+          },
+          {
+            title: 'FiledType',
+            dataIndex: 'type',
+            render: (text, input, index) => (
+              <BuiltInProcedureFieldSelect
+                value={text}
+                onSelect={value => {
+                  columns.splice(index, 1, {
+                    ...input,
+                    type: value,
+                  });
+                }}
+              />
+            ),
+          },
+          {
+            title: 'ReadOnly',
+            dataIndex: 'readOnly',
+            render: (data, input, index) => (
+              <Radio.Group
+                value={data}
+                onChange={({target: {value}}) => {
+                  columns.splice(index, 1, {
+                    ...input,
+                    readOnly: value,
+                  });
+                }}
+              >
+                <Radio.Button value={false}>false</Radio.Button>
+                <Radio.Button value={true}>true</Radio.Button>
+              </Radio.Group>
+            ),
+          },
+          {
+            title: 'Actions',
+            render: (_text, _input, index) => (
+              <Button
+                type="link"
+                onClick={() => {
+                  columns.splice(index, 1);
+                  onChange({columns});
+                }}
+              >
+                Delete
+              </Button>
+            ),
+          },
+        ]}
+      />
+    </Form.Item>
+  );
+};
+
 const BaseFieldDataDict: {[key in Field.BaseFieldType]: FC<DataProps>[]} = {
   'input-array': [PrefixedArrayData],
   select: [SelectAlikeData],
@@ -185,10 +277,9 @@ const BaseFieldDataDict: {[key in Field.BaseFieldType]: FC<DataProps>[]} = {
   'procedure-array': [],
   'tag-array': [],
   'file-array': [],
-  // TODO: not support. just fix types
-  table: [],
   textarea: [],
   'user-array': [],
+  table: [TableData],
 };
 
 const BuildInFieldDataDict: {
@@ -209,9 +300,8 @@ const BuildInFieldDataDict: {
   'procedure-array': [],
   'tag-array': [],
   'file-array': [],
-  // TODO: not support. just fix types
   'search-select': [],
-  table: [],
+  table: [TableData],
   textarea: [],
   'user-array': [],
 };

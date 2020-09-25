@@ -2,6 +2,7 @@ import {
   GlanceReport,
   PowerApp,
   PowerAppConfig,
+  PowerAppDataSource,
   PowerAppInput,
   PowerAppPage,
   PowerAppProcedureField,
@@ -30,11 +31,12 @@ type ValueType =
   | PowerApp.DefinitionProcedureResource
   | PowerAppProcedureField.FieldBaseDefinition
   | GlanceReport.Definition
-  | PowerAppPage.Definition;
+  | PowerAppPage.Definition
+  | PowerAppDataSource.Definition;
 
 export interface TabsProps<TValueType extends ValueType = ValueType> {
   primaryKey: keyof TValueType | undefined;
-  displayKey?: 'displayName' | 'title';
+  displayKey?: 'displayName' | 'title' | 'name';
   component: FC<{
     value: TValueType;
     onChange(value: TValueType | undefined): void;

@@ -15,9 +15,37 @@ const InputBaseFieldOptions: FC<OptionsProps<
   </Form.Item>
 );
 
-const BaseFieldOptionsDict: {[key: string]: FC<OptionsProps<any>>} = {
+const SelectBaseFieldOptions: FC<OptionsProps<
+  FieldTypes.SelectBaseFieldTypes
+>> = ({options: {searchable}, onChange}) => (
+  <Form.Item label="Searchable">
+    <Switch
+      checked={searchable}
+      onChange={searchable => onChange({searchable})}
+    />
+  </Form.Item>
+);
+
+const BaseFieldOptionsDict: {
+  [key in FieldTypes.BaseFieldType]: FC<OptionsProps<any>> | undefined;
+} = {
   input: InputBaseFieldOptions,
   'input-array': InputBaseFieldOptions,
+  select: SelectBaseFieldOptions,
+  date: undefined,
+  file: undefined,
+  'file-array': undefined,
+  link: undefined,
+  'procedure-array': undefined,
+  radio: undefined,
+  'select-array': undefined,
+  table: undefined,
+  'tag-array': undefined,
+  team: undefined,
+  'team-array': undefined,
+  textarea: undefined,
+  user: undefined,
+  'user-array': undefined,
 };
 
 export function getOptions(

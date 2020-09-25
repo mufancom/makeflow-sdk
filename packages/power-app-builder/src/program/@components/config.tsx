@@ -58,7 +58,7 @@ export const Config: FC<{
         <ConfigFieldTypeSelect
           placeholder="type"
           // field?: ConfigFieldType | ConfigFieldOptions 暂只支持 ConfigFieldType;
-          value={field as string}
+          value={field as PowerAppConfig.ConfigFieldType}
           onChange={(value: PowerAppConfig.ConfigFieldType) =>
             onPartChange({
               field: value,
@@ -67,7 +67,7 @@ export const Config: FC<{
         ></ConfigFieldTypeSelect>
       </Form.Item>
 
-      <Form.Item label="Require">
+      <Form.Item label="Required">
         <Radio.Group
           defaultValue="checkable"
           value={required}
