@@ -14,6 +14,7 @@ const {Content, Footer, Sider} = Layout;
 type TabType = keyof typeof Components;
 
 export const App: FC = () => {
+  const [toShow, setToShow] = useState<boolean>(true);
   const [collapsed, setCollapsed] = useState(false);
   const [active, setActive] = useState<TabType>('Basic');
   const [state, setState] = useState<PowerApp.RawDefinition>(
@@ -33,7 +34,9 @@ export const App: FC = () => {
         theme="light"
       >
         <div className="logo" style={{margin: '24px 0', overflow: 'hidden'}}>
-          <Button type="link">PowerApp Builder V2.0</Button>
+          <Button type="link" onClick={() => setToShow(true)}>
+            PowerApp Builder V2.0
+          </Button>
         </div>
         <Menu
           defaultSelectedKeys={['Basic']}
@@ -87,7 +90,11 @@ export const App: FC = () => {
           </Button>
         </Footer>
       </Layout>
-      <Start onChange={importedDefinition => setState(importedDefinition)} />
+      <Start
+        toShow={toShow}
+        setToShow={setToShow}
+        onChange={importedDefinition => setState(importedDefinition)}
+      />
       <BackTop />
     </Layout>
   );

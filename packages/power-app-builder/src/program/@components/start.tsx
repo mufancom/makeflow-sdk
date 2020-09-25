@@ -8,10 +8,10 @@ import React, {FC, useState} from 'react';
 const Meta = Card.Meta;
 
 export const Start: FC<{
+  toShow: boolean;
+  setToShow(toShow: boolean): void;
   onChange(definition: PowerApp.RawDefinition): void;
-}> = ({onChange}) => {
-  const [toShow, setToShow] = useState<boolean>(true);
-
+}> = ({onChange, toShow, setToShow}) => {
   const [copying, setCopying] = useState<boolean>(false);
 
   function importDefinition(): void {
@@ -74,7 +74,7 @@ export const Start: FC<{
       // eslint-disable-next-line no-null/no-null
       footer={null}
       closable={false}
-      maskClosable={false}
+      maskClosable={true}
       centered
       onCancel={() => setToShow(false)}
     >

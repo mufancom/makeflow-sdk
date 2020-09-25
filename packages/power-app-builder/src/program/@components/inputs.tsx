@@ -92,7 +92,7 @@ export const Inputs: FC<{
               <Radio.Button value={true}>expression</Radio.Button>
             </Radio.Group>
           </Form.Item>
-          <Form.Item label="value or expression">
+          <Form.Item label="Value or Expression">
             <Input
               placeholder="default"
               value={
@@ -138,7 +138,7 @@ export const Inputs: FC<{
               <Radio.Button value={true}>expression</Radio.Button>
             </Radio.Group>
           </Form.Item>
-          <Form.Item label="value or expression">
+          <Form.Item label="Value or Expression">
             <Input
               placeholder="bind"
               value={

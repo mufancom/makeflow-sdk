@@ -86,7 +86,7 @@ export const Tag: FC<{
           }
         ></TagVariables>
       </Form.Item>
-      <Form.Item label="Abstract Setting">
+      <Form.Item label="Abstract">
         <Switch
           title="Abstract"
           checked={abstract}
