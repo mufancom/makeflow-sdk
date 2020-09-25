@@ -19,8 +19,5 @@
     "typescriptreact"
   ],
   "eslint.workingDirectories": [{"mode": "auto"}],
-  "cSpell.words": [
-    "Makeflow",
-    "downlevel"
-  ]
+  "cSpell.words": ["Makeflow", "downlevel"]
 }

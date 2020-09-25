@@ -10,7 +10,7 @@ import {
   PowerItem,
   PowerNode,
 } from '@makeflow/types';
-import {Button, Icon, Tabs} from 'antd';
+import {Button, Tabs} from 'antd';
 import _ from 'lodash';
 import React, {FC, ReactElement, useState} from 'react';
 
@@ -90,13 +90,13 @@ export function SettingTabs<TValueType extends ValueType>({
             );
           }}
         >
-          <Icon type="plus"></Icon>
+          Add New
         </Button>
       }
       onChange={k => setActive(k)}
     >
       {values.map((value, index) => (
-        <TabPane tab={(value as any)[displayKey] || '新建'} key={`${index}`}>
+        <TabPane tab={(value as any)[displayKey] || 'New'} key={`${index}`}>
           <ValueComponent
             value={value}
             onChange={getOnItemChange(index)}
@@ -158,7 +158,7 @@ export function SettingTabsWithoutTitle<
             setActive(`${newValues.length - 1}`);
           }}
         >
-          <Icon type="plus"></Icon>
+          Add New
         </Button>
       }
       onChange={k => setActive(k)}

@@ -1,6 +1,6 @@
 import {GlanceData, GlanceReport} from '@makeflow/types';
-import {Card, Form, Icon, Input, Tooltip} from 'antd';
-import React, {FC, ReactNode, useState} from 'react';
+import {Button, Card, Form, Input} from 'antd';
+import React, {FC, ReactNode} from 'react';
 
 import {SubFormItem} from './common';
 import {ElementTypeSelect} from './select';
@@ -9,8 +9,6 @@ export const Element: FC<{
   value: GlanceReport.ElementDefinition;
   onChange(value: GlanceReport.ElementDefinition | undefined): void;
 }> = ({value, onChange}) => {
-  const [fold, setFold] = useState(false);
-
   let config = value;
 
   let {type, dataName, gird} = config;
@@ -37,79 +35,65 @@ export const Element: FC<{
   }
 
   return (
-    <Card
-      actions={[
-        <Tooltip placement="top" title={`${fold ? '展开' : '折叠'}元素`}>
-          <Icon
-            type={fold ? 'down' : 'up'}
-            onClick={(): void => setFold(!fold)}
-          />
-        </Tooltip>,
-        <Tooltip placement="top" title="删除此元素">
-          <Icon
-            type="delete"
-            key="delete"
-            onClick={() => onChange(undefined)}
-          />
-        </Tooltip>,
-      ]}
-    >
-      {!fold ? (
-        <>
-          <Form.Item label="类型" required>
-            <ElementTypeSelect
-              value={type}
-              onChange={value =>
-                onPartChange({
-                  type: value as GlanceReport.ElementType,
-                })
-              }
-            ></ElementTypeSelect>
-          </Form.Item>
-          <Form.Item label="数据集名称 (dataName)">
-            <Input
-              placeholder="dataName"
-              value={dataName}
-              onChange={({target: {value}}): void =>
-                onPartChange({
-                  dataName: value as GlanceData.DataName,
-                })
-              }
-            />
-          </Form.Item>
-          {Options}
+    <Card>
+      <Form.Item label="Element Type" required>
+        <ElementTypeSelect
+          value={type}
+          onChange={(value: GlanceReport.ElementType) =>
+            onPartChange({
+              type: value,
+            })
+          }
+        ></ElementTypeSelect>
+      </Form.Item>
+      <Form.Item label="DataName">
+        <Input
+          placeholder="dataName"
+          value={dataName}
+          onChange={({target: {value}}): void =>
+            onPartChange({
+              dataName: value as GlanceData.DataName,
+            })
+          }
+        />
+      </Form.Item>
+      {Options}
 
-          <Form.Item label="布局 (gird)" required>
-            <SubFormItem>
-              列 (column)
-              <Input
-                placeholder="column"
-                value={gird?.column}
-                onChange={({target: {value}}): void =>
-                  onPartChange({
-                    gird: {...gird, column: value},
-                  })
-                }
-              />
-            </SubFormItem>
+      <Form.Item label="Gird" required>
+        <SubFormItem>
+          Column
+          <Input
+            placeholder="column"
+            value={gird?.column}
+            onChange={({target: {value}}): void =>
+              onPartChange({
+                gird: {...gird, column: value},
+              })
+            }
+          />
+        </SubFormItem>
 
-            <SubFormItem required>
-              行 (row)
-              <Input
-                placeholder="row"
-                value={gird?.row}
-                onChange={({target: {value}}): void =>
-                  onPartChange({
-                    gird: {...gird, row: value},
-                  })
-                }
-              />
-            </SubFormItem>
-          </Form.Item>
-        </>
-      ) : (
-        '已折叠'
-      )}
+        <SubFormItem required>
+          Row
+          <Input
+            placeholder="row"
+            value={gird?.row}
+            onChange={({target: {value}}): void =>
+              onPartChange({
+                gird: {...gird, row: value},
+              })
+            }
+          />
+        </SubFormItem>
+      </Form.Item>
+
+      <Button
+        type="primary"
+        onClick={() => onChange(undefined)}
+        style={{float: 'right'}}
+      >
+        Delete
+      </Button>
     </Card>
   );
 };
@@ -121,7 +105,7 @@ function TextLineOptions(
   let {title} = options || {};
 
   return (
-    <Form.Item label="标题" required>
+    <Form.Item label="Title" required>
       <Input
         placeholder="options.title"
         value={title}
@@ -150,7 +134,7 @@ function NumberOptions(
 
   return (
     <>
-      <Form.Item label="标题">
+      <Form.Item label="Title">
         <Input
           placeholder="options.title"
           value={title}
@@ -162,7 +146,7 @@ function NumberOptions(
           }
         />
       </Form.Item>
-      <Form.Item label="单位">
+      <Form.Item label="Unit">
         <Input
           placeholder="options.unit"
           value={unit}

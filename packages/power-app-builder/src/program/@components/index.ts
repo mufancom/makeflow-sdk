@@ -7,7 +7,6 @@ export * from './field';
 export * from './inputs';
 export * from './power-custom-checkable-item';
 export * from './power-action';
-export * from './setting';
 export * from './start';
 export * from './tag';
 export * from './procedure';

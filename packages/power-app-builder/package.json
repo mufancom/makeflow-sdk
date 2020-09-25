@@ -4,13 +4,16 @@
   "private": true,
   "homepage": "http://makeflow.github.io/app-builder",
   "scripts": {
-    "serve": "parcel serve src/program/index.html",
+    "serve": "parcel src/program/index.html",
     "build": "parcel build --public-url /app-builder/ --out-dir bld/program src/program/index.html"
   },
   "dependencies": {
+    "@ant-design/icons": "^4.2.2",
+    "@loadable/component": "^5.13.2",
     "@makeflow/types": "latest",
     "@makeflow/types-nominal": "latest",
-    "antd": "^3.26.8",
+    "@types/loadable__component": "^5.13.0",
+    "antd": "^4.6.5",
     "lodash": "^4.17.15",
     "moment": "^2.26.0",
     "react": "^16.13.1",

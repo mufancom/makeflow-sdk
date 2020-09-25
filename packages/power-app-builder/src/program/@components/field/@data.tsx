@@ -12,7 +12,7 @@ interface DataProps<TData = object> {
 const PrefixedArrayData: FC<DataProps<
   FieldTypes.PrefixedArrayBaseFieldData
 >> = ({value: {prefix}, onChange}) => (
-  <Form.Item label="前缀 (prefix)">
+  <Form.Item label="Prefix">
     <Input
       placeholder="prefix"
       value={prefix}
@@ -43,7 +43,7 @@ const SelectAlikeData: FC<DataProps<FieldTypes.SelectAlikeFieldData>> = ({
   }
 
   return (
-    <Form.Item label="选项 (candidates)">
+    <Form.Item label="Candidates">
       <Button
         onClick={() => {
           dataSource.push({
@@ -58,7 +58,7 @@ const SelectAlikeData: FC<DataProps<FieldTypes.SelectAlikeFieldData>> = ({
         type="primary"
         style={{marginBottom: 10}}
       >
-        新增选项
+        Add new
       </Button>
       <Table<FieldTypes.SelectAlikeFieldCandidate>
         rowKey={input => String(_.findIndex(dataSource, input))}
@@ -68,7 +68,7 @@ const SelectAlikeData: FC<DataProps<FieldTypes.SelectAlikeFieldData>> = ({
         dataSource={dataSource}
         columns={[
           {
-            title: '键',
+            title: 'Key',
             dataIndex: 'text',
             render: (text, input, index) => (
               <Input
@@ -84,7 +84,7 @@ const SelectAlikeData: FC<DataProps<FieldTypes.SelectAlikeFieldData>> = ({
             ),
           },
           {
-            title: '值',
+            title: 'Value',
             dataIndex: 'value',
             render: (text, input, index) => (
               <Input
@@ -100,7 +100,7 @@ const SelectAlikeData: FC<DataProps<FieldTypes.SelectAlikeFieldData>> = ({
             ),
           },
           {
-            title: '操作',
+            title: 'Actions',
             render: (_text, _input, index) => (
               <Button
                 type="link"
@@ -111,7 +111,7 @@ const SelectAlikeData: FC<DataProps<FieldTypes.SelectAlikeFieldData>> = ({
                   });
                 }}
               >
-                删除
+                Delete
               </Button>
             ),
           },
@@ -129,20 +129,20 @@ const DateData: FC<DataProps<FieldTypes.DateBaseFieldData>> = ({
 
   return (
     <>
-      <Form.Item label="选择时间 (默认值只能日期)">
+      <Form.Item label="Enable Time Select">
         <Switch
           checked={showTime}
           onChange={showTime => onChange({...value, showTime})}
         />
       </Form.Item>
-      <Form.Item label="起于 (startsAt)">
+      <Form.Item label="StartsAt">
         <DatePicker
           value={moment(startsAt)}
           showTime={showTime}
           onChange={m => onChange({...value, startsAt: m?.toDate().getTime()})}
         />
       </Form.Item>
-      <Form.Item label="止于 (endsAt)">
+      <Form.Item label="EndsAt">
         <DatePicker
           value={moment(endsAt)}
           showTime={showTime}
@@ -157,7 +157,7 @@ const LinkData: FC<DataProps<Partial<FieldTypes.LinkBaseFieldData>>> = ({
   value: {description},
   onChange,
 }) => (
-  <Form.Item label="链接描述 (description)">
+  <Form.Item label="Description">
     <Input
       placeholder="description"
       value={description}

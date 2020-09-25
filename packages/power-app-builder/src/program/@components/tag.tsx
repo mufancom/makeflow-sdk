@@ -1,7 +1,7 @@
 import {PowerApp} from '@makeflow/types';
-import {Button, Card, Form, Icon, Input, Switch, Table, Tooltip} from 'antd';
+import {Button, Card, Form, Input, Switch, Table} from 'antd';
 import _ from 'lodash';
-import React, {FC, ReactElement, useState} from 'react';
+import React, {FC, ReactElement} from 'react';
 import {BlockPicker} from 'react-color';
 
 const DEFAULT_TAG_COLOR_DICT = {
@@ -25,8 +25,6 @@ export const Tag: FC<{
   value: PowerApp.DefinitionTagResource;
   onChange(value: PowerApp.DefinitionTagResource | undefined): void;
 }> = ({value, onChange}) => {
-  const [fold, setFold] = useState(false);
-
   let config = value;
 
   let {
@@ -46,88 +44,73 @@ export const Tag: FC<{
   };
 
   return (
-    <Card
-      actions={[
-        <Tooltip placement="top" title={`${fold ? '展开' : '折叠'}标签`}>
-          <Icon
-            type={fold ? 'down' : 'up'}
-            onClick={(): void => setFold(!fold)}
-          />
-        </Tooltip>,
-        <Tooltip placement="top" title="删除此标签">
-          <Icon
-            type="delete"
-            key="delete"
-            onClick={() => onChange(undefined)}
-          />
-        </Tooltip>,
-      ]}
-    >
-      {!fold ? (
-        <>
-          <Form.Item label="名称 (英文)" required>
-            <Input
-              placeholder="name"
-              value={name}
-              onChange={({target: {value}}): void =>
-                onPartChange({
-                  name: value as PowerApp.DefinitionResourceName,
-                })
-              }
-            />
-          </Form.Item>
-          <Form.Item label="展示名称 (别名)" required>
-            <Input
-              placeholder="displayName"
-              value={displayName}
-              onChange={({target: {value}}): void =>
-                onPartChange({
-                  displayName: value,
-                })
-              }
-            />
-          </Form.Item>
-          <Form.Item label="颜色" required>
-            <BlockPicker
-              triangle="hide"
-              width="80%"
-              colors={DEFAULT_TAG_COLORS}
-              color={color}
-              onChange={({hex}) => onPartChange({color: hex})}
-            ></BlockPicker>
-          </Form.Item>
-          <Form.Item label="携带变量">
-            <TagVariables
-              value={variables}
-              onChange={variables =>
-                onPartChange({
-                  variables,
-                })
-              }
-            ></TagVariables>
-          </Form.Item>
-          <Form.Item label="抽象标签">
-            <Switch
-              title="是否是抽象标签"
-              checked={abstract}
-              onChange={abstract => onPartChange({abstract})}
-            />
-          </Form.Item>
-          <Form.Item label="父标签">
-            <Input
-              placeholder="super"
-              value={superTag}
-              onChange={({target: {value}}): void =>
-                onPartChange({
-                  super: value as PowerApp.DefinitionResourceName,
-                })
-              }
-            />
-          </Form.Item>
-        </>
-      ) : (
-        '已折叠'
-      )}
+    <Card>
+      <Form.Item label="Name" required>
+        <Input
+          placeholder="name"
+          value={name}
+          onChange={({target: {value}}): void =>
+            onPartChange({
+              name: value as PowerApp.DefinitionResourceName,
+            })
+          }
+        />
+      </Form.Item>
+      <Form.Item label="DisplayName" required>
+        <Input
+          placeholder="displayName"
+          value={displayName}
+          onChange={({target: {value}}): void =>
+            onPartChange({
+              displayName: value,
+            })
+          }
+        />
+      </Form.Item>
+      <Form.Item label="Color" required>
+        <BlockPicker
+          triangle="hide"
+          width="80%"
+          colors={DEFAULT_TAG_COLORS}
+          color={color}
+          onChange={({hex}) => onPartChange({color: hex})}
+        ></BlockPicker>
+      </Form.Item>
+      <Form.Item label="Variables">
+        <TagVariables
+          value={variables}
+          onChange={variables =>
+            onPartChange({
+              variables,
+            })
+          }
+        ></TagVariables>
+      </Form.Item>
+      <Form.Item label="Abstract Setting">
+        <Switch
+          title="Abstract"
+          checked={abstract}
+          onChange={abstract => onPartChange({abstract})}
+        />
+      </Form.Item>
+      <Form.Item label="Super tag">
+        <Input
+          placeholder="super"
+          value={superTag}
+          onChange={({target: {value}}): void =>
+            onPartChange({
+              super: value as PowerApp.DefinitionResourceName,
+            })
+          }
+        />
+      </Form.Item>
+      <Button
+        type="primary"
+        onClick={() => onChange(undefined)}
+        style={{float: 'right'}}
+      >
+        Delete
+      </Button>
     </Card>
   );
 };
@@ -155,7 +138,7 @@ function TagVariables({
       <Button
         onClick={() => {
           dataSource.push({
-            name: '新增变量内容',
+            name: 'New',
             value: '',
           });
 
@@ -164,7 +147,7 @@ function TagVariables({
         type="primary"
         style={{marginBottom: 16}}
       >
-        新增一行输入
+        Add new
       </Button>
       <Table<PowerApp.TagVariable>
         rowKey={input => String(_.findIndex(dataSource, input))}
@@ -174,7 +157,7 @@ function TagVariables({
         dataSource={dataSource}
         columns={[
           {
-            title: '名称',
+            title: 'Name',
             dataIndex: 'name',
             render: (text, input, index) => (
               <Input
@@ -190,7 +173,7 @@ function TagVariables({
             ),
           },
           {
-            title: '值',
+            title: 'Value',
             dataIndex: 'value',
             render: (text, input, index) => (
               <Input
@@ -206,7 +189,7 @@ function TagVariables({
             ),
           },
           {
-            title: '操作',
+            title: 'Actions',
             render: (_text, _input, index) => (
               <Button
                 type="link"
@@ -215,7 +198,7 @@ function TagVariables({
                   onChange(dataSource);
                 }}
               >
-                删除
+                Delete
               </Button>
             ),
           },

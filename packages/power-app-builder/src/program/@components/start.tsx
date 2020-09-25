@@ -1,13 +1,18 @@
+import CopyFilled from '@ant-design/icons/CopyFilled';
+import FolderOpenFilled from '@ant-design/icons/FolderOpenFilled';
+import PlusCircleFilled from '@ant-design/icons/PlusCircleFilled';
 import {PowerApp} from '@makeflow/types';
-import {Card, Icon, Modal, notification} from 'antd';
+import {Card, Modal, notification} from 'antd';
 import React, {FC, useState} from 'react';
 
-const Meta =Card.Meta;
+const Meta = Card.Meta;
 
 export const Start: FC<{
   onChange(definition: PowerApp.RawDefinition): void;
 }> = ({onChange}) => {
   const [toShow, setToShow] = useState<boolean>(true);
+
+  const [copying, setCopying] = useState<boolean>(false);
 
   function importDefinition(): void {
     let fileInput = document.createElement('input');
@@ -52,7 +57,7 @@ export const Start: FC<{
             setToShow(false);
           } catch (error) {
             notification.open({
-              message: '导入失败, 请重试',
+              message: 'Import Failed',
               description: error.message,
             });
           }
@@ -63,7 +68,8 @@ export const Start: FC<{
 
   return (
     <Modal
-      title="选择一种方式"
+      title="Bootstrap"
+      width={580}
       visible={toShow}
       // eslint-disable-next-line no-null/no-null
       footer={null}
@@ -74,19 +80,38 @@ export const Start: FC<{
     >
       <div className="start">
         <Card onClick={importDefinition}>
-          <Meta
-            avatar={<Icon type="folder-open" theme="filled" />}
-            title="从本地导入"
-            description="导入一份 json 文件"
-          />
+          <Meta avatar={<FolderOpenFilled />} title="Import" />
+        </Card>
+
+        <Card
+          className={copying ? 'active' : ''}
+          onClick={() => {
+            const once = (): void => {
+              setCopying(false);
+              document.removeEventListener('click', once);
+            };
+            document.addEventListener('click', once);
+            setCopying(true);
+          }}
+          onPaste={({clipboardData}) => {
+            try {
+              const data = JSON.parse(clipboardData.getData('text/plain'));
+              setCopying(false);
+              onChange(data);
+              setToShow(false);
+            } catch (error) {
+              notification.open({
+                message: 'Paste Failed',
+                description: error.message,
+              });
+            }
+          }}
+        >
+          <Meta avatar={<CopyFilled />} title="Clipboard" />
         </Card>
 
         <Card onClick={() => setToShow(false)}>
-          <Meta
-            avatar={<Icon type="plus-circle" theme="filled" />}
-            title="新建文档"
-            description="从零开始定义"
-          />
+          <Meta avatar={<PlusCircleFilled />} title="New" />
         </Card>
       </div>
     </Modal>

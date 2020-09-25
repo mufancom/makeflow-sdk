@@ -1,14 +1,12 @@
 import {PowerAppInput, PowerItem, PowerNode} from '@makeflow/types';
-import {Button, Card, Form, Icon, Input, Table, Tooltip} from 'antd';
+import {Button, Card, Form, Input, Table} from 'antd';
 import _ from 'lodash';
-import React, {FC, ReactElement, useState} from 'react';
+import React, {FC, ReactElement} from 'react';
 
 export const PowerItemAction: FC<{
   value: PowerItem.ActionDefinition;
   onChange(value: PowerItem.ActionDefinition | undefined): void;
 }> = ({value, onChange}) => {
-  const [fold, setFold] = useState(false);
-
   let config = value;
 
   let {displayName, name, inputs, target} = config;
@@ -21,69 +19,57 @@ export const PowerItemAction: FC<{
   };
 
   return (
-    <Card
-      actions={[
-        <Tooltip placement="top" title={`${fold ? '展开' : '折叠'}操作`}>
-          <Icon type={fold ? 'down' : 'up'} onClick={() => setFold(!fold)} />
-        </Tooltip>,
-        <Tooltip placement="top" title="删除此内容">
-          <Icon
-            type="delete"
-            key="delete"
-            onClick={() => onChange(undefined)}
-          />
-        </Tooltip>,
-      ]}
-    >
-      {!fold ? (
-        <>
-          <Form.Item label="名称 (英文)" required>
-            <Input
-              placeholder="name"
-              value={name}
-              onChange={({target: {value}}) =>
-                onPartChange({
-                  name: value as PowerItem.ActionName,
-                })
-              }
-            />
-          </Form.Item>
-          <Form.Item label="展示名称 (别名)" required>
-            <Input
-              placeholder="displayName"
-              value={displayName}
-              onChange={({target: {value}}) =>
-                onPartChange({
-                  displayName: value,
-                })
-              }
-            />
-          </Form.Item>
-          <Form.Item label="目标网页 (target)">
-            <Input
-              placeholder="target"
-              value={target}
-              onChange={({target: {value}}) =>
-                onPartChange({
-                  target: value,
-                })
-              }
-            />
-          </Form.Item>
-          <Form.Item label="输入 (inputs)">
-            <PowerAppInputOptions
-              value={inputs}
-              onChange={inputs => {
-                onPartChange({
-                  inputs,
-                });
-              }}
-            ></PowerAppInputOptions>
-          </Form.Item>
-        </>
-      ) : (
-        '已折叠'
-      )}
+    <Card>
+      <Form.Item label="Name" required>
+        <Input
+          placeholder="name"
+          value={name}
+          onChange={({target: {value}}) =>
+            onPartChange({
+              name: value as PowerItem.ActionName,
+            })
+          }
+        />
+      </Form.Item>
+      <Form.Item label="DisplayName" required>
+        <Input
+          placeholder="displayName"
+          value={displayName}
+          onChange={({target: {value}}) =>
+            onPartChange({
+              displayName: value,
+            })
+          }
+        />
+      </Form.Item>
+      <Form.Item label="Target">
+        <Input
+          placeholder="target"
+          value={target}
+          onChange={({target: {value}}) =>
+            onPartChange({
+              target: value,
+            })
+          }
+        />
+      </Form.Item>
+      <Form.Item label="Inputs">
+        <PowerAppInputOptions
+          value={inputs}
+          onChange={inputs => {
+            onPartChange({
+              inputs,
+            });
+          }}
+        ></PowerAppInputOptions>
+      </Form.Item>
+      <Button
+        type="primary"
+        onClick={() => onChange(undefined)}
+        style={{float: 'right'}}
+      >
+        Delete
+      </Button>
     </Card>
   );
 };
@@ -92,8 +78,6 @@ export const PowerNodeAction: FC<{
   value: PowerNode.ActionDefinition;
   onChange(value: PowerNode.ActionDefinition | undefined): void;
 }> = ({value, onChange}) => {
-  const [fold, setFold] = useState(false);
-
   let config = value;
 
   let {displayName, name, inputs} = config;
@@ -106,58 +90,46 @@ export const PowerNodeAction: FC<{
   };
 
   return (
-    <Card
-      actions={[
-        <Tooltip placement="top" title={`${fold ? '展开' : '折叠'}操作`}>
-          <Icon type={fold ? 'down' : 'up'} onClick={() => setFold(!fold)} />
-        </Tooltip>,
-        <Tooltip placement="top" title="删除此内容">
-          <Icon
-            type="delete"
-            key="delete"
-            onClick={() => onChange(undefined)}
-          />
-        </Tooltip>,
-      ]}
-    >
-      {!fold ? (
-        <>
-          <Form.Item label="名称 (英文)" required>
-            <Input
-              placeholder="name"
-              value={name}
-              onChange={({target: {value}}) =>
-                onPartChange({
-                  name: value as PowerNode.ActionName,
-                })
-              }
-            />
-          </Form.Item>
-          <Form.Item label="展示名称 (别名)" required>
-            <Input
-              placeholder="displayName"
-              value={displayName}
-              onChange={({target: {value}}) =>
-                onPartChange({
-                  displayName: value,
-                })
-              }
-            />
-          </Form.Item>
-          <Form.Item label="输入 (inputs)">
-            <PowerAppInputOptions
-              value={inputs}
-              onChange={inputs => {
-                onPartChange({
-                  inputs,
-                });
-              }}
-            ></PowerAppInputOptions>
-          </Form.Item>
-        </>
-      ) : (
-        '已折叠'
-      )}
+    <Card>
+      <Form.Item label="Name" required>
+        <Input
+          placeholder="name"
+          value={name}
+          onChange={({target: {value}}) =>
+            onPartChange({
+              name: value as PowerNode.ActionName,
+            })
+          }
+        />
+      </Form.Item>
+      <Form.Item label="DisplayName" required>
+        <Input
+          placeholder="displayName"
+          value={displayName}
+          onChange={({target: {value}}) =>
+            onPartChange({
+              displayName: value,
+            })
+          }
+        />
+      </Form.Item>
+      <Form.Item label="Inputs">
+        <PowerAppInputOptions
+          value={inputs}
+          onChange={inputs => {
+            onPartChange({
+              inputs,
+            });
+          }}
+        ></PowerAppInputOptions>
+      </Form.Item>
+      <Button
+        type="primary"
+        onClick={() => onChange(undefined)}
+        style={{float: 'right'}}
+      >
+        Delete
+      </Button>
     </Card>
   );
 };
@@ -185,7 +157,7 @@ function PowerAppInputOptions({
       <Button
         onClick={() => {
           dataSource.push({
-            name: '新建输入' as PowerAppInput.Name,
+            name: 'New' as PowerAppInput.Name,
             type: 'value',
             value: '',
           });
@@ -195,7 +167,7 @@ function PowerAppInputOptions({
         type="primary"
         style={{marginBottom: 16}}
       >
-        新增一行输入
+        Add Row
       </Button>
       <Table<PowerAppInput.Options>
         rowKey={input => String(_.findIndex(dataSource, input))}
@@ -205,7 +177,7 @@ function PowerAppInputOptions({
         dataSource={dataSource}
         columns={[
           {
-            title: '名称',
+            title: 'Name',
             dataIndex: 'name',
             render: (text, input, index) => (
               <Input
@@ -221,7 +193,7 @@ function PowerAppInputOptions({
             ),
           },
           {
-            title: '值',
+            title: 'Value',
             dataIndex: 'value',
             render: (text, input, index) => (
               <Input
@@ -238,11 +210,11 @@ function PowerAppInputOptions({
             ),
           },
           {
-            title: '表达式',
+            title: 'Expression',
             dataIndex: 'expression',
             render: (text, input, index) => (
               <Input
-                placeholder="expression 与 value 互斥"
+                placeholder="Value and Expression are mutually exclusive"
                 value={text}
                 onChange={handlerChange(({target: {value}}) =>
                   dataSource.splice(index, 1, {
@@ -255,7 +227,7 @@ function PowerAppInputOptions({
             ),
           },
           {
-            title: '操作',
+            title: 'Actions',
             render: (_text, _input, index) => (
               <Button
                 type="link"
@@ -264,7 +236,7 @@ function PowerAppInputOptions({
                   onChange(dataSource);
                 }}
               >
-                删除
+                Delete
               </Button>
             ),
           },

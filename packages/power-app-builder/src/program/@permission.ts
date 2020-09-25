@@ -7,32 +7,32 @@ export const permissionData: {
   value: AccessControl.PermissionName;
 }[] = [
   {
-    label: '通过信息模糊匹配用户',
+    label: 'Match User',
     value: 'user:match',
   },
 
   {
-    label: '创建任务',
+    label: 'Create Task',
     value: 'task:create',
   },
 
   {
-    label: '更新任务',
+    label: 'Update Task',
     value: 'task:update',
   },
 
   {
-    label: '在任务中发送消息',
+    label: 'Send TaskMessage',
     value: 'task:send-message',
   },
 
   {
-    label: '创建流程',
+    label: 'Create Procedure',
     value: 'procedure:create',
   },
 
   {
-    label: '更新流程',
+    label: 'Update Procedure',
     value: 'procedure:update',
   },
 ];

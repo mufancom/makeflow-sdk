@@ -1,33 +1,3 @@
-.app {
-  height: 100%;
-}
-
-.app .header {
-  background-color: transparent;
-}
-
-.app .header i {
-  float: right;
-  height: 100%;
-  font-size: 1.2em;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-
-.app > main {
-  overflow-y: auto;
-}
-
-.app .main {
-  box-sizing: border-box;
-  padding: 12px;
-}
-
-.required {
-  border-color: #009960 !important;
-}
-
 .start {
   height: 100px;
   display: flex;
@@ -45,10 +15,34 @@
   font-size: 1.8em;
 }
 
-.start > :first-child {
-  margin-right: 16px;
+.start :not(:first-child) {
+  margin-left: 16px;
+}
+
+.start .ant-card-body {
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .start .ant-card-meta-description {
   font-size: 0.8em;
+}
+
+.start .active {
+  position: relative;
+  background-color: #0d4f8c;
+  color: #fff;
+}
+
+.start .active * {
+  color: #fff;
+}
+
+.start .active::after {
+  position: absolute;
+  content: 'Paste Here';
+  bottom: 4px;
+  left: 12px;
+  color: #ccc;
 }

@@ -10,7 +10,7 @@ interface OptionsProps<TDefinition extends FieldTypes.BaseFieldTypes> {
 const InputBaseFieldOptions: FC<OptionsProps<
   FieldTypes.InputBaseFieldTypes
 >> = ({options: {secret}, onChange}) => (
-  <Form.Item label="输入时不可见 (密码类型)">
+  <Form.Item label="Secret Mode">
     <Switch checked={secret} onChange={secret => onChange({secret})} />
   </Form.Item>
 );

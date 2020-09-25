@@ -67,6 +67,7 @@ function lock(
   propertyKey: string,
   descriptor: PropertyDescriptor,
 ): void {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   let fn: Function = target[propertyKey];
 
   descriptor.value = async function (
