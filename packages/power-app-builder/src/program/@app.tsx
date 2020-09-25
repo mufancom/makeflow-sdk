@@ -1,6 +1,6 @@
 import {PowerApp} from '@makeflow/types';
 import {BackTop, Breadcrumb, Button, Layout, Menu, notification} from 'antd';
-import _ from 'lodash';
+import {isEmpty} from 'lodash';
 import React, {FC, useState} from 'react';
 import {v4 as uuid} from 'uuid';
 
@@ -143,7 +143,7 @@ function formatDefinition(
 
 function handleLeave(definition: PowerApp.RawDefinition): void {
   window.onbeforeunload = () => {
-    if (_.isEmpty(definition)) {
+    if (isEmpty(definition)) {
       return undefined;
     }
 

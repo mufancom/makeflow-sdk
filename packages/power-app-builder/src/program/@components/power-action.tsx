@@ -1,6 +1,6 @@
 import {PowerAppInput, PowerItem, PowerNode} from '@makeflow/types';
 import {Button, Card, Form, Input, Table} from 'antd';
-import _ from 'lodash';
+import {cloneDeep, findIndex} from 'lodash';
 import React, {FC, ReactElement} from 'react';
 
 export const PowerItemAction: FC<{
@@ -141,7 +141,7 @@ export function PowerAppInputOptions({
   value: PowerAppInput.Options[] | undefined;
   onChange(value: PowerAppInput.Options[]): void;
 }): ReactElement {
-  let dataSource = _.cloneDeep(value);
+  let dataSource = cloneDeep(value);
 
   function handlerChange(
     fn: (event: React.ChangeEvent<HTMLInputElement>) => void,
@@ -170,7 +170,7 @@ export function PowerAppInputOptions({
         Add Row
       </Button>
       <Table<PowerAppInput.Options>
-        rowKey={input => String(_.findIndex(dataSource, input))}
+        rowKey={input => String(findIndex(dataSource, input))}
         size="small"
         pagination={false}
         bordered

@@ -12,7 +12,7 @@ import {
   PowerNode,
 } from '@makeflow/types';
 import {Button, Tabs} from 'antd';
-import _ from 'lodash';
+import {compact, uniq, uniqBy} from 'lodash';
 import React, {FC, ReactElement, useState} from 'react';
 
 const {TabPane} = Tabs;
@@ -61,7 +61,7 @@ export function SettingTabs<TValueType extends ValueType>({
 
     return value => {
       _values.splice(index, 1, value);
-      onChange(_.compact(_values));
+      onChange(compact(_values));
     };
   }
 
@@ -75,7 +75,7 @@ export function SettingTabs<TValueType extends ValueType>({
           type="dashed"
           onClick={() => {
             let newValues = primaryKey
-              ? _.uniqBy(
+              ? uniqBy(
                   [...values, {[primaryKey]: '', [displayKey]: ''} as any],
                   primaryKey,
                 )
@@ -140,7 +140,7 @@ export function SettingTabsWithoutTitle<
 
     return value => {
       _values.splice(index, 1, value);
-      onChange(_.compact(_values));
+      onChange(compact(_values));
     };
   }
 
@@ -153,7 +153,7 @@ export function SettingTabsWithoutTitle<
         <Button
           type="dashed"
           onClick={() => {
-            let newValues = _.uniq([...values, {} as TValueType]);
+            let newValues = uniq([...values, {} as TValueType]);
 
             onChange(newValues);
 

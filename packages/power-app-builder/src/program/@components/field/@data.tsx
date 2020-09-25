@@ -1,6 +1,6 @@
 import {Field, Field as FieldTypes, ProcedureField} from '@makeflow/types';
 import {Button, DatePicker, Form, Input, Radio, Switch, Table} from 'antd';
-import _ from 'lodash';
+import {cloneDeep, findIndex} from 'lodash';
 import moment from 'moment';
 import React, {FC} from 'react';
 
@@ -31,7 +31,7 @@ const SelectAlikeData: FC<DataProps<FieldTypes.SelectAlikeFieldData>> = ({
   value: {candidates = []},
   onChange,
 }) => {
-  let dataSource = _.cloneDeep(candidates);
+  let dataSource = cloneDeep(candidates);
 
   function handlerChange(
     fn: (event: React.ChangeEvent<HTMLInputElement>) => void,
@@ -63,7 +63,7 @@ const SelectAlikeData: FC<DataProps<FieldTypes.SelectAlikeFieldData>> = ({
         Add New
       </Button>
       <Table<FieldTypes.SelectAlikeFieldCandidate>
-        rowKey={input => String(_.findIndex(dataSource, input))}
+        rowKey={input => String(findIndex(dataSource, input))}
         size="small"
         pagination={false}
         bordered
@@ -187,7 +187,7 @@ const TableData: FC<DataProps<
   return (
     <Form.Item label="Columns">
       <Table<FieldTypes.TableBaseFieldColumn<string>>
-        rowKey={input => String(_.findIndex(columns, input))}
+        rowKey={input => String(findIndex(columns, input))}
         size="small"
         pagination={false}
         bordered

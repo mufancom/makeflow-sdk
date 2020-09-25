@@ -1,6 +1,6 @@
 import {PowerApp} from '@makeflow/types';
 import {Button, Card, Form, Input, Switch, Table} from 'antd';
-import _ from 'lodash';
+import {cloneDeep, findIndex} from 'lodash';
 import React, {FC, ReactElement} from 'react';
 import {BlockPicker} from 'react-color';
 
@@ -122,7 +122,7 @@ function TagVariables({
   value: PowerApp.TagVariable[] | undefined;
   onChange(value: PowerApp.TagVariable[]): void;
 }): ReactElement {
-  let dataSource = _.cloneDeep(value);
+  let dataSource = cloneDeep(value);
 
   function handlerChange(
     fn: (event: React.ChangeEvent<HTMLInputElement>) => void,
@@ -150,7 +150,7 @@ function TagVariables({
         Add New
       </Button>
       <Table<PowerApp.TagVariable>
-        rowKey={input => String(_.findIndex(dataSource, input))}
+        rowKey={input => String(findIndex(dataSource, input))}
         size="small"
         pagination={false}
         bordered
