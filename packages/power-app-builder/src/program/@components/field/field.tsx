@@ -240,6 +240,7 @@ export const ItemField: FC<{
           value={buildIn}
           onChange={({target: {value}}) => {
             setBuildIn(value);
+            onChange(undefined);
           }}
         >
           <Radio.Button value={true}>builtIn filed</Radio.Button>
