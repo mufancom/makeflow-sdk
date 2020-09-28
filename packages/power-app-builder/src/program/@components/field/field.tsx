@@ -238,9 +238,19 @@ export const ItemField: FC<{
       <Form.Item label="Field Data">
         <Radio.Group
           value={buildIn}
-          onChange={({target: {value}}) => {
-            setBuildIn(value);
-            onChange(undefined);
+          onChange={({target: {value: buildIn}}) => {
+            setBuildIn(buildIn);
+
+            if ('type' in value) {
+              let data: any = {...value};
+              delete data.data;
+              delete data.type;
+              onChange(data);
+            } else {
+              let data: any = {...value};
+              delete data.definition;
+              onChange(data);
+            }
           }}
         >
           <Radio.Button value={true}>builtIn filed</Radio.Button>
