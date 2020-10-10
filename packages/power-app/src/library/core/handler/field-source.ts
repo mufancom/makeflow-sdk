@@ -13,7 +13,7 @@ import {GeneralDeclare, PowerAppVersion} from '../version';
 export type FieldSourceHandler = (
   app: PowerApp,
   params: FieldSourceHandlerParams,
-) => Promise<PowerAppProcedureField.FieldBaseDefinition[] | undefined | void>;
+) => Promise<PowerAppProcedureField.FieldBaseDefinition[] | void>;
 
 export interface FieldSourceParams {
   name: string;
@@ -21,7 +21,6 @@ export interface FieldSourceParams {
 }
 
 interface FieldSourceHandlerParams {
-  type: 'fieldSource';
   params: FieldSourceParams;
   body: API.ProcedureField.FieldSourceParams;
 }
@@ -67,7 +66,7 @@ export const fieldSourceHandler: FieldSourceHandler = async (
 
   await runMigrations(db, storage, migrations);
 
-  let responseField;
+  let responseField: PowerAppProcedureField.FieldBaseDefinition[] | void;
 
   if (change) {
     let [context] = await app.getStorageObjectContexts('field-source', storage);
@@ -77,7 +76,7 @@ export const fieldSourceHandler: FieldSourceHandler = async (
     });
   }
 
-  return responseField;
+  return responseField ?? [];
 };
 
 function getFieldSourceChange({

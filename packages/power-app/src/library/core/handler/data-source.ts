@@ -22,7 +22,6 @@ export interface DataSourceParams {
 }
 
 interface DataSourceHandlerParams {
-  type: 'dataSource';
   params: DataSourceParams;
   body: API.ProcedureField.DataSourceParams;
 }
