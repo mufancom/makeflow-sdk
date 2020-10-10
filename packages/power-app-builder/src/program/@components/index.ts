@@ -16,3 +16,4 @@ export * from './element';
 export * from './power-node';
 export * from './page';
 export * from './data-source';
+export * from './procedure-filed-source';

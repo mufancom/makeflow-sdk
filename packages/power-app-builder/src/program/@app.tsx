@@ -54,6 +54,9 @@ export const App: FC = () => {
             PowerCustomCheckableItems
           </Menu.Item>
           <Menu.Item key="DataSources">DataSources</Menu.Item>
+          <Menu.Item key="ProcedureFieldSources">
+            ProcedureFieldSources
+          </Menu.Item>
           <Menu.Item key="Resources">Resources</Menu.Item>
         </Menu>
       </Sider>

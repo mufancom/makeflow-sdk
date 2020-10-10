@@ -10,6 +10,7 @@ import {
   PowerGlance,
   PowerItem,
   PowerNode,
+  ProcedureFieldSource,
 } from '@makeflow/types';
 import {Button, Tabs} from 'antd';
 import {compact, uniq, uniqBy} from 'lodash';
@@ -32,7 +33,8 @@ type ValueType =
   | PowerAppProcedureField.FieldBaseDefinition
   | GlanceReport.Definition
   | PowerAppPage.Definition
-  | PowerAppDataSource.Definition;
+  | PowerAppDataSource.Definition
+  | ProcedureFieldSource.Definition;
 
 export interface TabsProps<TValueType extends ValueType = ValueType> {
   primaryKey: keyof TValueType | undefined;
