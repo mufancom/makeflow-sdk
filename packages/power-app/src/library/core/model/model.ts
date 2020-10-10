@@ -29,7 +29,8 @@ export type Model =
   | PowerCustomCheckableItemModel
   | PageModel
   | UserModel
-  | DataSourceModel;
+  | DataSourceModel
+  | FieldSourceModel;
 
 export type Definition =
   | InstallationDefinition
@@ -39,7 +40,8 @@ export type Definition =
   | PowerCustomCheckableItemDefinition
   | PageDefinition
   | UserDefinition
-  | DataSourceDefinition;
+  | DataSourceDefinition
+  | FieldSourceDefinition;
 
 type __Definition<TModel> = TModel extends BasicModel<infer Type, string>
   ? {
@@ -124,6 +126,14 @@ export interface DataSourceModel extends BasicModel<'data-source', string> {
 
 export type DataSourceDefinition = __Definition<DataSourceModel>;
 
+// field-source
+
+export interface FieldSourceModel extends BasicModel<'field-source', string> {
+  id: string;
+}
+
+export type FieldSourceDefinition = __Definition<FieldSourceModel>;
+
 type ModelTypeToDefinition<TType extends Model['type']> = Extract<
   Definition,
   {type: TType}
@@ -158,6 +168,9 @@ export const typeToModelDefinitionDict: {
   },
   'data-source': {
     type: 'data-source',
+  },
+  'field-source': {
+    type: 'field-source',
   },
 };
 

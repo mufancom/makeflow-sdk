@@ -1,4 +1,4 @@
-import {API as APITypes} from '@makeflow/types';
+import {API as APITypes, PowerAppProcedureField} from '@makeflow/types';
 
 import {Context, ContextType} from './context';
 
@@ -15,6 +15,7 @@ export interface CustomDeclareDict {
   powerCustomCheckableItems: {[key in string]: GeneralDeclareWithInputs};
   pages: {[key in string]: GeneralDeclareWithInputs};
   dataSources: {[key in string]: GeneralDeclareWithInputs};
+  fieldSources: {[key in string]: GeneralDeclare};
 }
 
 export interface GeneralDeclare {
@@ -130,6 +131,18 @@ export namespace PowerAppVersion {
         : {}) &
         {
           [key in string]: DataSource.Definition<GeneralDeclareWithInputs>;
+        };
+
+      fieldSources?: (TCustomDeclareDict['fieldSources'] extends CustomDeclareDict['fieldSources']
+        ? {
+            [TKey in keyof TCustomDeclareDict['fieldSources']]: FieldSource.Definition<
+              TCustomDeclareDict['fieldSources'][TKey] &
+                Pick<TInstallationDeclare, 'configs'>
+            >;
+          }
+        : {}) &
+        {
+          [key in string]: FieldSource.Definition<GeneralDeclare>;
         };
     };
   }
@@ -260,6 +273,21 @@ export namespace PowerAppVersion {
   export namespace DataSource {
     // TODO(boen): data-source 返回值类型
     export type Change<TDeclare> = GeneralChange<'data-source', TDeclare, any>;
+
+    export interface Definition<TDeclare> {
+      request?: Change<TDeclare>;
+      migrations?: Migrations<ExtractDeclareStorage<TDeclare>>;
+    }
+  }
+
+  // field-source
+
+  export namespace FieldSource {
+    export type Change<TDeclare> = GeneralChange<
+      'field-source',
+      TDeclare,
+      PowerAppProcedureField.FieldBaseDefinition[]
+    >;
 
     export interface Definition<TDeclare> {
       request?: Change<TDeclare>;

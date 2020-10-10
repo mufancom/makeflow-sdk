@@ -243,6 +243,7 @@ export class LowdbAdapter extends AbstractDBAdapter {
         page: [],
         user: [],
         'data-source': [],
+        'field-source': [],
       })
       .write();
   }

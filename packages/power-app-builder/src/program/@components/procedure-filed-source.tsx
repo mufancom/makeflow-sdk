@@ -45,7 +45,7 @@ export const ProcedureFieldSource: FC<{
       </Form.Item>
       <span style={{opacity: name ? 0.6 : 0}}>
         Tip: Fields request url will be{' '}
-        <b>[HookBaseURL]/procedure-field/{name}</b>
+        <b>[HookBaseURL]/procedure-field/{name}/request</b>
       </span>
       <Button
         type="primary"

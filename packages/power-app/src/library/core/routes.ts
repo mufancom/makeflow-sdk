@@ -5,6 +5,7 @@ import {PowerApp} from '../app';
 import {ContextType} from './context';
 import {
   dataSourceHandler,
+  fieldSourceHandler,
   installationHandler,
   pageHandler,
   powerCustomCheckableItemHandler,
@@ -110,6 +111,19 @@ export function buildRoutes(
         },
       ],
       handler: handlerCatcher(app, dataSourceHandler),
+    },
+    {
+      type: 'field-source',
+      paths: [
+        'procedure-field',
+        {
+          name: 'name',
+        },
+        {
+          name: 'type',
+        },
+      ],
+      handler: handlerCatcher(app, fieldSourceHandler),
     },
   ];
 }

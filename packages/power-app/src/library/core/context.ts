@@ -6,6 +6,7 @@ import {UserId} from '../types/namespace';
 
 import {
   DataSourceModel,
+  FieldSourceModel,
   InstallationModel,
   Model,
   ModelIdentity,
@@ -88,6 +89,7 @@ export type ContextTypeToBasicMapping = {
       search: string | undefined;
     },
   ];
+  'field-source': [FieldSourceModel, {}];
 };
 
 export type __AssertContextTypeToBasicMapping<

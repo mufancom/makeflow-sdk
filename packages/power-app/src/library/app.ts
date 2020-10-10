@@ -17,6 +17,7 @@ import {
   ContextTypeToModel,
   CustomDeclareDict,
   DataSourceModel,
+  FieldSourceModel,
   IDBAdapter,
   InstallationModel,
   LowdbAdapter,
@@ -424,6 +425,26 @@ export class PowerApp {
           type: 'data-source',
           id: storageObject.getField('id')!,
           search: options?.['data-source']?.search,
+        };
+
+        contexts = [context];
+        break;
+      }
+
+      case 'field-source': {
+        if (
+          !assertStorageObjectType<StorageObject<FieldSourceModel, TStorage>>(
+            'field-source',
+            storageObject,
+          )
+        ) {
+          return [];
+        }
+
+        let context: Context<'field-source'> = {
+          ...initialBasicContext,
+          type: 'field-source',
+          id: storageObject.getField('id')!,
         };
 
         contexts = [context];
