@@ -265,7 +265,9 @@ export class ActionStorage<TModel extends Model, TStorage extends Dict<any>> {
   }
 
   @lock
-  async update(fn: (storage: TStorage) => Promise<TStorage>): Promise<void> {
+  async update(
+    fn: (storage: TStorage) => TStorage | Promise<TStorage>,
+  ): Promise<void> {
     let storage = await fn(
       _.cloneDeep(this.storageObject.storage || ({} as TStorage)),
     );
