@@ -67,8 +67,8 @@ export class MongoAdapter extends AbstractDBAdapter {
   async setStorage<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     storage: any,
-  ): Promise<void> {
-    await this.findOneAndUpdate(identity, {
+  ): Promise<TModel> {
+    return this.findOneAndUpdate(identity, {
       $set: {
         storage,
       },

@@ -263,6 +263,17 @@ export class ActionStorage<TModel extends Model, TStorage extends Dict<any>> {
     );
     this.storageObject.updateModel(model);
   }
+
+  @lock
+  async update(
+    fn: (storage: TStorage | undefined) => Promise<TStorage>,
+  ): Promise<void> {
+    let storage = await fn(_.cloneDeep(this.storageObject.storage));
+
+    let model = await this.db.setStorage(this.storageObject.identity, storage);
+
+    this.storageObject.updateModel(model);
+  }
 }
 
 function flatPath<TStorage>(path: Path<TStorage>): string {

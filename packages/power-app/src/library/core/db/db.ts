@@ -115,7 +115,7 @@ abstract class DBAdapter {
   abstract async setStorage<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     storage: any,
-  ): Promise<void>;
+  ): Promise<TModel>;
 
   // field
 

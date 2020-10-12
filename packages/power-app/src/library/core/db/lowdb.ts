@@ -61,18 +61,20 @@ export class LowdbAdapter extends AbstractDBAdapter {
       this.getCollection(identity).find({id}),
     );
 
-    model.write();
+    await model.write();
 
     return model.value();
   }
 
-  async setStorage(
+  async setStorage<TModel extends Model>(
     {id, type}: ModelIdentity<Model>,
     storage: any,
-  ): Promise<void> {
+  ): Promise<TModel> {
     let model = await this.getCollection({type}).find({id});
 
     await model.set('storage', storage).write();
+
+    return model.value() as TModel;
   }
 
   async rename<TModel extends Model>(

@@ -96,7 +96,7 @@ export const FieldTypeSelect: FC<SelectProps<Field.BaseFieldType>> = props => {
   ];
 
   return (
-    <Select defaultValue="text" {...props}>
+    <Select defaultValue="input" {...props}>
       {types.map(type => (
         <Option key={type} value={type}>
           {type}
@@ -152,7 +152,7 @@ export const ReportIconTypeSelect: FC<SelectProps<
   ];
 
   return (
-    <Select defaultValue="text" {...props}>
+    <Select defaultValue="star" {...props}>
       {types.map(type => (
         <Option key={type} value={type}>
           {type}
@@ -175,7 +175,7 @@ export const ElementTypeSelect: FC<SelectProps<
   ];
 
   return (
-    <Select defaultValue="text" {...props}>
+    <Select defaultValue="number" {...props}>
       {types.map(type => (
         <Option key={type} value={type}>
           {type}
