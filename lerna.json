@@ -5,6 +5,8 @@
       "npmClient": "npm"
     }
   },
-  "packages": ["packages/*"],
-  "version": "0.3.0-wip.4"
+  "packages": [
+    "packages/*"
+  ],
+  "version": "0.3.0-wip.5"
 }
