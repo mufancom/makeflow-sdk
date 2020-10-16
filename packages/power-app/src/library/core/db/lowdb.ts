@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, {CollectionChain} from 'lodash';
 import lowdb, {LowdbSync} from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
 
@@ -256,8 +256,8 @@ export class LowdbAdapter extends AbstractDBAdapter {
     type,
   }: {
     type: TModel['type'];
-  }): _.CollectionChain<TModel> {
-    return this.db.get(type) as _.CollectionChain<TModel>;
+  }): CollectionChain<TModel> {
+    return this.db.get(type) as CollectionChain<TModel>;
   }
 
   private async findOneAndUpdate<TModel extends Model>(
