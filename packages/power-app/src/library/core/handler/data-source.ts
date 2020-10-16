@@ -34,6 +34,7 @@ export const dataSourceHandler: DataSourceHandler = async (
       source: {token, url, installation, organization, team, version},
       inputs,
       search,
+      value,
     },
   },
 ) => {
@@ -75,6 +76,7 @@ export const dataSourceHandler: DataSourceHandler = async (
     let [context] = await app.getStorageObjectContexts('data-source', storage, {
       'data-source': {
         search,
+        value,
       },
     });
 

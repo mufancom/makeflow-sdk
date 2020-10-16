@@ -87,6 +87,7 @@ export type ContextTypeToBasicMapping = {
     DataSourceModel,
     {
       search: string | undefined;
+      value?: any;
     },
   ];
   'field-source': [FieldSourceModel, {}];

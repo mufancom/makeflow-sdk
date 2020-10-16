@@ -58,6 +58,7 @@ export interface GetStorageObjectContextsOptions {
   };
   'data-source'?: {
     search?: string;
+    value?: any;
   };
 }
 
@@ -425,6 +426,7 @@ export class PowerApp {
           type: 'data-source',
           id: storageObject.getField('id')!,
           search: options?.['data-source']?.search,
+          value: options?.['data-source']?.value,
         };
 
         contexts = [context];
