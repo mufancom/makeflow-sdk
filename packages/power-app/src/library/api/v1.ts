@@ -1,7 +1,14 @@
 import {Readable} from 'stream';
 import {URL} from 'url';
 
-import {API as APITypes, PowerApp, User, Value} from '@makeflow/types';
+import {
+  API as APITypes,
+  PowerApp,
+  Procedure,
+  Tag,
+  User,
+  Value,
+} from '@makeflow/types';
 import {
   OperationTokenToken,
   OrganizationId,
@@ -289,6 +296,46 @@ export class API<TSourceObject extends APISource = APISource> {
     includeSubTeams = false,
   ): Promise<User.TeamUserInfo[]> {
     return this.request('/user/get-users', {
+      requireAccessToken: true,
+      body: {
+        team,
+        includeSubTeams,
+      },
+    });
+  }
+
+  // tag
+
+  /**
+   * 获取团队标签
+   * @param team 团队 id
+   * @accessToken
+   */
+  async getTeamTags(
+    team: TeamId | undefined = this.source.team?.id,
+    includeSubTeams = false,
+  ): Promise<Tag.TeamTagInfo[]> {
+    return this.request('/tag/get-tags', {
+      requireAccessToken: true,
+      body: {
+        team,
+        includeSubTeams,
+      },
+    });
+  }
+
+  // procedure
+
+  /**
+   * 获取团队流程
+   * @param team 团队 id
+   * @accessToken
+   */
+  async getTeamProcedures(
+    team: TeamId | undefined = this.source.team?.id,
+    includeSubTeams = false,
+  ): Promise<Procedure.TeamProcedureInfo[]> {
+    return this.request('/procedure/get-procedures', {
       requireAccessToken: true,
       body: {
         team,

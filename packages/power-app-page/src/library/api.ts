@@ -23,6 +23,14 @@ export class PowerAppPage {
 
       resolver(response);
     });
+
+    window.document.addEventListener(
+      'click',
+      () => {
+        this.clearAllPopups().catch(console.error);
+      },
+      true,
+    );
   }
 
   showMessage(params: PowerAppPageAPI.ShowMessageOptions): void {
@@ -41,6 +49,52 @@ export class PowerAppPage {
     options: PowerAppPageAPI.GetUserOptions = {},
   ): Promise<PowerAppPageAPI.GetUserResult> {
     return this.request('get-user', options);
+  }
+
+  async selectUsers(
+    context: Element | EventTarget,
+    options?: Omit<PowerAppPageAPI.SelectUsersOptions, 'rect'>,
+  ): Promise<PowerAppPageAPI.SelectUsersResult> {
+    if (!(context instanceof Element)) {
+      return;
+    }
+
+    return this.request('select-users', {
+      rect: context.getBoundingClientRect(),
+      ...options,
+    });
+  }
+
+  async selectProcedures(
+    context: Element | EventTarget,
+    options?: Omit<PowerAppPageAPI.SelectProceduresOptions, 'rect'>,
+  ): Promise<PowerAppPageAPI.SelectProceduresResult> {
+    if (!(context instanceof Element)) {
+      return;
+    }
+
+    return this.request('select-procedures', {
+      rect: context.getBoundingClientRect(),
+      ...options,
+    });
+  }
+
+  async selectTags(
+    context: Element | EventTarget,
+    options?: Omit<PowerAppPageAPI.SelectTagsOptions, 'rect'>,
+  ): Promise<PowerAppPageAPI.SelectTagsResult> {
+    if (!(context instanceof Element)) {
+      return;
+    }
+
+    return this.request('select-tags', {
+      rect: context.getBoundingClientRect(),
+      ...options,
+    });
+  }
+
+  async clearAllPopups(): Promise<void> {
+    return this.request('clear-all-popups', {});
   }
 
   close(): void {

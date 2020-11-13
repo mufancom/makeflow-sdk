@@ -2222,10 +2222,10 @@
   dependencies:
     tslang "^0.1.22"
 
-"@makeflow/types@^0.1.24":
-  version "0.1.24"
-  resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.24.tgz#cd38fcf95187e4b97094cddf0b9e17dafa114bf6"
-  integrity sha512-b6U/zMa+hUXVLdls1w2/NMp87TfXBB1SetAkNv8kGiN4rVU28uRVfkN5dwiUPKfxJq6b1ZRFPMXzMiQnvoTghA==
+"@makeflow/types@^0.1.25":
+  version "0.1.25"
+  resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.25.tgz#4d970505c246d8c36f542f0dd68abc0d75d222a7"
+  integrity sha512-bjljNWF6ljnomUGlzuj/zueZDOWxXxhqqS6tF5L6Bf1voi9t4L8civ22DXx4dWXKVQ6V3w1rq66IpN8+FhP+pA==
   dependencies:
     tslang "^0.1.22"
 
