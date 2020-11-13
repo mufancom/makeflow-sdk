@@ -26,9 +26,7 @@ export class PowerAppPage {
 
     window.document.addEventListener(
       'click',
-      () => {
-        this.clearAllPopups().catch(console.error);
-      },
+      () => this.clearAllPopups().catch(console.error),
       true,
     );
   }
