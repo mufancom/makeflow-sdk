@@ -78,7 +78,7 @@ export class PowerApp {
 
   dbAdapter!: IDBAdapter;
 
-  constructor(private options: PowerAppOptions = {}) {
+  constructor(readonly options: PowerAppOptions = {}) {
     this.initialize();
   }
 
@@ -518,20 +518,7 @@ export class PowerApp {
   private buildAdapter<TMiddleware>(
     adapter: PowerAppAdapter<any>,
   ): ReturnType<PowerAppAdapter<TMiddleware>> {
-    let token = this.options.source?.token;
-
     return adapter({
-      authenticate(body) {
-        if (!token) {
-          return true;
-        }
-
-        if (!body.source) {
-          return false;
-        }
-
-        return _.isEqual(token, body.source.token);
-      },
       routes: buildRoutes(this),
     });
   }

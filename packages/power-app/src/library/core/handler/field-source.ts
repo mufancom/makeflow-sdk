@@ -1,4 +1,4 @@
-import {PowerAppProcedureField} from '@makeflow/types';
+import {API, PowerAppProcedureField} from '@makeflow/types';
 import _ from 'lodash';
 
 import {PowerApp} from '../../app';
@@ -22,9 +22,7 @@ export interface FieldSourceParams {
 
 interface FieldSourceHandlerParams {
   params: FieldSourceParams;
-  // body: API.ProcedureField.FieldSourceParams;
-  // 等待 动态字段
-  body: any;
+  body: API.ProcedureField.FieldSourceParams;
 }
 
 export const fieldSourceHandler: FieldSourceHandler = async (

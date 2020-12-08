@@ -166,10 +166,7 @@ export namespace PowerAppVersion {
     export type Change<TDeclare> = GeneralChange<
       'installation',
       TDeclare,
-      // TODO
-      {
-        description?: string | false;
-      }
+      APITypes.PowerApp.InstallationActivateHookReturn
     >;
 
     export interface Definition<TDeclare> {

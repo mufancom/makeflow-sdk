@@ -8,7 +8,7 @@ export interface AdapterMiddlewareOptions {
   path?: string;
 }
 
-export type PowerAppRoutePath =
+export type PowerAppRoutePathSegment =
   | string
   | {
       name: string;
@@ -17,30 +17,31 @@ export type PowerAppRoutePath =
 
 export type PowerAppRouteMethod = 'get' | 'post';
 
-export interface PowerAppRoute<TType, TParams, TBody, TResponse> {
-  type: TType;
-  paths: PowerAppRoutePath[];
+export interface PowerAppHandlerReturn {
+  data?: any;
+  error?: {
+    status: number;
+    msg?: string;
+  };
+}
+
+export interface PowerAppRoute {
+  type: string;
+  path: PowerAppRoutePathSegment[];
   method?: PowerAppRouteMethod;
-  validator?(params: TParams): boolean;
   handler({
     type,
     body,
     params,
   }: {
-    type: TType;
-    params: TParams;
-    body: TBody;
-  }): Promise<TResponse>;
+    type: string;
+    params: any;
+    body: any;
+  }): Promise<PowerAppHandlerReturn>;
 }
 
-export interface PowerAppAdapterDefinition<
-  TType = string,
-  TParams = any,
-  TBody = any,
-  TResponse = any
-> {
-  routes: PowerAppRoute<TType, TParams, TBody, TResponse>[];
-  authenticate?(body: TBody): boolean;
+export interface PowerAppAdapterDefinition<> {
+  routes: PowerAppRoute[];
 }
 
 export type PowerAppAdapter<TMiddleware> = (

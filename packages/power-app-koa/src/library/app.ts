@@ -9,7 +9,6 @@ import Router from 'koa-router';
 
 export const koaAdapter: PowerAppAdapter<Koa.Middleware> = ({
   routes,
-  authenticate,
 }: PowerAppAdapterDefinition) => {
   function buildApp(path?: string): Koa {
     let app = new Koa();
@@ -18,42 +17,33 @@ export const koaAdapter: PowerAppAdapter<Koa.Middleware> = ({
 
     let router = new Router<unknown>({prefix});
 
-    router.all('(.*)', async (context, next) => {
-      if (authenticate && !authenticate(context.request.body)) {
-        context.throw(416);
-        return;
-      }
-
-      await next();
-
-      context.body = await context.body;
-    });
-
-    for (let {type, paths, method, validator, handler} of routes) {
+    for (let {type, path, method, handler} of routes) {
       router[method ?? 'post']?.(
         [
           '',
-          ...paths.map(path =>
-            typeof path === 'string'
-              ? path
-              : `:${path.name}${path.optional ? '?' : ''}`,
+          ...path.map(segment =>
+            typeof segment === 'string'
+              ? segment
+              : `:${segment.name}${segment.optional ? '?' : ''}`,
           ),
         ].join('/'),
-        context => {
+        async context => {
           let {
             params,
             request: {body},
           } = context;
 
-          if (validator && !validator(params)) {
-            return;
-          }
-
-          context.body = handler({
+          let {data, error} = await handler({
             type,
             params,
             body,
           });
+
+          if (error) {
+            context.throw(error.status, new Error(error.msg));
+          } else {
+            context.body = data;
+          }
         },
       );
     }

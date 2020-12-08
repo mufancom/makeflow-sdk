@@ -1,9 +1,9 @@
-# Makeflow PowerApp Hapi Adapter - WIP
+# Makeflow PowerApp Hapi Adapter
 
 ```ts
 const powerApp = new PowerApp();
 
-// middleware
+// hapi plugin
 powerApp.middleware(hapiAdapter);
 
 // server

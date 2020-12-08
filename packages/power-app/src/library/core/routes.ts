@@ -1,8 +1,11 @@
-import {PowerAppRoute} from '@makeflow/power-app-server-adapter';
+import {
+  PowerAppHandlerReturn,
+  PowerAppRoute,
+} from '@makeflow/power-app-server-adapter';
+import _ from 'lodash';
 
 import {PowerApp} from '../app';
 
-import {ContextType} from './context';
 import {
   dataSourceHandler,
   fieldSourceHandler,
@@ -15,23 +18,51 @@ import {
 } from './handler';
 import {handlerCatcher} from './utils';
 
-export function buildRoutes(
-  app: PowerApp,
-): PowerAppRoute<ContextType, any, any, any>[] {
+export type RouteHandler = Parameters<typeof handlerCatcher>[1];
+
+export function buildRoutes(app: PowerApp): PowerAppRoute[] {
+  const handlerWrapper = (handler: RouteHandler): PowerAppRoute['handler'] => {
+    let token = app.options.source?.token;
+
+    return async (request): Promise<PowerAppHandlerReturn> => {
+      let {body} = request;
+
+      if (!body.source) {
+        return {
+          error: {
+            status: 400,
+            msg: 'Invalid request !',
+          },
+        };
+      }
+
+      if (token && !_.isEqual(token, body.source.token)) {
+        return {
+          error: {
+            status: 403,
+            msg: 'Permission denied !',
+          },
+        };
+      }
+
+      return handlerCatcher(app, handler)(request);
+    };
+  };
+
   return [
     {
       type: 'installation',
-      paths: [
+      path: [
         'installation',
         {
           name: 'type',
         },
       ],
-      handler: handlerCatcher(app, installationHandler),
+      handler: handlerWrapper(installationHandler),
     },
     {
       type: 'power-item',
-      paths: [
+      path: [
         'power-item',
         {
           name: 'name',
@@ -44,11 +75,11 @@ export function buildRoutes(
           optional: true,
         },
       ],
-      handler: handlerCatcher(app, powerItemHandler),
+      handler: handlerWrapper(powerItemHandler),
     },
     {
       type: 'power-node',
-      paths: [
+      path: [
         'power-node',
         {
           name: 'name',
@@ -61,11 +92,11 @@ export function buildRoutes(
           optional: true,
         },
       ],
-      handler: handlerCatcher(app, powerNodeHandler),
+      handler: handlerWrapper(powerNodeHandler),
     },
     {
       type: 'power-glance',
-      paths: [
+      path: [
         'power-glance',
         {
           name: 'name',
@@ -74,21 +105,21 @@ export function buildRoutes(
           name: 'type',
         },
       ],
-      handler: handlerCatcher(app, powerGlanceHandler),
+      handler: handlerWrapper(powerGlanceHandler),
     },
     {
       type: 'power-custom-checkable-item',
-      paths: [
+      path: [
         'power-custom-checkable-item',
         {
           name: 'name',
         },
       ],
-      handler: handlerCatcher(app, powerCustomCheckableItemHandler),
+      handler: handlerWrapper(powerCustomCheckableItemHandler),
     },
     {
       type: 'page',
-      paths: [
+      path: [
         'page',
         {
           name: 'name',
@@ -97,11 +128,11 @@ export function buildRoutes(
           name: 'type',
         },
       ],
-      handler: handlerCatcher(app, pageHandler),
+      handler: handlerWrapper(pageHandler),
     },
     {
       type: 'data-source',
-      paths: [
+      path: [
         'data-source',
         {
           name: 'name',
@@ -110,11 +141,11 @@ export function buildRoutes(
           name: 'type',
         },
       ],
-      handler: handlerCatcher(app, dataSourceHandler),
+      handler: handlerWrapper(dataSourceHandler),
     },
     {
       type: 'field-source',
-      paths: [
+      path: [
         'procedure-field',
         {
           name: 'name',
@@ -123,7 +154,7 @@ export function buildRoutes(
           name: 'type',
         },
       ],
-      handler: handlerCatcher(app, fieldSourceHandler),
+      handler: handlerWrapper(fieldSourceHandler),
     },
   ];
 }

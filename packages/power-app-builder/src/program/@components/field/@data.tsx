@@ -280,6 +280,8 @@ const BaseFieldDataDict: {[key in Field.BaseFieldType]: FC<DataProps>[]} = {
   textarea: [],
   'user-array': [],
   table: [TableData],
+  'cascading-select': [],
+  location: [],
 };
 
 const BuildInFieldDataDict: {
@@ -304,6 +306,8 @@ const BuildInFieldDataDict: {
   table: [TableData],
   textarea: [],
   'user-array': [],
+  'cascading-select': [],
+  location: [],
 };
 
 export function getBaseFieldData(

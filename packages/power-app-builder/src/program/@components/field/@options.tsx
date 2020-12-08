@@ -46,6 +46,8 @@ const BaseFieldOptionsDict: {
   textarea: undefined,
   user: undefined,
   'user-array': undefined,
+  'cascading-select': undefined,
+  location: undefined,
 };
 
 export function getOptions(
