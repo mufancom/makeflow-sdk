@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app-page",
-  "version": "0.3.0-wip.8",
+  "version": "0.3.0-wip.9",
   "description": "Makeflow PowerApp Page Framework.",
   "publishConfig": {
     "access": "public"

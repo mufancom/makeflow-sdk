@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app-builder",
-  "version": "0.3.0-wip.8",
+  "version": "0.3.0-wip.9",
   "private": true,
   "homepage": "http://makeflow.github.io/app-builder",
   "scripts": {
