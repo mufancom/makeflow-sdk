@@ -90,21 +90,21 @@ abstract class DBAdapter {
 
   // query
 
-  protected abstract async getModel(
+  protected abstract getModel(
     identity: ModelIdentity<Model>,
   ): Promise<Model | undefined>;
 
-  protected abstract async getModelList<TModel extends Model>(
+  protected abstract getModelList<TModel extends Model>(
     partialModel: DefaultQueryType<TModel>,
   ): Promise<TModel[]>;
 
   // model
 
-  protected abstract async createModel<TModel extends Model>(
+  protected abstract createModel<TModel extends Model>(
     model: TModel,
   ): Promise<TModel>;
 
-  protected abstract async upgradeModel<TModel extends Model>(
+  protected abstract upgradeModel<TModel extends Model>(
     version: string,
     identity: ModelIdentity<TModel>,
     model: Partial<TModel>,
@@ -112,38 +112,38 @@ abstract class DBAdapter {
 
   // storage
 
-  abstract async setStorage<TModel extends Model>(
+  abstract setStorage<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     storage: any,
   ): Promise<TModel>;
 
   // field
 
-  abstract async rename<TModel extends Model>(
+  abstract rename<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
     newPath: string,
   ): Promise<TModel>;
 
-  abstract async inc<TModel extends Model>(
+  abstract inc<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
   ): Promise<TModel>;
 
-  abstract async mul<TModel extends Model>(
+  abstract mul<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
   ): Promise<TModel>;
 
-  abstract async set<TModel extends Model>(
+  abstract set<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
     value: any,
   ): Promise<TModel>;
 
-  abstract async unset<TModel extends Model>(
+  abstract unset<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
   ): Promise<TModel>;
@@ -159,29 +159,29 @@ abstract class DBAdapter {
    * 2. [ +? = the_first_?_items ]
    * 3. [ -? = the_last_?_items ]
    */
-  abstract async slice<TModel extends Model>(
+  abstract slice<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
     size: number,
   ): Promise<TModel>;
 
-  abstract async shift<TModel extends Model>(
+  abstract shift<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
   ): Promise<TModel>;
 
-  abstract async unshift<TModel extends Model>(
+  abstract unshift<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
     value: any,
   ): Promise<TModel>;
 
-  abstract async pop<TModel extends Model>(
+  abstract pop<TModel extends Model>(
     identity: ModelIdentity<TModel>,
     path: string,
   ): Promise<TModel>;
 
-  abstract async push<TModel extends Model, TValue>(
+  abstract push<TModel extends Model, TValue>(
     identity: ModelIdentity<TModel>,
     path: string,
     ...value: TValue[]

@@ -45,7 +45,9 @@ export function buildRoutes(app: PowerApp): PowerAppRoute[] {
         };
       }
 
-      return handlerCatcher(app, handler)(request);
+      return {
+        data: await handlerCatcher(app, handler)(request),
+      };
     };
   };
 
