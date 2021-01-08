@@ -206,6 +206,7 @@ export namespace PowerAppVersion {
     >;
 
     export interface Definition<TDeclare> {
+      preactivate?: Change<TDeclare>;
       activate?: Change<TDeclare>;
       update?: Change<TDeclare>;
       deactivate?: Change<TDeclare>;

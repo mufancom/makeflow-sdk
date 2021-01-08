@@ -252,6 +252,22 @@ export class API<TSourceObject extends APISource = APISource> {
   }
 
   /**
+   * 发送普通消息到任务
+   * @param task 任务ID
+   * @param content 消息内容
+   * @accessToken
+   */
+  async sendTaskTextMessage(task: TaskId, content: BodyInit): Promise<void> {
+    await this.request('/task/send-message', {
+      requireAccessToken: true,
+      body: {
+        task,
+        content,
+      },
+    });
+  }
+
+  /**
    * 添加输出到任务
    * @param taskId 任务ID
    * @param outputs 键值对
