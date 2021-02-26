@@ -22,7 +22,7 @@ export type RouteHandler = Parameters<typeof handlerCatcher>[1];
 
 export function buildRoutes(app: PowerApp): PowerAppRoute[] {
   const handlerWrapper = (handler: RouteHandler): PowerAppRoute['handler'] => {
-    let token = app.options.source?.token;
+    let sources = _.castArray(app.options.source);
 
     return async (request): Promise<PowerAppHandlerReturn> => {
       let {body} = request;
@@ -36,7 +36,10 @@ export function buildRoutes(app: PowerApp): PowerAppRoute[] {
         };
       }
 
-      if (token && !_.isEqual(token, body.source.token)) {
+      if (
+        sources.length &&
+        sources.every(source => !_.isEqual(source.token, body.source.token))
+      ) {
         return {
           error: {
             status: 403,

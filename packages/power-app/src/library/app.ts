@@ -67,7 +67,7 @@ export type PowerAppSource = Partial<
 >;
 
 export interface PowerAppOptions {
-  source?: PowerAppSource;
+  source?: PowerAppSource | PowerAppSource[];
   db?:
     | {type: 'mongo'; options: MongoOptions}
     | {type: 'lowdb'; options: LowdbOptions};
