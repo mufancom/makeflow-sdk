@@ -166,60 +166,44 @@ export class PowerApp {
 
     let api = new API(storageObject.source);
 
-    let appInstallationId = storageObject.getField('installation')?.id!;
+    let installationId = storageObject.source.installation.id;
+
+    let installationStorageObject:
+      | StorageObject<InstallationModel, any>
+      | undefined;
+
+    if (
+      type === 'installation' &&
+      assertStorageObjectType<StorageObject<InstallationModel, TStorage>>(
+        'installation',
+        storageObject,
+      )
+    ) {
+      installationStorageObject = storageObject;
+    } else {
+      installationStorageObject = await this.dbAdapter.getStorageObject<
+        InstallationModel
+      >({
+        type: 'installation',
+        id: installationId,
+      });
+    }
+
+    if (!installationStorageObject) {
+      throw Error('未匹配到安装信息');
+    }
 
     let initialBasicContext: Omit<
       BasicContext<any, any, any>,
       keyof ModelIdentity<Model>
     > = {
+      powerApp: this,
       api,
+      installationStorage: getActionStorage(db, installationStorageObject),
       storage: getActionStorage(db, storageObject),
       source: storageObject.source,
-      configs: {},
+      configs: installationStorageObject.getField('configs'),
     };
-
-    // #region installation
-
-    if (type === 'installation') {
-      if (
-        !assertStorageObjectType<StorageObject<InstallationModel, TStorage>>(
-          'installation',
-          storageObject,
-        )
-      ) {
-        return [];
-      }
-
-      api.setAccessToken(storageObject.getField('accessToken'));
-
-      let context: Context<'installation'> = {
-        ...initialBasicContext,
-        type: 'installation',
-        id: appInstallationId,
-        users: storageObject.getField('users') ?? [],
-        configs: storageObject.getField('configs') ?? {},
-        resources: storageObject.getField('resources') ?? {
-          tags: {},
-          procedures: {},
-        },
-        disabled: !!storageObject.getField('disabled'),
-      };
-
-      return [context] as Context<TContextType>[];
-    }
-
-    // #endregion installation
-
-    let installationStorageObject = await this.dbAdapter.getStorageObject<
-      InstallationModel
-    >({
-      type: 'installation',
-      id: appInstallationId,
-    });
-
-    if (!installationStorageObject) {
-      throw Error('未匹配到安装信息');
-    }
 
     api.setAccessToken(installationStorageObject.getField('accessToken'));
 
@@ -227,11 +211,34 @@ export class PowerApp {
       api.setOperationToken(storageObject.getField('operationToken'));
     }
 
-    initialBasicContext.configs = installationStorageObject.getField('configs');
-
     let contexts: Context<ContextType>[] = [];
 
     switch (type) {
+      case 'installation': {
+        if (
+          !assertStorageObjectType<StorageObject<InstallationModel, TStorage>>(
+            'installation',
+            storageObject,
+          )
+        ) {
+          return [];
+        }
+
+        let context: Context<'installation'> = {
+          ...initialBasicContext,
+          type: 'installation',
+          id: installationId,
+          users: storageObject.getField('users') ?? [],
+          resources: storageObject.getField('resources') ?? {
+            tags: {},
+            procedures: {},
+          },
+          disabled: !!storageObject.getField('disabled'),
+        };
+
+        contexts = [context];
+        break;
+      }
       case 'power-item': {
         if (
           !assertStorageObjectType<StorageObject<PowerItemModel, TStorage>>(
@@ -323,7 +330,7 @@ export class PowerApp {
 
         if (pageOptions?.user) {
           let userModelId = getInstallationResourceId(
-            appInstallationId,
+            installationId,
             pageOptions.user.id,
           );
 

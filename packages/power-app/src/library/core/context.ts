@@ -2,6 +2,7 @@ import {API as APITypes, User} from '@makeflow/types';
 import {Dict} from 'tslang';
 
 import {API} from '../api';
+import {PowerApp} from '../app';
 import {UserId} from '../types/namespace';
 
 import {
@@ -20,8 +21,10 @@ import {
 import {ActionStorage} from './storage';
 
 export type BasicContext<TModel extends Model, TStorage, TConfigs> = {
+  powerApp: PowerApp;
   api: API;
   source: APITypes.PowerApp.Source;
+  installationStorage: ActionStorage<InstallationModel, TStorage>;
   storage: ActionStorage<TModel, TStorage>;
   configs: TConfigs;
 } & ModelIdentity<TModel>;
