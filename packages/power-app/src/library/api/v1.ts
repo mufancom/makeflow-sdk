@@ -216,6 +216,7 @@ export class API<TSourceObject extends APISource = APISource> {
    * @params options.id 任务 ID
    * @params options.brief 任务简述
    * @params options.outputs 任务输出
+   * @params options.associatedTasks 关联任务信息
    * @accessToken
    */
   async updateTask(options: UpdateTaskOptions): Promise<TaskId> {
@@ -249,6 +250,22 @@ export class API<TSourceObject extends APISource = APISource> {
         body,
       },
     );
+  }
+
+  /**
+   * 发送普通消息到任务
+   * @param task 任务ID
+   * @param content 消息内容
+   * @accessToken
+   */
+  async sendTaskTextMessage(task: TaskId, content: BodyInit): Promise<void> {
+    await this.request('/task/send-message', {
+      requireAccessToken: true,
+      body: {
+        task,
+        content,
+      },
+    });
   }
 
   /**
@@ -418,6 +435,7 @@ export interface UpdateTaskOptions {
   id: TaskId;
   brief?: string;
   outputs?: Dict<CompositeValueDescriptor>;
+  associatedTasks?: TaskAssociation[];
 }
 
 export interface UserCandidate {

@@ -20,7 +20,7 @@ type PowerNodeHandlerParams<
 
 export interface PowerNodeParams {
   name: string;
-  type: 'activate' | 'update' | 'deactivate' | 'action';
+  type: 'preactivate' | 'activate' | 'update' | 'deactivate' | 'action';
   action: string | undefined;
 }
 

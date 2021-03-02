@@ -2215,19 +2215,19 @@
     tslang "^0.1.22"
     tsutils "^3.17.1"
 
-"@makeflow/types-nominal@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@makeflow/types-nominal/-/types-nominal-0.1.2.tgz#b8239f394af388652acb8af1873fdcd094bce7f4"
-  integrity sha512-oxXr+KpbIM6b0beBvFB0RdNeZLMk94BXozBQO4vCEYHPsbWOvGr3uLI1ghc0gfGC2I4bi4GxNivzgROAAWLrSw==
+"@makeflow/types-nominal@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@makeflow/types-nominal/-/types-nominal-0.1.3.tgz#cbb45f3d80a167441ddde563ce1b70ecd34c16c5"
+  integrity sha512-VFSdQBcxH3TcsIi113t/cZkRBbAuE1ovXLxNo9ycXxICvK2YpfQp+MJ+uRdBIDNswG4Jc4gz3SCNVWYDCS9q3g==
   dependencies:
-    tslang "^0.1.22"
+    tslang "^0.1.23"
 
-"@makeflow/types@^0.1.27":
-  version "0.1.27"
-  resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.27.tgz#9401ec0004492f7a6f1eb79ecbbb336b65b6bde7"
-  integrity sha512-NSiYzozkCyH2UjKQgrYU33EC0TYsWzRjGmelTO5fBDQrCngPotzt6Ldq/0Y/2rbPLwT/KyICctTrVMBxDqz06g==
+"@makeflow/types@^0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@makeflow/types/-/types-0.1.28.tgz#babf2aaeff00083b1033aa8e15b6e0f780814e0a"
+  integrity sha512-1S+u0zp8pqvc5BCfMBFg7in+bc7kAdxDQncHz8IbKifaZybGkvfLPvRtqSP5uEYIw7PqqTqoy5Nt1v2aIKv/qg==
   dependencies:
-    tslang "^0.1.22"
+    tslang "^0.1.23"
 
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
@@ -11016,6 +11016,11 @@ tslang@^0.1.22:
   version "0.1.22"
   resolved "https://registry.yarnpkg.com/tslang/-/tslang-0.1.22.tgz#df8260690037043e6a8a7ad8e55d9bf0e0767565"
   integrity sha512-7wFN8784UBKxpmpN1Ve+dQMl+2N7CnxLIZMPlUnEk8TqjY7o2vY5llcuHNkfeVPd4LnbMM73myd5t2wtiEhjZg==
+
+tslang@^0.1.23:
+  version "0.1.23"
+  resolved "https://registry.yarnpkg.com/tslang/-/tslang-0.1.23.tgz#cf79359a4ad1f8d1f04e03d4b42340974c0b651d"
+  integrity sha512-V8922AQT5Ij09dO+CjWaDum5nRqllwWQfvLIgSm/Twjel9XAAGRXDd7qqR8r8wkzbTX2UwdMIeWca9PoufpL6Q==
 
 tslib@^1.10.0, tslib@^1.8.0, tslib@^1.8.1, tslib@^1.9.0:
   version "1.13.0"
