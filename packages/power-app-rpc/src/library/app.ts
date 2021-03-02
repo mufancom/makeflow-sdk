@@ -6,7 +6,7 @@ import socketIO from 'socket.io-client';
 
 const RPC_URL_DEFAULT = 'https://www.makeflow.com/';
 
-export const rpcAdapter: PowerAppAdapter<any> = ({
+export const rpcAdapter: PowerAppAdapter<() => void> = ({
   routes,
   sources,
 }: PowerAppAdapterDefinition) => {
@@ -28,7 +28,7 @@ export const rpcAdapter: PowerAppAdapter<any> = ({
         'power-app:rpc',
         async (
           {paths, body}: {paths: string[]; body: unknown},
-          response: (res: any) => void,
+          response: (res: {data?: unknown; error?: unknown}) => void,
         ) => {
           try {
             let type = paths[0];
@@ -37,7 +37,7 @@ export const rpcAdapter: PowerAppAdapter<any> = ({
               throw Error('Unknown request type');
             }
 
-            let {handler, path} = pathTypeToRouteMap.get(type)!;
+            let {handler, path} = pathTypeToRouteMap.get(type);
 
             let params = path.reduce<any>((params: any, path, index) => {
               if (typeof path === 'string') {
