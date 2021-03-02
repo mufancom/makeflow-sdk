@@ -37,7 +37,7 @@ export const rpcAdapter: PowerAppAdapter<() => void> = ({
               throw Error('Unknown request type');
             }
 
-            let {handler, path} = pathTypeToRouteMap.get(type);
+            let {handler, path} = pathTypeToRouteMap.get(type)!;
 
             let params = path.reduce<any>((params: any, path, index) => {
               if (typeof path === 'string') {
