@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "@makeflow/power-app-server-adapter": "^0.3.0-wip.9",
+    "@types/socket.io-client": "^1.4.35",
+    "socket.io-client": "^2.2.0"
+  },
+  "description": "Makeflow PowerApp Server Adapter - RPC.",
+  "files": [
+    "src/**/*.ts",
+    "bld",
+    "!*.tsbuildinfo"
+  ],
+  "license": "MIT",
+  "main": "bld/library/index.js",
+  "name": "@makeflow/power-app-rpc",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/makeflow/makeflow-sdk.git"
+  },
+  "scripts": {
+    "build": "tsc -p ./src/library/tsconfig.json"
+  },
+  "types": "bld/library/index.d.ts",
+  "version": "0.3.0-wip.9"
+}

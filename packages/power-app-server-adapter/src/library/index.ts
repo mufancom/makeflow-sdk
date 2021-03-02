@@ -40,7 +40,13 @@ export interface PowerAppRoute {
   }): Promise<PowerAppHandlerReturn>;
 }
 
+interface PowerAppSource {
+  url?: string;
+  token?: string;
+}
+
 export interface PowerAppAdapterDefinition<> {
+  sources: PowerAppSource[];
   routes: PowerAppRoute[];
 }
 

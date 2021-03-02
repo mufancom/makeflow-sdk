@@ -11,6 +11,8 @@
 
     {"path": "packages/power-app-hapi/src/library"},
 
+    {"path": "packages/power-app-rpc/src/library"},
+
     {"path": "packages/power-app/src/library"},
 
     {"path": "packages/power-app-page/src/library"},
