@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app",
-  "version": "0.3.0-wip.11",
+  "version": "0.3.0-wip.12",
   "description": "Makeflow PowerApp Node.js Framework.",
   "publishConfig": {
     "access": "public"
@@ -21,7 +21,7 @@
     "prepublishOnly": "yarn rimraf bld && yarn tsc --build ./src/library"
   },
   "dependencies": {
-    "@makeflow/power-app-server-adapter": "^0.3.0-wip.9",
+    "@makeflow/power-app-server-adapter": "^0.3.0-wip.12",
     "@makeflow/types": "^0.1.28",
     "@makeflow/types-nominal": "^0.1.3",
     "@types/lowdb": "^1.0.9",

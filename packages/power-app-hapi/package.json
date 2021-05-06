@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app-hapi",
-  "version": "0.3.0-wip.9",
+  "version": "0.3.0-wip.12",
   "description": "Makeflow PowerApp Server Adapter - Hapi.",
   "publishConfig": {
     "access": "public"
@@ -22,7 +22,7 @@
   ],
   "dependencies": {
     "@hapi/hapi": "^19.1.1",
-    "@makeflow/power-app-server-adapter": "^0.3.0-wip.9",
+    "@makeflow/power-app-server-adapter": "^0.3.0-wip.12",
     "@types/hapi__hapi": "^19.0.3"
   }
 }

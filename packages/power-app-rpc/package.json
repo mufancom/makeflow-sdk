@@ -1,6 +1,6 @@
 {
   "name": "@makeflow/power-app-rpc",
-  "version": "0.3.0-wip.9",
+  "version": "0.3.0-wip.12",
   "description": "Makeflow PowerApp Server Adapter - RPC.",
   "publishConfig": {
     "access": "public"
@@ -21,7 +21,7 @@
     "build": "tsc -p ./src/library/tsconfig.json"
   },
   "dependencies": {
-    "@makeflow/power-app-server-adapter": "^0.3.0-wip.9",
+    "@makeflow/power-app-server-adapter": "^0.3.0-wip.12",
     "@types/socket.io-client": "^1.4.35",
     "socket.io-client": "^2.2.0"
   }
