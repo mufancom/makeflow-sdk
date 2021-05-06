@@ -22,7 +22,7 @@ export type RouteHandler = Parameters<typeof handlerCatcher>[1];
 
 export function buildRoutes(app: PowerApp): PowerAppRoute[] {
   const handlerWrapper = (handler: RouteHandler): PowerAppRoute['handler'] => {
-    let sources = _.castArray(app.options.source);
+    let sources = _.compact(_.castArray(app.options.source));
 
     return async (request): Promise<PowerAppHandlerReturn> => {
       let {body} = request;

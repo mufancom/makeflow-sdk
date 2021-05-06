@@ -526,7 +526,7 @@ export class PowerApp {
     adapter: PowerAppAdapter<any>,
   ): ReturnType<PowerAppAdapter<TMiddleware>> {
     return adapter({
-      sources: _.castArray(this.options.source),
+      sources: _.compact(_.castArray(this.options.source)),
       routes: buildRoutes(this),
     });
   }
