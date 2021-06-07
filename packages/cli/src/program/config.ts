@@ -36,3 +36,7 @@ export function updateConfig(update: Partial<SDKConfig>): void {
     `${JSON.stringify(configToSave, undefined, 2)}\n`,
   );
 }
+
+export function setConfig(config: SDKConfig): void {
+  FS.writeFileSync(CONFIG_PATH, `${JSON.stringify(config, undefined, 2)}\n`);
+}
