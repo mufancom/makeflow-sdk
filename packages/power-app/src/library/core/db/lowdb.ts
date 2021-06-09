@@ -5,7 +5,12 @@ import FileSync from 'lowdb/adapters/FileSync';
 import {Model, ModelIdentity} from '../model';
 import {buildSecureUpdateData} from '../utils';
 
-import {AbstractDBAdapter, DefaultQueryType} from './db';
+import {
+  AbstractDBAdapter,
+  DefaultQueryType,
+  PaginationOptions,
+  PaginationResult,
+} from './db';
 
 export interface LowdbOptions {
   file?: string;
@@ -38,6 +43,20 @@ export class LowdbAdapter extends AbstractDBAdapter {
     return this.getCollection(partialModel)
       .filter(partialModel as any)
       .value();
+  }
+
+  async getModelPagination<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel>,
+    {current, size}: PaginationOptions,
+  ): Promise<PaginationResult<TModel>> {
+    let chain = this.getCollection(partialModel).filter(partialModel as any);
+
+    let start = current * size;
+
+    return {
+      total: chain.size().value(),
+      data: chain.slice(start, start + size).value(),
+    };
   }
 
   // model

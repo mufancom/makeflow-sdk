@@ -12,7 +12,12 @@ import {
 import {Model, ModelIdentity} from '../model';
 import {buildSecureUpdateData, flattenObjectToQuery} from '../utils';
 
-import {AbstractDBAdapter, DefaultQueryType} from './db';
+import {
+  AbstractDBAdapter,
+  DefaultQueryType,
+  PaginationOptions,
+  PaginationResult,
+} from './db';
 
 export interface MongoOptions {
   uri: string;
@@ -44,6 +49,22 @@ export class MongoAdapter extends AbstractDBAdapter {
     return this.getCollection<TModel>(partialModel)
       .find(flattenObjectToQuery(partialModel))
       .toArray();
+  }
+
+  async getModelPagination<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel>,
+    {current, size}: PaginationOptions,
+  ): Promise<PaginationResult<TModel>> {
+    let cursor = this.getCollection<TModel>(partialModel).find(
+      flattenObjectToQuery(partialModel),
+    );
+
+    cursor = cursor.skip(current * size).limit(size);
+
+    return {
+      total: await cursor.count(),
+      data: await cursor.toArray(),
+    };
   }
 
   // model

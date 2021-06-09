@@ -28,6 +28,8 @@ import {
   MongoAdapter,
   MongoOptions,
   PageModel,
+  PaginationOptions,
+  PaginationResult,
   PowerAppVersion,
   PowerAppVersionInfo,
   PowerGlanceModel,
@@ -155,6 +157,42 @@ export class PowerApp {
     }
 
     return contexts;
+  }
+
+  async getContextsPagination<
+    TContextType extends ContextType,
+    TStorage = Dict<any>,
+    TConfigs = Dict<any>
+  >(
+    type: TContextType,
+    filter: MatchContextsFilter<TContextType>,
+    options: PaginationOptions,
+  ): Promise<PaginationResult<Context<TContextType, TStorage, TConfigs>>> {
+    let db = this.dbAdapter;
+
+    let contexts: Context<TContextType, TStorage, TConfigs>[] = [];
+
+    let {total, data: storageObjects} = await db.getStorageObjectPagination<
+      ContextTypeToModel<TContextType>,
+      TStorage
+    >(
+      {
+        type,
+        ...(filter as any),
+      },
+      options,
+    );
+
+    for (let storageObject of storageObjects) {
+      contexts.push(
+        ...(await this.getStorageObjectContexts(type, storageObject)),
+      );
+    }
+
+    return {
+      total,
+      data: contexts,
+    };
   }
 
   async getStorageObjectContexts<TContextType extends ContextType, TStorage>(

@@ -9,6 +9,25 @@ export interface IDBAdapter extends DBAdapter {}
 export type DefaultQueryType<TModel extends Model> = Partial<TModel> &
   Required<{type: TModel['type']}>;
 
+export interface PaginationOptions {
+  /**
+   * 每页大小
+   */
+  size: number;
+  /**
+   * 当前页, 从 0 开始
+   */
+  current: number;
+}
+
+export interface PaginationResult<TData> {
+  /**
+   * 总条数
+   */
+  total: number;
+  data: TData[];
+}
+
 abstract class DBAdapter {
   private readonly ready = this.initialize();
 
@@ -32,6 +51,23 @@ abstract class DBAdapter {
     let models = await this.getModelList(partialModel);
 
     return models.map(model => new StorageObject(model));
+  }
+
+  async getStorageObjectPagination<TModel extends Model, TStorage>(
+    partialModel: DefaultQueryType<TModel>,
+    options: PaginationOptions,
+  ): Promise<PaginationResult<StorageObject<TModel, TStorage>>> {
+    await this.ready;
+
+    let {total, data: models} = await this.getModelPagination(
+      partialModel,
+      options,
+    );
+
+    return {
+      total,
+      data: models.map(model => new StorageObject(model)),
+    };
   }
 
   async createStorageObject<TModel extends Model, TStorage = Dict<any>>(
@@ -97,6 +133,11 @@ abstract class DBAdapter {
   protected abstract getModelList<TModel extends Model>(
     partialModel: DefaultQueryType<TModel>,
   ): Promise<TModel[]>;
+
+  protected abstract getModelPagination<TModel extends Model>(
+    partialModel: DefaultQueryType<TModel>,
+    options: PaginationOptions,
+  ): Promise<PaginationResult<TModel>>;
 
   // model
 
